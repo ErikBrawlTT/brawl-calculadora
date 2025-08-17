@@ -122,14 +122,14 @@
     let chart;
     function calcular() {
       const valores = {
-        "🎟️ Brawl Pass": document.getElementById("bpass").value * 10,
+        "🎟️ Brawl Pass": document.getElementById("bpass").value * 7,
         "👕 Comunes": document.getElementById("comunes").value * 2,
         "💚 Raras": document.getElementById("raras").value * 5,
         "💜 Épicas": document.getElementById("epicas").value * 10,
-        "❤️ Míticas": document.getElementById("miticas").value * 20,
-        "🌟 Legendarias": document.getElementById("legendarias").value * 30,
-        "⚡ Hipercarga": document.getElementById("hipercarga").value * 50,
-        "🔥 Maxeados": document.getElementById("maxeados").value * 15
+        "❤️ Míticas": document.getElementById("miticas").value * 12,
+        "🌟 Legendarias": document.getElementById("legendarias").value * 15,
+        "⚡ Hipercarga": document.getElementById("hipercarga").value * 20,
+        "🔥 Maxeados": document.getElementById("maxeados").value * 50
       };
       const total = Object.values(valores).reduce((a,b) => a+b, 0);
       document.getElementById("resultado").innerText = "Valor total: " + total + " €";
