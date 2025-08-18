@@ -126,12 +126,13 @@
     <div id="resultado">Valor total: 0 €</div>
     <canvas id="myChart" width="400" height="400"></canvas>
 
-    <!-- Contador de visitas -->
-    <div class="visitas">
-      👀 Visitas: <span id="visitas">0</span>
-    </div>
-  </div>
-
+    
+<!-- Contador de visitas -->
+<div class="visitas">
+  👀 Visitas: 
+  <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://brawl-calculadora.vercel.app&count_bg=%2379C83D&title_bg=%23555555&icon=brawlstars&icon_color=%23E7E7E7&title=Visitas&edge_flat=false"/>
+</div>
+    
   <script>
     let chart;
     function calcular() {
@@ -188,7 +189,7 @@
     }
 
     // Contador de visitas con CountAPI
-    fetch('https://api.countapi.xyz/hit/calculadora-brawl/vercel')
+    fetch('https://api.countapi.xyz/hit/brawl-calculadora/vercel')
       .then(response => response.json())
       .then(data => {
         document.getElementById('visitas').innerText = data.value;
