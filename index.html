@@ -6,6 +6,7 @@
 <title>Calculadora Brawl Stars</title>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
   body {
     margin: 0;
@@ -95,6 +96,10 @@
     transition: all 0.2s ease;
     font-family: 'Bangers', cursive;
   }
+  button:active {
+    transform: scale(0.92);
+    filter: brightness(1.4);
+  }
   #calcBtn {
     background: linear-gradient(90deg, #ff0080, #7928ca);
     box-shadow: 0 0 15px rgba(255,0,128,0.8);
@@ -112,11 +117,6 @@
     0% { transform: scale(1); box-shadow: 0 0 10px #fff; }
     50% { transform: scale(1.1); box-shadow: 0 0 20px #ff0; }
     100% { transform: scale(1); box-shadow: 0 0 10px #fff; }
-  }
-  .activeBtn {
-    transform: scale(1.2);
-    filter: brightness(1.6);
-    box-shadow: 0 0 25px #fff;
   }
   #resultado {
     margin-top: 20px;
@@ -142,7 +142,7 @@
   <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
-    <label>👕 Skins Comunes: <input type="number" id="comunes" value="0"></label>
+    <label>🩵 Skins Comunes: <input type="number" id="comunes" value="0"></label>
     <label>💚 Skins Raras: <input type="number" id="raras" value="0"></label>
     <label>💜 Skins Épicas: <input type="number" id="epicas" value="0"></label>
     <label>❤️ Skins Míticas: <input type="number" id="miticas" value="0"></label>
@@ -162,27 +162,39 @@
   <canvas id="myChart" width="400" height="400"></canvas>
 </div>
 
-<!-- Sonidos diferentes por botón -->
-<audio id="clickCalc" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
-<audio id="clickClear" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-<audio id="clickShare" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
-
 <script>
-let chart;
-
-function playSoundAndEffect(id, btn){
-  const sound = document.getElementById(id);
-  sound.currentTime = 0;
-  sound.play().catch(err=>console.log('Error sonido:', err));
-  btn.classList.add("activeBtn");
-  setTimeout(()=>btn.classList.remove("activeBtn"),200);
+// Sonido simple
+function playBeep(freq, duration=120) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    osc.stop(ctx.currentTime + duration/1000);
+  } catch (e) {
+    console.log("Audio no soportado", e);
+  }
 }
 
-function calcular(btn) {
-  playSoundAndEffect('clickCalc', btn);
+// Vibración
+function vibrar(ms=100) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+let chart;
+
+function calcular() {
+  playBeep(600);
+  vibrar();
+
   const valores = {
     "🎟️ Brawl Pass": document.getElementById("bpass").value*10,
-    "👕 Comunes": document.getElementById("comunes").value*2,
+    "🩵 Comunes": document.getElementById("comunes").value*2,
     "💚 Raras": document.getElementById("raras").value*5,
     "💜 Épicas": document.getElementById("epicas").value*10,
     "❤️ Míticas": document.getElementById("miticas").value*12,
@@ -225,17 +237,35 @@ function calcular(btn) {
       }
     }
   });
+
+  // 🎆 EFECTO FUEGOS ARTIFICIALES RGB (4 segundos)
+  const duration = 4 * 1000;
+  const end = Date.now() + duration;
+
+  (function frame() {
+    confetti({
+      particleCount: 100,
+      startVelocity: 40,
+      spread: 360,
+      ticks: 60,
+      origin: { x: Math.random(), y: Math.random() * 0.5 },
+      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
 }
 
-function limpiar(btn) {
-  playSoundAndEffect('clickClear', btn);
+function limpiar() {
+  playBeep(400);
+  vibrar(80);
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText = "Valor total: 0 €";
   if(chart) chart.destroy();
 }
 
-function compartir(btn) {
-  playSoundAndEffect('clickShare', btn);
+function compartir() {
+  playBeep(800);
+  vibrar(120);
   if (navigator.share) {
     navigator.share({
       title: 'Calculadora Brawl Stars',
@@ -247,9 +277,9 @@ function compartir(btn) {
   }
 }
 
-document.getElementById("calcBtn").addEventListener("click", e=>{ e.preventDefault(); calcular(e.target); });
-document.getElementById("clearBtn").addEventListener("click", e=>{ e.preventDefault(); limpiar(e.target); });
-document.getElementById("shareBtn").addEventListener("click", e=>{ e.preventDefault(); compartir(e.target); });
+document.getElementById("calcBtn").addEventListener("click", e=>{ e.preventDefault(); calcular(); });
+document.getElementById("clearBtn").addEventListener("click", e=>{ e.preventDefault(); limpiar(); });
+document.getElementById("shareBtn").addEventListener("click", e=>{ e.preventDefault(); compartir(); });
 </script>
 </body>
 </html>
