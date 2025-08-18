@@ -131,9 +131,14 @@
     <canvas id="myChart" width="400" height="400"></canvas>
 
     <!-- Contador de visitas -->
-    <div id="contador" style="font-size:20px; color:#fff; margin-top:15px;">
-  👀 Visitas: <span id="visitas">0</span>
-</div>
+    div class="visitas">
+      👀 Visitas: 
+      <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://calculadora-brawl.vercel.app&count_bg=%2379C83D&title_bg=%23555555&icon=brawlstars&icon_color=%23E7E7E7&title=Visitas&edge_flat=false"/>
+    </div>
+  </div>
+
+  <script>
+    let chart;
     let chart;
     function calcular() {
       const valores = {
