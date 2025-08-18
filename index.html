@@ -12,16 +12,19 @@
       font-family: 'Bangers', cursive;
       background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
       background-size: cover;
+      position: relative;
     }
-    body::before {
+    body::after {
       content: "";
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
-      z-index: -1;
+      backdrop-filter: blur(6px);
+      z-index: 0;
     }
     .container {
+      position: relative;
+      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -40,6 +43,7 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
+      text-shadow: 2px 2px 5px #000;
     }
     .diamond {
       font-size: 2.5rem;
@@ -98,6 +102,16 @@
     canvas {
       margin-top: 20px;
     }
+    .visitas {
+      margin-top: 30px;
+      font-size: 1.2rem;
+      color: #FFD700;
+    }
+    .visitas img {
+      vertical-align: middle;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
   </style>
 </head>
 <body>
@@ -116,13 +130,19 @@
     </form>
     <div id="resultado">Valor total: 0 €</div>
     <canvas id="myChart" width="400" height="400"></canvas>
+
+    <!-- Contador de visitas -->
+    <div class="visitas">
+      👀 Visitas: 
+      <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://TU-APP.vercel.app&count_bg=%2379C83D&title_bg=%23555555&icon=brawlstars&icon_color=%23E7E7E7&title=Visitas&edge_flat=false"/>
+    </div>
   </div>
 
   <script>
     let chart;
     function calcular() {
       const valores = {
-        "🎟️ Brawl Pass": document.getElementById("bpass").value * 7,
+        "🎟️ Brawl Pass": document.getElementById("bpass").value * 10,
         "👕 Comunes": document.getElementById("comunes").value * 2,
         "💚 Raras": document.getElementById("raras").value * 5,
         "💜 Épicas": document.getElementById("epicas").value * 10,
@@ -139,14 +159,14 @@
         datasets: [{
           data: Object.values(valores),
           backgroundColor: [
-            "#1E90FF", // brawl pass azul
-            "#CCCCCC", // comunes gris
-            "#00FF00", // raras verde
-            "#800080", // epicas morado
-            "#FF0000", // miticas rojo
-            "#FFD700", // legendarias dorado
-            "#FF8C00", // hipercarga naranja
-            "#808080"  // maxeados gris oscuro
+            "#1E90FF", // Brawl Pass
+            "#CCCCCC", // Comunes
+            "#00FF00", // Raras
+            "#800080", // Épicas
+            "#FF0000", // Míticas
+            "#FFD700", // Legendarias
+            "#FF8C00", // Hipercarga
+            "#FF1493"  // Maxeados (rosa brillante)
           ],
           borderColor: "#111",
           borderWidth: 2
