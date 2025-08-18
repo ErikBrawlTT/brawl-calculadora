@@ -33,7 +33,7 @@
       color: white;
       text-align: center;
     }
-     h1 {
+    h1 {
       font-size: 3rem;
       margin-bottom: 20px;
       background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
@@ -50,8 +50,8 @@
       animation: glow 1.5s infinite alternate;
     }
     @keyframes glow {
-      from { text-shadow: 0 0 5px #0ff; }
-      to   { text-shadow: 0 0 20px #0ff; }
+      from { text-shadow: 0 0 5px #0ff, 0 0 10px #0ff; }
+      to { text-shadow: 0 0 20px #0ff, 0 0 40px #0ff; }
     }
     form {
       background: rgba(0,0,0,0.5);
@@ -99,15 +99,16 @@
       text-shadow: 2px 2px 4px #000;
     }
     canvas {
-      margin-top: 30px;
+      margin-top: 20px;
     }
     .visitas {
-      margin-top: 10px;
+      margin-top: 15px;
       font-size: 1.4rem;
       color: #FFD700;
       text-shadow: 2px 2px 5px #000;
     }
-    /* Fireworks */
+
+    /* Fuegos artificiales */
     .firework {
       position: fixed;
       width: 8px;
@@ -115,10 +116,11 @@
       border-radius: 50%;
       animation: explode 0.8s forwards;
       pointer-events: none;
+      z-index: 3;
     }
     @keyframes explode {
-      from { transform: scale(0); opacity: 1; }
-      to   { transform: scale(8); opacity: 0; }
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(5); opacity: 0; }
     }
   </style>
 </head>
@@ -138,52 +140,41 @@
     </form>
 
     <div id="resultado">Valor total: 0 €</div>
-    <div class="visitas">👀 Visitas: <span id="visitas">7.868</span></div>
     <canvas id="myChart" width="400" height="400"></canvas>
+
+    <div class="visitas">
+      👀 Visitas: <span id="visitas">7.156</span>
+    </div>
   </div>
 
-  <!-- audio efecto épico -->
-  <audio id="audioEfecto" src="https://cdn.pixabay.com/download/audio/2021/09/27/audio_0b7ff2b2bb.mp3" preload="auto"></audio>
+  <!-- Sonido -->
+  <audio id="audioEfecto" src="https://assets.mixkit.co/sfx/preview/mixkit-game-level-music-2019.mp3"></audio>
 
   <script>
     let chart;
 
+    function crearFuegos() {
+      for(let i=0;i<15;i++){
+        const fire = document.createElement('div');
+        fire.classList.add('firework');
+        fire.style.background = `hsl(${Math.random()*360}, 100%, 50%)`;
+        fire.style.left = `${Math.random()*window.innerWidth}px`;
+        fire.style.top = `${Math.random()*window.innerHeight}px`;
+        document.body.appendChild(fire);
+        setTimeout(()=> fire.remove(),800);
+      }
+    }
+
     function reproducirSonido() {
       const audio = document.getElementById('audioEfecto');
+      audio.volume = 1;
       audio.currentTime = 0;
-      audio.play();
-    }
-
-    function crearFuegoArtificial() {
-      const fire = document.createElement('div');
-      fire.classList.add('firework');
-      // Posición aleatoria
-      fire.style.left = Math.random() * 90 + '%';
-      fire.style.top  = (20 + Math.random() * 60) + '%';
-      // Color RGB aleatorio
-      const r = Math.floor(Math.random()*256);
-      const g = Math.floor(Math.random()*256);
-      const b = Math.floor(Math.random()*256);
-      fire.style.backgroundColor = `rgb(${r},${g},${b})`;
-      document.body.appendChild(fire);
-      setTimeout(()=> fire.remove(), 800);
-    }
-
-    function mostrarFuegos() {
-      let conteo = 0;
-      const intervalo = setInterval(() => {
-        crearFuegoArtificial();
-        conteo++;
-        if (conteo >= 4) {
-          clearInterval(intervalo);
-        }
-      }, 500);
+      audio.play().catch(()=>{});
     }
 
     function calcular() {
-      // sonido + fuegos
       reproducirSonido();
-      mostrarFuegos();
+      crearFuegos();
 
       const valores = {
         "🎟️ Brawl Pass": document.getElementById("bpass").value * 10,
@@ -203,31 +194,43 @@
         datasets: [{
           data: Object.values(valores),
           backgroundColor: [
-            "#1E90FF","#CCCCCC","#00FF00","#800080",
-            "#FF0000","#FFD700","#FF8C00","#FF1493"
+            "#1E90FF",
+            "#CCCCCC",
+            "#00FF00",
+            "#800080",
+            "#FF0000",
+            "#FFD700",
+            "#FF8C00",
+            "#FF1493"
           ],
           borderColor: "#111",
           borderWidth: 2
         }]
       };
 
-      if (chart) chart.destroy();
+      if(chart) chart.destroy();
       const ctx = document.getElementById("myChart").getContext("2d");
       chart = new Chart(ctx, {
         type: "doughnut",
         data: data,
         options: {
-          plugins: { legend: { labels:{ color:"white", font:{ size:14 }}} }
+          plugins: {
+            legend: {
+              labels: { color: "white", font: { size: 14 } }
+            }
+          }
         }
       });
     }
 
-    // Contador de visitas con CountAPI
-    fetch('https://api.countapi.xyz/hit/brawl-calculadora')
-      .then(res => res.json())
+    // Contador de visitas
+    fetch('https://api.countapi.xyz/hit/calculadora-brawl/vercel')
+      .then(response => response.json())
       .then(data => {
         document.getElementById('visitas').innerText = data.value;
-      });
+      })
+      .catch(err => console.error("Error contador:", err));
+
   </script>
 </body>
 </html>
