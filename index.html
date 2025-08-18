@@ -1,236 +1,92 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calculadora Brawl Stars</title>
-<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulario con Sonidos</title>
 <style>
-  body {
-    margin: 0;
-    font-family: 'Bangers', cursive;
-    background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
-    background-size: cover;
-    position: relative;
-    color: white;
-    text-align: center;
-  }
-  body::after {
-    content: "";
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(6px);
-    z-index: 0;
-  }
-  .container {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
-  h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-    background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-  .diamond {
-    font-size: 2.5rem;
-    color: #00eaff;
-    animation: glow 1.5s infinite alternate;
-  }
-  @keyframes glow {
-    from { text-shadow: 0 0 5px #0ff, 0 0 10px #0ff; }
-    to { text-shadow: 0 0 20px #0ff, 0 0 40px #0ff; }
-  }
-  form {
-    background: rgba(0,0,0,0.5);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.7);
-    width: 90%;
-    max-width: 600px;
-    margin-bottom: 40px;
-  }
-  label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 10px 0;
-    font-size: 1.2rem;
-  }
-  input {
-    width: 100px;
-    padding: 5px;
-    border-radius: 8px;
-    border: none;
-    font-size: 1rem;
-    text-align: center;
-  }
-  .buttons {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-  }
-  button {
-    padding: 10px 20px;
-    font-size: 1.5rem;
-    border: none;
-    border-radius: 12px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: 'Bangers', cursive;
-  }
-  #calcBtn {
-    background: linear-gradient(90deg, #ff0080, #7928ca);
-    box-shadow: 0 0 15px rgba(255,0,128,0.8);
-  }
-  #clearBtn {
-    background: linear-gradient(90deg, #00CFFF, #0077FF);
-    box-shadow: 0 0 15px rgba(0,255,255,0.8);
-  }
-  #shareBtn {
-    background: linear-gradient(90deg, #00FFAA, #FF00FF);
-    animation: pulse 1s infinite;
-    box-shadow: 0 0 15px rgba(0,255,170,0.8);
-  }
-  @keyframes pulse {
-    0% { transform: scale(1); box-shadow: 0 0 10px #fff; }
-    50% { transform: scale(1.1); box-shadow: 0 0 20px #ff0; }
-    100% { transform: scale(1); box-shadow: 0 0 10px #fff; }
-  }
-  #resultado {
-    margin-top: 20px;
-    font-size: 1.8rem;
-    color: #00FFAA;
-    text-shadow: 2px 2px 4px #000;
-    transition: all 0.3s ease;
-  }
-  canvas {
-    margin-top: 20px;
-    max-width: 400px;
-  }
-  .visitas {
-    margin-top: 15px;
-    font-size: 1.4rem;
-    color: #FFD700;
-    text-shadow: 2px 2px 5px #000;
-  }
+body { font-family: Arial, sans-serif; display:flex; justify-content:center; margin-top:50px; }
+.container { text-align: center; }
+button { margin: 10px 5px; padding: 10px 20px; cursor: pointer; }
+#valorTotal { margin-bottom: 30px; font-size: 1.2em; }
+form { margin-bottom: 20px; }
 </style>
 </head>
 <body>
+
 <div class="container">
-  <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
-  <form id="calcForm">
-    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
-    <label>👕 Skins Comunes: <input type="number" id="comunes" value="0"></label>
-    <label>💚 Skins Raras: <input type="number" id="raras" value="0"></label>
-    <label>💜 Skins Épicas: <input type="number" id="epicas" value="0"></label>
-    <label>❤️ Skins Míticas: <input type="number" id="miticas" value="0"></label>
-    <label>🌟 Skins Legendarias: <input type="number" id="legendarias" value="0"></label>
-    <label>⚡ Skins Hipercarga: <input type="number" id="hipercarga" value="0"></label>
-    <label>🔥 Brawlers Maxeados: <input type="number" id="maxeados" value="0"></label>
-  </form>
+    <form id="miFormulario">
+        <input type="number" placeholder="Número 1" id="num1">
+        <input type="number" placeholder="Número 2" id="num2">
+    </form>
 
-  <div class="buttons">
-    <button id="calcBtn">Calcular</button>
-    <button id="clearBtn">Limpiar</button>
-    <button id="shareBtn">📤 Compartir</button>
-  </div>
+    <div id="valorTotal">Valor Total: <span id="total">0</span></div>
 
-  <div id="resultado">Valor total: 0 €</div>
-  <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
-  <canvas id="myChart" width="400" height="400"></canvas>
+    <button id="calcularBtn">Calcular</button>
+    <button id="limpiarBtn">Limpiar</button>
+    <button id="compartirBtn">Compartir</button>
 </div>
 
-<!-- Sonidos suaves estilo clic elegante -->
-<audio id="clickCalc" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5c3bcb2be2.mp3?filename=soft-click-2s-6070.mp3"></audio>
-<audio id="clickClear" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_fa3bb4c6a2.mp3?filename=soft-click-2s-6071.mp3"></audio>
-<audio id="clickShare" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1e8aeb4f5f.mp3?filename=soft-click-2s-6072.mp3"></audio>
+<!-- Audios -->
+<audio id="clickCalc" src="https://www.soundjay.com/button/sounds/button-16.mp3"></audio>
+<audio id="clickClear" src="https://www.soundjay.com/button/sounds/button-09.mp3"></audio>
+<audio id="clickShare" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
 
 <script>
-let chart;
+// Pre-cargar sonidos
+const clickCalc = document.getElementById('clickCalc');
+const clickClear = document.getElementById('clickClear');
+const clickShare = document.getElementById('clickShare');
 
-function playSound(id){
-  const sound = document.getElementById(id);
-  sound.currentTime = 0;
-  sound.volume = 0.4; // volumen suave
-  sound.play();
+[clickCalc, clickClear, clickShare].forEach(audio=>{
+    audio.load();
+    audio.volume = 0.4;
+});
+
+function playSound(audio) {
+    audio.currentTime = 0;
+    audio.play().catch(err => console.log('El sonido no se pudo reproducir:', err));
 }
 
-function calcular() {
-  playSound('clickCalc');
-  const valores = {
-    "🎟️ Brawl Pass": document.getElementById("bpass").value * 10,
-    "👕 Comunes": document.getElementById("comunes").value * 2,
-    "💚 Raras": document.getElementById("raras").value * 5,
-    "💜 Épicas": document.getElementById("epicas").value * 10,
-    "❤️ Míticas": document.getElementById("miticas").value * 12,
-    "🌟 Legendarias": document.getElementById("legendarias").value * 15,
-    "⚡ Hipercarga": document.getElementById("hipercarga").value * 20,
-    "🔥 Maxeados": document.getElementById("maxeados").value * 50
-  };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  document.getElementById("resultado").innerText = "Valor total: " + total + " €";
+// Botones
+const calcularBtn = document.getElementById('calcularBtn');
+const limpiarBtn = document.getElementById('limpiarBtn');
+const compartirBtn = document.getElementById('compartirBtn');
+const totalSpan = document.getElementById('total');
 
-  const data = {
-    labels: Object.keys(valores),
-    datasets: [{
-      data: Object.values(valores),
-      backgroundColor: ["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
-      borderColor: "#111",
-      borderWidth: 2
-    }]
-  };
+calcularBtn.addEventListener('click', ()=>{
+    playSound(clickCalc);
+    const n1 = parseFloat(document.getElementById('num1').value) || 0;
+    const n2 = parseFloat(document.getElementById('num2').value) || 0;
+    totalSpan.textContent = n1 + n2;
+});
 
-  if(chart) chart.destroy();
-  const ctx = document.getElementById("myChart").getContext("2d");
-  chart = new Chart(ctx, { type: 'doughnut', data: data, options: { plugins:{ legend:{ labels:{ color:'white', font:{size:14} } } } } });
-}
+limpiarBtn.addEventListener('click', ()=>{
+    playSound(clickClear);
+    document.getElementById('num1').value = '';
+    document.getElementById('num2').value = '';
+    totalSpan.textContent = 0;
+});
 
-function limpiar() {
-  playSound('clickClear');
-  document.querySelectorAll("input").forEach(input=>input.value=0);
-  document.getElementById("resultado").innerText = "Valor total: 0 €";
-  if(chart) chart.destroy();
-}
-
-async function compartir() {
-  playSound('clickShare');
-  const shareData = {
-    title: 'Calculadora Brawl Stars',
-    text: '¡Mira esta calculadora de Brawl Stars!',
-    url: window.location.href
-  }
-  try {
-    if(navigator.share){
-      await navigator.share(shareData);
-    } else {
-      alert("Tu navegador no soporta compartir directamente. Se copiará al portapapeles.");
-      await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+// Compartir usando el API nativa del navegador
+compartirBtn.addEventListener('click', async ()=>{
+    playSound(clickShare);
+    const shareData = {
+        title: 'Mi Formulario',
+        text: `El valor total es: ${totalSpan.textContent}`,
+        url: window.location.href
+    };
+    try {
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else {
+            alert('Compartir no soportado en este navegador');
+        }
+    } catch(err) {
+        console.log('Error al compartir:', err);
     }
-  } catch(err){
-    console.log('Error al compartir:', err);
-  }
-}
-
-document.getElementById("calcBtn").addEventListener("click", calcular);
-document.getElementById("clearBtn").addEventListener("click", limpiar);
-document.getElementById("shareBtn").addEventListener("click", compartir);
+});
 </script>
+
 </body>
 </html>
