@@ -164,38 +164,37 @@
 
 <script>
 let chart;
+let audios = ['clickCalc','clickClear','clickShare'].map(id=>document.getElementById(id));
 
-// Pre-cargar sonidos
-const audios = ['clickCalc','clickClear','clickShare'].map(id=>document.getElementById(id));
-audios.forEach(a => { a.volume=0.4; });
+// Función para asegurar reproducción en iOS
+function enableAudio() {
+  audios.forEach(a => {
+    a.play().then(()=>a.pause()).catch(()=>{});
+    a.currentTime = 0;
+    a.volume = 0.4;
+  });
+  document.removeEventListener('touchstart', enableAudio);
+}
+document.addEventListener('touchstart', enableAudio);
 
-// Desbloquear audio tras primer clic
-let audioEnabled = false;
-document.body.addEventListener('click', () => {
-  if(!audioEnabled){
-    audios.forEach(a => a.play().then(()=>a.pause()));
-    audioEnabled = true;
-  }
-}, {once:true});
-
+// Reproducir sonido
 function playSound(id){
-  if(!audioEnabled) return;
   const sound = document.getElementById(id);
   sound.currentTime = 0;
-  sound.play().catch(err=>console.log('Error al reproducir sonido:', err));
+  sound.play().catch(err=>console.log('Error sonido:', err));
 }
 
 function calcular() {
   playSound('clickCalc');
   const valores = {
-    "🎟️ Brawl Pass": document.getElementById("bpass").value * 10,
-    "👕 Comunes": document.getElementById("comunes").value * 2,
-    "💚 Raras": document.getElementById("raras").value * 5,
-    "💜 Épicas": document.getElementById("epicas").value * 10,
-    "❤️ Míticas": document.getElementById("miticas").value * 12,
-    "🌟 Legendarias": document.getElementById("legendarias").value * 15,
-    "⚡ Hipercarga": document.getElementById("hipercarga").value * 20,
-    "🔥 Maxeados": document.getElementById("maxeados").value * 50
+    "🎟️ Brawl Pass": document.getElementById("bpass").value*10,
+    "👕 Comunes": document.getElementById("comunes").value*2,
+    "💚 Raras": document.getElementById("raras").value*5,
+    "💜 Épicas": document.getElementById("epicas").value*10,
+    "❤️ Míticas": document.getElementById("miticas").value*12,
+    "🌟 Legendarias": document.getElementById("legendarias").value*15,
+    "⚡ Hipercarga": document.getElementById("hipercarga").value*20,
+    "🔥 Maxeados": document.getElementById("maxeados").value*50
   };
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   document.getElementById("resultado").innerText = "Valor total: " + total + " €";
@@ -220,10 +219,7 @@ function calcular() {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: {
-            color: 'white',
-            font: { size: 14 }
-          }
+          labels: { color: 'white', font: { size: 14 } }
         },
         tooltip: {
           callbacks: {
@@ -246,23 +242,20 @@ function limpiar() {
 
 function compartir() {
   playSound('clickShare');
-  const total = document.getElementById("resultado").innerText;
   if (navigator.share) {
     navigator.share({
       title: 'Calculadora Brawl Stars',
-      text: total,
+      text: '¡Mira mi cálculo!',
       url: window.location.href
-    }).catch(err=>console.log('Error al compartir:', err));
+    }).catch(console.log);
   } else {
-    navigator.clipboard.writeText(total)
-      .then(() => alert("¡Valor copiado al portapapeles!"))
-      .catch(() => alert("Error al copiar al portapapeles"));
+    alert('Tu navegador no soporta compartir directamente. Usa copiar enlace.');
   }
 }
 
-document.getElementById("calcBtn").addEventListener("click", (e) => { e.preventDefault(); calcular(); });
-document.getElementById("clearBtn").addEventListener("click", (e) => { e.preventDefault(); limpiar(); });
-document.getElementById("shareBtn").addEventListener("click", (e) => { e.preventDefault(); compartir(); });
+document.getElementById("calcBtn").addEventListener("click", e=>{ e.preventDefault(); calcular(); });
+document.getElementById("clearBtn").addEventListener("click", e=>{ e.preventDefault(); limpiar(); });
+document.getElementById("shareBtn").addEventListener("click", e=>{ e.preventDefault(); compartir(); });
 </script>
 </body>
 </html>
