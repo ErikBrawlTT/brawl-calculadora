@@ -1,202 +1,201 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calculadora Brawl Stars</title>
-<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-  body {
-    margin: 0;
-    font-family: 'Bangers', cursive;
-    background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
-    background-size: cover;
-    position: relative;
-  }
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(6px);
-    z-index: 0;
-  }
-  .container {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    color: white;
-    text-align: center;
-  }
-  h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-    background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .brawl-btn {
-    font-family: 'Bangers', cursive;
-    padding: 10px 20px;
-    font-size: 1.5rem;
-    margin:0 8px;
-    border:none;
-    border-radius:12px;
-    background: linear-gradient(90deg,#ff0080,#7928ca);
-    color:white;
-    cursor:pointer;
-    box-shadow:0 0 15px rgba(255,0,128,0.8);
-    transition:all .2s;
-  }
-  .brawl-btn:hover {
-    transform:scale(1.05);
-    box-shadow:0 0 25px rgba(255,0,128,1);
-  }
-  #resultado {
-    margin-top:15px;
-    font-size:1.5rem;
-    color:#00FFAA;
-    text-shadow:2px 2px 4px #000;
-  }
-  .visitas {
-    margin-top:10px;
-    font-size:1.3rem;
-    color:#FFD700;
-    text-shadow:2px 2px 5px #000;
-  }
-  #fireworksCanvas {
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    z-index:2;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora Brawl Stars</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Bangers', cursive;
+      background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      z-index: 0;
+    }
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: white;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    form {
+      background: rgba(0,0,0,0.5);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+      width: 90%;
+      max-width: 600px;
+    }
+    label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+      font-size: 1.2rem;
+    }
+    input {
+      width: 100px;
+      padding: 5px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .brawl-btn {
+      font-family: 'Bangers', cursive;
+      margin: 0 8px;
+      padding: 10px 20px;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #ff0080, #7928ca);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(255,0,128,0.8);
+    }
+    .brawl-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(255,0,128,1);
+    }
+    #shareBtn{
+      font-family:'Bangers',cursive;
+      margin-top:10px;
+      padding:8px 20px;
+      font-size:1.4rem;
+      border:none;
+      border-radius:12px;
+      background:linear-gradient(90deg,#00FFAA,#FF00FF);
+      color:white;
+      cursor:pointer;
+      animation:pulseShare 1.2s infinite;
+    }
+    @keyframes pulseShare {
+      0% { transform:scale(1);   box-shadow:0 0 8px #fff; }
+      50%{ transform:scale(1.08);box-shadow:0 0 20px #ff00ff; }
+      100%{transform:scale(1);   box-shadow:0 0 8px #fff; }
+    }
+    #resultado {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      color: #00FFAA;
+      text-shadow: 2px 2px 4px #000;
+    }
+    canvas { margin-top: 20px; }
+    .visitas {
+      margin-top: 10px;
+      font-size: 1.4rem;
+      color: #FFD700;
+      text-shadow: 2px 2px 5px #000;
+    }
+  </style>
 </head>
 <body>
-<canvas id="fireworksCanvas"></canvas>
+  <div class="container">
+    <h1>💎 Calculadora Brawl Stars 💎</h1>
 
-<div class="container">
-  <h1>💎 Calculadora Brawl Stars 💎</h1>
+    <form id="calcForm">
+      <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
+      <label>👕 Skins Comunes: <input type="number" id="comunes" value="0"></label>
+      <label>💚 Skins Raras: <input type="number" id="raras" value="0"></label>
+      <label>💜 Skins Épicas: <input type="number" id="epicas" value="0"></label>
+      <label>❤️ Skins Míticas: <input type="number" id="miticas" value="0"></label>
+      <label>🌟 Skins Legendarias: <input type="number" id="legendarias" value="0"></label>
+      <label>⚡ Skins Hipercarga: <input type="number" id="hipercarga" value="0"></label>
+      <label>🔥 Brawlers Maxeados: <input type="number" id="maxeados" value="0"></label>
 
-  <form id="calcForm">
-    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
-    <label>👕 Skins Comunes: <input type="number" id="comunes" value="0"></label>
-    <label>💚 Skins Raras: <input type="number" id="raras" value="0"></label>
-    <label>💜 Skins Épicas: <input type="number" id="epicas" value="0"></label>
-    <label>❤️ Skins Míticas: <input type="number" id="miticas" value="0"></label>
-    <label>🌟 Skins Legendarias: <input type="number" id="legendarias" value="0"></label>
-    <label>⚡ Skins Hipercarga: <input type="number" id="hipercarga" value="0"></label>
-    <label>🔥 Brawlers Maxeados: <input type="number" id="maxeados" value="0"></label>
-    <div style="margin-top:15px;">
-      <button type="button" class="brawl-btn" onclick="calcular()">Calcular</button>
-      <button type="button" class="brawl-btn" onclick="limpiar()">Limpiar</button>
-    </div>
-  </form>
+      <div style="margin-top:15px;">
+        <button type="button" class="brawl-btn" onclick="playClick();calcular()">Calcular</button>
+        <button type="button" class="brawl-btn" onclick="playClick();limpiar()">Limpiar</button>
+      </div>
+      <div>
+        <button id="shareBtn" type="button" onclick="playClick();compartir()">📤 Compartir</button>
+      </div>
+    </form>
 
-  <div id="resultado">Valor total: 0 €</div>
-  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
+    <div id="resultado">Valor total: 0 €</div>
+    <canvas id="myChart" width="400" height="400"></canvas>
 
-  <canvas id="myChart" width="400" height="400" style="margin-top:20px;"></canvas>
-</div>
+    <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
+  </div>
 
-<!-- sonido -->
-<audio id="sonidoBrawl" src="https://www.myinstants.com/media/sounds/legendary-star-drop-brawl-stars-189.mp3"></audio>
+  <!-- sonido click -->
+  <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/1165/1165-preview.mp3"></audio>
 
 <script>
-// contador de visitas
-fetch('https://api.countapi.xyz/hit/calculadora-brawl/vercel')
-  .then(r => r.json())
-  .then(d => document.getElementById('visitas').innerText = d.value);
+  let chart;
 
-let chart;
-
-function calcular(){
-  // Sonido
-  const sonido = document.getElementById("sonidoBrawl");
-  sonido.currentTime = 0;
-  sonido.play();
-
-  // Calculo
-  const valores = {
-    "🎟️ Brawl Pass": document.getElementById("bpass").value *10,
-    "👕 Comunes":    document.getElementById("comunes").value *2,
-    "💚 Raras":      document.getElementById("raras").value *5,
-    "💜 Épicas":     document.getElementById("epicas").value *10,
-    "❤️ Míticas":    document.getElementById("miticas").value *12,
-    "🌟 Legendarias":document.getElementById("legendarias").value *15,
-    "⚡ Hipercarga": document.getElementById("hipercarga").value *20,
-    "🔥 Maxeados":   document.getElementById("maxeados").value *50
-  };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  document.getElementById("resultado").innerText="Valor total: "+total+" €";
-
-  // Gráfico
-  const data = {labels:Object.keys(valores),datasets:[{data:Object.values(valores),
-    backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
-    borderColor:"#111",borderWidth:2}]};
-  if(chart) chart.destroy();
-  chart = new Chart(document.getElementById("myChart").getContext("2d"),{
-    type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:"white",font:{size:14}}}}}
-  });
-
-  lanzarFuegos();
-}
-
-// reset
-function limpiar(){
-  ['bpass','comunes','raras','epicas','miticas','legendarias','hipercarga','maxeados'].forEach(id=>{
-    document.getElementById(id).value = 0;
-  });
-  document.getElementById("resultado").innerText="Valor total: 0 €";
-  if(chart){ chart.destroy(); }
-}
-
-// fuegos artificiales RGB
-function lanzarFuegos() {
-  const canvas = document.getElementById("fireworksCanvas");
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const particles = [];
-  for(let i=0;i<80;i++){
-    particles.push({
-      x: Math.random()*canvas.width,
-      y: canvas.height,
-      vx:(Math.random()-0.5)*8,
-      vy:-Math.random()*12-4,
-      color:`hsl(${Math.random()*360},100%,50%)`,
-      opacity:1
-    });
+  function playClick(){
+    const s=document.getElementById("clickSound");
+    s.currentTime=0; s.play();
   }
 
-  const start = Date.now();
-  const duracion = 4000;
-  (function anim(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    particles.forEach(p=>{
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.2;
-      p.opacity -= 0.01;
-      ctx.fillStyle = p.color.replace(')',`,${p.opacity})`).replace('hsl','hsla');
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,4,0,Math.PI*2);
-      ctx.fill();
-    });
+  function calcular(){
+    const valores = {
+      "🎟️ Brawl Pass": document.getElementById("bpass").value * 10,
+      "👕 Comunes":     document.getElementById("comunes").value * 2,
+      "💚 Raras":       document.getElementById("raras").value * 5,
+      "💜 Épicas":      document.getElementById("epicas").value * 10,
+      "❤️ Míticas":     document.getElementById("miticas").value * 12,
+      "🌟 Legendarias": document.getElementById("legendarias").value * 15,
+      "⚡ Hipercarga":  document.getElementById("hipercarga").value * 20,
+      "🔥 Maxeados":    document.getElementById("maxeados").value * 50
+    };
+    const total = Object.values(valores).reduce((a,b)=>a+b,0);
+    document.getElementById("resultado").innerText="Valor total: " + total + " €";
 
-    if(Date.now()-start < duracion){
-      requestAnimationFrame(anim)
-    } else {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
+    const data = { labels:Object.keys(valores), datasets:[{ data:Object.values(valores),
+      backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
+      borderColor:"#111", borderWidth:2 }] };
+
+    if(chart) chart.destroy();
+    chart = new Chart(document.getElementById("myChart").getContext("2d"),
+      { type:"doughnut", data:data, options:{ plugins:{ legend:{ labels:{ color:"white",font:{ size:14 }}}}}});
+  }
+
+  function limpiar(){
+    ["bpass","comunes","raras","epicas","miticas","legendarias","hipercarga","maxeados"].forEach(id=>{
+      document.getElementById(id).value=0;
+    });
+    document.getElementById("resultado").innerText="Valor total: 0 €";
+    if(chart) chart.destroy();
+  }
+
+  function compartir(){
+    if(navigator.share){
+      navigator.share({ title:'Calculadora Brawl Stars', url:window.location.href });
+    }else{
+      navigator.clipboard.writeText(window.location.href);
+      alert("¡Enlace copiado!");
     }
-  })();
-}
+  }
+
+  // Contador de visitas
+  fetch('https://api.countapi.xyz/hit/calculadora-brawl/vercel')
+       .then(r=>r.json())
+       .then(d=>document.getElementById('visitas').innerText=d.value);
 </script>
 </body>
 </html>
