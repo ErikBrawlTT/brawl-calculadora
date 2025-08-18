@@ -13,11 +13,13 @@
       background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
       background-size: cover;
       position: relative;
+      color: white;
+      text-align: center;
     }
     body::after {
       content: "";
       position: fixed;
-      inset: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6);
       backdrop-filter: blur(6px);
       z-index: 0;
@@ -30,8 +32,7 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      color: white;
-      text-align: center;
+      padding: 20px;
     }
     h1 {
       font-size: 3rem;
@@ -39,6 +40,19 @@
       background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .diamond {
+      font-size: 2.5rem;
+      color: #00eaff;
+      animation: glow 1.5s infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 5px #0ff, 0 0 10px #0ff; }
+      to { text-shadow: 0 0 20px #0ff, 0 0 40px #0ff; }
     }
     form {
       background: rgba(0,0,0,0.5);
@@ -47,6 +61,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.7);
       width: 90%;
       max-width: 600px;
+      margin-bottom: 30px;
     }
     label {
       display: flex;
@@ -63,9 +78,14 @@
       font-size: 1rem;
       text-align: center;
     }
-    .brawl-btn {
-      font-family: 'Bangers', cursive;
-      margin: 0 8px;
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    button {
       padding: 10px 20px;
       font-size: 1.5rem;
       border: none;
@@ -75,37 +95,34 @@
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 0 15px rgba(255,0,128,0.8);
+      font-family: 'Bangers', cursive;
     }
-    .brawl-btn:hover {
-      transform: scale(1.05);
+    button:hover {
       box-shadow: 0 0 25px rgba(255,0,128,1);
+      transform: scale(1.05);
     }
-    #shareBtn{
-      font-family:'Bangers',cursive;
-      margin-top:10px;
-      padding:8px 20px;
-      font-size:1.4rem;
-      border:none;
-      border-radius:12px;
-      background:linear-gradient(90deg,#00FFAA,#FF00FF);
-      color:white;
-      cursor:pointer;
-      animation:pulseShare 1.2s infinite;
+    #shareBtn {
+      background: linear-gradient(90deg, #00FFAA, #FF00FF);
+      animation: pulse 1s infinite;
     }
-    @keyframes pulseShare {
-      0% { transform:scale(1);   box-shadow:0 0 8px #fff; }
-      50%{ transform:scale(1.08);box-shadow:0 0 20px #ff00ff; }
-      100%{transform:scale(1);   box-shadow:0 0 8px #fff; }
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 10px #fff; }
+      50% { transform: scale(1.1); box-shadow: 0 0 20px #ff0; }
+      100% { transform: scale(1); box-shadow: 0 0 10px #fff; }
     }
     #resultado {
       margin-top: 20px;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       color: #00FFAA;
       text-shadow: 2px 2px 4px #000;
+      transition: all 0.3s ease;
     }
-    canvas { margin-top: 20px; }
+    canvas {
+      margin-top: 20px;
+      max-width: 400px;
+    }
     .visitas {
-      margin-top: 10px;
+      margin-top: 20px;
       font-size: 1.4rem;
       color: #FFD700;
       text-shadow: 2px 2px 5px #000;
@@ -114,8 +131,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>💎 Calculadora Brawl Stars 💎</h1>
-
+    <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
     <form id="calcForm">
       <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
       <label>👕 Skins Comunes: <input type="number" id="comunes" value="0"></label>
@@ -125,77 +141,87 @@
       <label>🌟 Skins Legendarias: <input type="number" id="legendarias" value="0"></label>
       <label>⚡ Skins Hipercarga: <input type="number" id="hipercarga" value="0"></label>
       <label>🔥 Brawlers Maxeados: <input type="number" id="maxeados" value="0"></label>
-
-      <div style="margin-top:15px;">
-        <button type="button" class="brawl-btn" onclick="playClick();calcular()">Calcular</button>
-        <button type="button" class="brawl-btn" onclick="playClick();limpiar()">Limpiar</button>
-      </div>
-      <div>
-        <button id="shareBtn" type="button" onclick="playClick();compartir()">📤 Compartir</button>
-      </div>
     </form>
 
+    <div class="buttons">
+      <button id="calcBtn">Calcular</button>
+      <button id="clearBtn">Limpiar</button>
+      <button id="shareBtn">📤 Compartir</button>
+    </div>
+
     <div id="resultado">Valor total: 0 €</div>
+
     <canvas id="myChart" width="400" height="400"></canvas>
 
-    <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
+    <div class="visitas">
+      👀 Visitas: <span id="visitas">7.156</span>
+    </div>
   </div>
 
-  <!-- sonido click -->
-  <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/1165/1165-preview.mp3"></audio>
+  <audio id="clickSound" src="https://freesound.org/data/previews/170/170204_2437358-lq.mp3"></audio>
 
-<script>
-  let chart;
+  <script>
+    let chart;
+    const clickSound = document.getElementById("clickSound");
 
-  function playClick(){
-    const s=document.getElementById("clickSound");
-    s.currentTime=0; s.play();
-  }
-
-  function calcular(){
-    const valores = {
-      "🎟️ Brawl Pass": document.getElementById("bpass").value * 10,
-      "👕 Comunes":     document.getElementById("comunes").value * 2,
-      "💚 Raras":       document.getElementById("raras").value * 5,
-      "💜 Épicas":      document.getElementById("epicas").value * 10,
-      "❤️ Míticas":     document.getElementById("miticas").value * 12,
-      "🌟 Legendarias": document.getElementById("legendarias").value * 15,
-      "⚡ Hipercarga":  document.getElementById("hipercarga").value * 20,
-      "🔥 Maxeados":    document.getElementById("maxeados").value * 50
-    };
-    const total = Object.values(valores).reduce((a,b)=>a+b,0);
-    document.getElementById("resultado").innerText="Valor total: " + total + " €";
-
-    const data = { labels:Object.keys(valores), datasets:[{ data:Object.values(valores),
-      backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
-      borderColor:"#111", borderWidth:2 }] };
-
-    if(chart) chart.destroy();
-    chart = new Chart(document.getElementById("myChart").getContext("2d"),
-      { type:"doughnut", data:data, options:{ plugins:{ legend:{ labels:{ color:"white",font:{ size:14 }}}}}});
-  }
-
-  function limpiar(){
-    ["bpass","comunes","raras","epicas","miticas","legendarias","hipercarga","maxeados"].forEach(id=>{
-      document.getElementById(id).value=0;
-    });
-    document.getElementById("resultado").innerText="Valor total: 0 €";
-    if(chart) chart.destroy();
-  }
-
-  function compartir(){
-    if(navigator.share){
-      navigator.share({ title:'Calculadora Brawl Stars', url:window.location.href });
-    }else{
-      navigator.clipboard.writeText(window.location.href);
-      alert("¡Enlace copiado!");
+    function playClick() {
+      clickSound.currentTime = 0;
+      clickSound.play();
     }
-  }
 
-  // Contador de visitas
-  fetch('https://api.countapi.xyz/hit/calculadora-brawl/vercel')
-       .then(r=>r.json())
-       .then(d=>document.getElementById('visitas').innerText=d.value);
-</script>
+    function calcular() {
+      playClick();
+      const valores = {
+        "🎟️ Brawl Pass": document.getElementById("bpass").value * 10,
+        "👕 Comunes": document.getElementById("comunes").value * 2,
+        "💚 Raras": document.getElementById("raras").value * 5,
+        "💜 Épicas": document.getElementById("epicas").value * 10,
+        "❤️ Míticas": document.getElementById("miticas").value * 12,
+        "🌟 Legendarias": document.getElementById("legendarias").value * 15,
+        "⚡ Hipercarga": document.getElementById("hipercarga").value * 20,
+        "🔥 Maxeados": document.getElementById("maxeados").value * 50
+      };
+      const total = Object.values(valores).reduce((a,b) => a+b, 0);
+      document.getElementById("resultado").innerText = "Valor total: " + total + " €";
+
+      const data = {
+        labels: Object.keys(valores),
+        datasets: [{
+          data: Object.values(valores),
+          backgroundColor: [
+            "#1E90FF", "#CCCCCC", "#00FF00", "#800080", "#FF0000", "#FFD700", "#FF8C00", "#FF1493"
+          ],
+          borderColor: "#111",
+          borderWidth: 2
+        }]
+      };
+
+      if (chart) chart.destroy();
+      const ctx = document.getElementById("myChart").getContext("2d");
+      chart = new Chart(ctx, {
+        type: "doughnut",
+        data: data,
+        options: {
+          plugins: { legend: { labels: { color: "white", font: { size: 14 } } } }
+        }
+      });
+    }
+
+    function limpiar() {
+      playClick();
+      document.querySelectorAll("input").forEach(input => input.value = 0);
+      document.getElementById("resultado").innerText = "Valor total: 0 €";
+      if (chart) chart.destroy();
+    }
+
+    function compartir() {
+      playClick();
+      alert("¡Enlace copiado al portapapeles! (simulación)");
+    }
+
+    document.getElementById("calcBtn").addEventListener("click", calcular);
+    document.getElementById("clearBtn").addEventListener("click", limpiar);
+    document.getElementById("shareBtn").addEventListener("click", compartir);
+  </script>
 </body>
 </html>
