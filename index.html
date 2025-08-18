@@ -164,28 +164,35 @@
 
 <script>
 let chart;
-let audios = ['clickCalc','clickClear','clickShare'].map(id=>document.getElementById(id));
 
-// Función para asegurar reproducción en iOS
-function enableAudio() {
-  audios.forEach(a => {
-    a.play().then(()=>a.pause()).catch(()=>{});
-    a.currentTime = 0;
-    a.volume = 0.4;
+// Inicializar audios
+const audios = {
+  calc: document.getElementById("clickCalc"),
+  clear: document.getElementById("clickClear"),
+  share: document.getElementById("clickShare")
+};
+
+// Desbloquear sonidos en el primer click/tap
+document.addEventListener("click", () => {
+  Object.values(audios).forEach(a => {
+    a.play().then(() => {
+      a.pause();
+      a.currentTime = 0;
+    }).catch(()=>{});
   });
-  document.removeEventListener('touchstart', enableAudio);
-}
-document.addEventListener('touchstart', enableAudio);
+}, { once: true });
 
-// Reproducir sonido
-function playSound(id){
-  const sound = document.getElementById(id);
-  sound.currentTime = 0;
-  sound.play().catch(err=>console.log('Error sonido:', err));
+// Función para reproducir un sonido
+function playSound(key){
+  const sound = audios[key];
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play().catch(err=>console.log("Error sonido:", err));
+  }
 }
 
 function calcular() {
-  playSound('clickCalc');
+  playSound("calc");
   const valores = {
     "🎟️ Brawl Pass": document.getElementById("bpass").value*10,
     "👕 Comunes": document.getElementById("comunes").value*2,
@@ -234,14 +241,14 @@ function calcular() {
 }
 
 function limpiar() {
-  playSound('clickClear');
+  playSound("clear");
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText = "Valor total: 0 €";
   if(chart) chart.destroy();
 }
 
 function compartir() {
-  playSound('clickShare');
+  playSound("share");
   if (navigator.share) {
     navigator.share({
       title: 'Calculadora Brawl Stars',
