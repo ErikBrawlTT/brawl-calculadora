@@ -82,7 +82,7 @@
       margin-top: 20px;
       display: flex;
       justify-content: center;
-      gap: 20px;
+      gap: 30px; /* Más separación entre botones */
       flex-wrap: wrap;
     }
     button {
@@ -122,7 +122,7 @@
       max-width: 400px;
     }
     .visitas {
-      margin-top: 20px;
+      margin-top: 15px; /* Debajo del resultado */
       font-size: 1.4rem;
       color: #FFD700;
       text-shadow: 2px 2px 5px #000;
@@ -151,14 +151,14 @@
 
     <div id="resultado">Valor total: 0 €</div>
 
-    <canvas id="myChart" width="400" height="400"></canvas>
-
     <div class="visitas">
       👀 Visitas: <span id="visitas">7.156</span>
     </div>
+
+    <canvas id="myChart" width="400" height="400"></canvas>
   </div>
 
-  <audio id="clickSound" src="https://freesound.org/data/previews/170/170204_2437358-lq.mp3"></audio>
+  <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 
   <script>
     let chart;
@@ -214,9 +214,14 @@
       if (chart) chart.destroy();
     }
 
-    function compartir() {
+    async function compartir() {
       playClick();
-      alert("¡Enlace copiado al portapapeles! (simulación)");
+      try {
+        await navigator.clipboard.writeText("¡Mira esta calculadora de Brawl Stars!");
+        alert("Enlace copiado al portapapeles!");
+      } catch(err) {
+        alert("No se pudo copiar al portapapeles");
+      }
     }
 
     document.getElementById("calcBtn").addEventListener("click", calcular);
