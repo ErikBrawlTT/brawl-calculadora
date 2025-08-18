@@ -131,15 +131,7 @@
       👀 Visitas: <span id="visitas">0</span>
     </div>
   </div>
-  // Contador de visitas con CountAPI
-    fetch('https://api.countapi.xyz/hit/calculadora-brawl/vercel')
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('visitas').innerText = data.value;
-      })
-      .catch(err => console.error("Error contador:", err));
-  </script>
-
+  
   <script>
     let chart;
     function calcular() {
