@@ -92,7 +92,7 @@
     border-radius: 12px;
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     font-family: 'Bangers', cursive;
   }
   #calcBtn {
@@ -112,6 +112,11 @@
     0% { transform: scale(1); box-shadow: 0 0 10px #fff; }
     50% { transform: scale(1.1); box-shadow: 0 0 20px #ff0; }
     100% { transform: scale(1); box-shadow: 0 0 10px #fff; }
+  }
+  .activeBtn {
+    transform: scale(1.2);
+    filter: brightness(1.6);
+    box-shadow: 0 0 25px #fff;
   }
   #resultado {
     margin-top: 20px;
@@ -157,42 +162,24 @@
   <canvas id="myChart" width="400" height="400"></canvas>
 </div>
 
-<!-- Sonidos -->
-<audio id="clickCalc" src="https://raw.githubusercontent.com/erikbrawllab/assets/main/click-calc.mp3"></audio>
-<audio id="clickClear" src="https://raw.githubusercontent.com/erikbrawllab/assets/main/click-clear.mp3"></audio>
-<audio id="clickShare" src="https://raw.githubusercontent.com/erikbrawllab/assets/main/click-share.mp3"></audio>
+<!-- Sonidos diferentes por botón -->
+<audio id="clickCalc" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="clickClear" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<audio id="clickShare" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
 
 <script>
 let chart;
 
-// Inicializar audios
-const audios = {
-  calc: document.getElementById("clickCalc"),
-  clear: document.getElementById("clickClear"),
-  share: document.getElementById("clickShare")
-};
-
-// Desbloquear sonidos en el primer click/tap
-document.addEventListener("click", () => {
-  Object.values(audios).forEach(a => {
-    a.play().then(() => {
-      a.pause();
-      a.currentTime = 0;
-    }).catch(()=>{});
-  });
-}, { once: true });
-
-// Función para reproducir un sonido
-function playSound(key){
-  const sound = audios[key];
-  if (sound) {
-    sound.currentTime = 0;
-    sound.play().catch(err=>console.log("Error sonido:", err));
-  }
+function playSoundAndEffect(id, btn){
+  const sound = document.getElementById(id);
+  sound.currentTime = 0;
+  sound.play().catch(err=>console.log('Error sonido:', err));
+  btn.classList.add("activeBtn");
+  setTimeout(()=>btn.classList.remove("activeBtn"),200);
 }
 
-function calcular() {
-  playSound("calc");
+function calcular(btn) {
+  playSoundAndEffect('clickCalc', btn);
   const valores = {
     "🎟️ Brawl Pass": document.getElementById("bpass").value*10,
     "👕 Comunes": document.getElementById("comunes").value*2,
@@ -240,15 +227,15 @@ function calcular() {
   });
 }
 
-function limpiar() {
-  playSound("clear");
+function limpiar(btn) {
+  playSoundAndEffect('clickClear', btn);
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText = "Valor total: 0 €";
   if(chart) chart.destroy();
 }
 
-function compartir() {
-  playSound("share");
+function compartir(btn) {
+  playSoundAndEffect('clickShare', btn);
   if (navigator.share) {
     navigator.share({
       title: 'Calculadora Brawl Stars',
@@ -260,9 +247,9 @@ function compartir() {
   }
 }
 
-document.getElementById("calcBtn").addEventListener("click", e=>{ e.preventDefault(); calcular(); });
-document.getElementById("clearBtn").addEventListener("click", e=>{ e.preventDefault(); limpiar(); });
-document.getElementById("shareBtn").addEventListener("click", e=>{ e.preventDefault(); compartir(); });
+document.getElementById("calcBtn").addEventListener("click", e=>{ e.preventDefault(); calcular(e.target); });
+document.getElementById("clearBtn").addEventListener("click", e=>{ e.preventDefault(); limpiar(e.target); });
+document.getElementById("shareBtn").addEventListener("click", e=>{ e.preventDefault(); compartir(e.target); });
 </script>
 </body>
 </html>
