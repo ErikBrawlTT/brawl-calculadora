@@ -157,7 +157,7 @@
   <canvas id="myChart" width="400" height="400"></canvas>
 </div>
 
-<!-- Sonidos suaves funcionales -->
+<!-- Sonidos -->
 <audio id="clickCalc" src="https://raw.githubusercontent.com/erikbrawllab/assets/main/click-calc.mp3"></audio>
 <audio id="clickClear" src="https://raw.githubusercontent.com/erikbrawllab/assets/main/click-clear.mp3"></audio>
 <audio id="clickShare" src="https://raw.githubusercontent.com/erikbrawllab/assets/main/click-share.mp3"></audio>
@@ -167,12 +167,14 @@ let chart;
 
 // Pre-cargar sonidos
 const audios = ['clickCalc','clickClear','clickShare'].map(id=>document.getElementById(id));
-audios.forEach(a => { a.load(); a.volume=0.4; });
+audios.forEach(a => { a.load(); a.volume=0.5; });
 
 function playSound(id){
   const sound = document.getElementById(id);
-  sound.currentTime = 0;
-  sound.play().catch(err=>console.log('Error al reproducir sonido:', err));
+  if(sound){
+    sound.currentTime = 0;
+    sound.play().catch(err => console.log("No se pudo reproducir:", err));
+  }
 }
 
 function calcular() {
@@ -210,10 +212,7 @@ function calcular() {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: {
-            color: 'white',
-            font: { size: 14 }
-          }
+          labels: { color: 'white', font: { size: 14 } }
         },
         tooltip: {
           callbacks: {
@@ -236,10 +235,31 @@ function limpiar() {
 
 function compartir() {
   playSound('clickShare');
+
+  // Intentar usar Web Share API si está disponible
   const total = document.getElementById("resultado").innerText;
-  navigator.clipboard.writeText(total)
-    .then(() => alert("¡Valor copiado al portapapeles!"))
-    .catch(() => alert("Error al copiar al portapapeles"));
+  if(navigator.share){
+    navigator.share({
+      title: 'Calculadora Brawl Stars',
+      text: total,
+      url: window.location.href
+    }).catch(err => console.log("Error al compartir:", err));
+  } else {
+    // Fallback: mostrar opciones de compartir en redes sociales
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(total);
+    const twitter = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    const facebook = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    const whatsapp = `https://api.whatsapp.com/send?text=${text}%20${url}`;
+    const compartirHTML = `
+      <p>Compartir en:</p>
+      <a href="${twitter}" target="_blank">Twitter</a> |
+      <a href="${facebook}" target="_blank">Facebook</a> |
+      <a href="${whatsapp}" target="_blank">WhatsApp</a>
+    `;
+    const ventana = window.open('', '_blank', 'width=400,height=200');
+    ventana.document.write(compartirHTML);
+  }
 }
 
 document.getElementById("calcBtn").addEventListener("click", (e) => { e.preventDefault(); calcular(); });
