@@ -167,14 +167,22 @@ let chart;
 
 // Pre-cargar sonidos
 const audios = ['clickCalc','clickClear','clickShare'].map(id=>document.getElementById(id));
-audios.forEach(a => { a.load(); a.volume=0.5; });
+audios.forEach(a => { a.volume=0.4; });
+
+// Desbloquear audio tras primer clic
+let audioEnabled = false;
+document.body.addEventListener('click', () => {
+  if(!audioEnabled){
+    audios.forEach(a => a.play().then(()=>a.pause()));
+    audioEnabled = true;
+  }
+}, {once:true});
 
 function playSound(id){
+  if(!audioEnabled) return;
   const sound = document.getElementById(id);
-  if(sound){
-    sound.currentTime = 0;
-    sound.play().catch(err => console.log("No se pudo reproducir:", err));
-  }
+  sound.currentTime = 0;
+  sound.play().catch(err=>console.log('Error al reproducir sonido:', err));
 }
 
 function calcular() {
@@ -212,7 +220,10 @@ function calcular() {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { color: 'white', font: { size: 14 } }
+          labels: {
+            color: 'white',
+            font: { size: 14 }
+          }
         },
         tooltip: {
           callbacks: {
@@ -235,30 +246,17 @@ function limpiar() {
 
 function compartir() {
   playSound('clickShare');
-
-  // Intentar usar Web Share API si está disponible
   const total = document.getElementById("resultado").innerText;
-  if(navigator.share){
+  if (navigator.share) {
     navigator.share({
       title: 'Calculadora Brawl Stars',
       text: total,
       url: window.location.href
-    }).catch(err => console.log("Error al compartir:", err));
+    }).catch(err=>console.log('Error al compartir:', err));
   } else {
-    // Fallback: mostrar opciones de compartir en redes sociales
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(total);
-    const twitter = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
-    const facebook = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-    const whatsapp = `https://api.whatsapp.com/send?text=${text}%20${url}`;
-    const compartirHTML = `
-      <p>Compartir en:</p>
-      <a href="${twitter}" target="_blank">Twitter</a> |
-      <a href="${facebook}" target="_blank">Facebook</a> |
-      <a href="${whatsapp}" target="_blank">WhatsApp</a>
-    `;
-    const ventana = window.open('', '_blank', 'width=400,height=200');
-    ventana.document.write(compartirHTML);
+    navigator.clipboard.writeText(total)
+      .then(() => alert("¡Valor copiado al portapapeles!"))
+      .catch(() => alert("Error al copiar al portapapeles"));
   }
 }
 
