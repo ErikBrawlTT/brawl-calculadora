@@ -1,127 +1,215 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brawl Calculadora</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calculadora Brawl Stars</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GTM-5NWMXWTH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GTM-5NWMXWTH');
+</script>
+
 <style>
-  body { font-family: Arial, sans-serif; background:#111; color:#fff; text-align:center; margin:0; padding:20px;}
-  h1 { display:flex; justify-content:center; align-items:center; gap:10px; font-size:2em; }
-  .diamond { font-size:1.5em; animation: glow 2s infinite alternate; }
-  @keyframes glow {
-    0% { text-shadow:0 0 5px #fff;}
-    50% { text-shadow:0 0 15px #ff0;}
-    100% { text-shadow:0 0 5px #fff;}
-  }
-  #buttons { margin:20px; }
-  button { margin:5px; padding:10px 20px; font-size:16px; cursor:pointer; }
-  #centerDiamond { position:absolute; font-size:40px; top:50%; left:50%; transform:translate(-50%, -50%); display:none; }
-  #donut { width:200px; height:200px; border-radius:50%; background:conic-gradient(red 0% 0%, blue 0% 0%, green 0% 0%); margin:20px auto; position:relative; }
-  #visits { margin-top:10px; }
+body {
+  margin: 0;
+  font-family: 'Bangers', cursive;
+  background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  color: white;
+  text-align: center;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 0;
+}
+.container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: transparent;
+  background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
+  -webkit-background-clip: text;
+  position: relative;
+}
+h1 .diamond {
+  animation: glow 2s infinite alternate;
+}
+@keyframes glow {
+  0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+  50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
+  100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+}
+form {
+  background: rgba(0,0,0,0.5);
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 600px;
+  width:90%;
+  margin-bottom: 25px;
+}
+label{display:flex;justify-content:space-between;margin:8px 0;}
+input{width:100px;text-align:center;border:none;border-radius:8px;}
+.buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
+button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
+#calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
+#clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
+#shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+#resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
+.visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
+canvas{margin-top:15px;max-width:400px;position:relative;}
+/* Diamante central del donut */
+#centerDiamond{
+  position:absolute;
+  font-size:50px;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%) rotate(0deg);
+  animation: spin 3s linear infinite;
+  z-index:5;
+  text-shadow: 0 0 15px #00FFFF, 0 0 25px #FF00FF, 0 0 35px #FFD700;
+}
+@keyframes spin{
+  from{transform:translate(-50%,-50%) rotate(0deg);}
+  to{transform:translate(-50%,-50%) rotate(360deg);}
+}
 </style>
 </head>
 <body>
+<div class="container">
+  <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
 
-<h1>
-  <span class="diamond" style="color:rgb(255,100,200)">💎</span>
-  Brawl Calculadora
-  <span class="diamond" style="color:rgb(100,200,255)">💎</span>
-</h1>
+  <form id="calcForm">
+    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
+    <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
+    <label>💚 Raras: <input type="number" id="raras" value="0"></label>
+    <label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
+    <label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
+    <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
+    <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
+    <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
+  </form>
 
-<div id="donut"></div>
-<div id="centerDiamond">💎</div>
+  <div class="buttons">
+    <button id="calcBtn">Calcular</button>
+    <button id="clearBtn">Limpiar</button>
+  </div>
 
-<div id="buttons">
-  <button onclick="calcular()">Calcular</button>
-  <button onclick="limpiar()">Limpiar</button>
-</div>
+  <button id="shareBtn">📤 Compartir</button>
 
-<button id="shareBtn" style="margin-top:15px; padding:10px 20px;">Compartir</button>
+  <div id="resultado">Valor total: 0 €</div>
+  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
 
-<div id="resultado">
-  <p>Valor total: <span id="valorTotal" style="color:green">0</span></p>
-  <p id="visits">Visitas: <span id="visitCount">0</span></p>
+  <div style="position:relative; display:inline-block;">
+    <canvas id="myChart" width="400" height="400"></canvas>
+    <div id="centerDiamond">💎</div>
+  </div>
 </div>
 
 <script>
-// Donut de ejemplo y diamante central
-function calcular() {
-  // ejemplo de colores de skin
-  const colores = ['#ff00ff','#00ffff','#00ff00','#ff9900'];
-  let valores = [30,40,50,80]; // ejemplo
-  let total = valores.reduce((a,b)=>a+b,0);
-  document.getElementById('valorTotal').textContent = total;
+// Contador de visitas
+let visitas = localStorage.getItem("visitas") || 0;
+visitas++; 
+localStorage.setItem("visitas", visitas);
+document.getElementById("visitas").innerText = visitas;
 
-  // Generar donut
-  let deg=0;
-  let donut = document.getElementById('donut');
-  let css = 'conic-gradient(';
-  for(let i=0;i<valores.length;i++){
-    let angle = (valores[i]/total)*360;
-    css += `${colores[i]} ${deg}deg ${deg+angle}deg,`;
-    deg+=angle;
+// Confeti
+function lanzarConfeti() {
+  const duration = 4000;
+  const end = Date.now() + duration;
+  (function frame() {
+    confetti({
+      particleCount: 10,
+      startVelocity: 3,
+      gravity: 0.25,
+      spread: 360,
+      ticks: 200,
+      origin: { x: Math.random(), y: Math.random() * 0.4 },
+      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+}
+
+// Sonido y vibración
+function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
+function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
+
+// Animar número
+function animateNumber(finalValue){
+  const start=0,duration=2000,startTime=performance.now();
+  function step(now){
+    const p=Math.min((now-startTime)/duration,1);
+    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";
+    if(p<1)requestAnimationFrame(step);
   }
-  css = css.slice(0,-1)+')';
-  donut.style.background = css;
-
-  mostrarDiamanteCentral();
+  requestAnimationFrame(step);
 }
 
-// Animación diamante central
-function animateDiamond() {
-  const diamond = document.getElementById("centerDiamond");
-  let angle = 0;
-  let dx = 1.5, dy = 1.2;
-  let posX = 0, posY = 0;
-  const maxOffset = 30;
+// Gráfico
+let chart;
+function calcular(){
+  beep(600); vibrar(80);
 
-  function rgbColor() {
-    const r = Math.floor(Math.random()*256);
-    const g = Math.floor(Math.random()*256);
-    const b = Math.floor(Math.random()*256);
-    return `rgb(${r},${g},${b})`;
-  }
+  const valores={
+    "🎟️ Brawl Pass":bpass.value*10,
+    "🩵 Comunes":comunes.value*2,
+    "💚 Raras":raras.value*5,
+    "💜 Épicas":epicas.value*10,
+    "❤️ Míticas":miticas.value*12,
+    "🌟 Legendarias":legendarias.value*15,
+    "⚡ Hipercarga":hipercarga.value*20,
+    "🔥 Maxeados":maxeados.value*50
+  };
+  const total = Object.values(valores).reduce((a,b)=>a+b,0);
+  animateNumber(total);
 
-  function frame() {
-    angle += 2;
-    diamond.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translate(${posX}px, ${posY}px)`;
-    posX += dx; posY += dy;
-    if(Math.abs(posX) > maxOffset) dx = -dx;
-    if(Math.abs(posY) > maxOffset) dy = -dy;
-    diamond.style.color = rgbColor();
-    requestAnimationFrame(frame);
-  }
+  const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
+    backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#00FF00","#FF8C00","#FF1493"],
+    borderColor:"#111",borderWidth:2}]};
 
-  frame();
+  if(chart) chart.destroy();
+  chart = new Chart(myChart.getContext("2d"), {type:"doughnut", data:data, options:{plugins:{legend:{labels:{color:'white'}}}}});
+
+  lanzarConfeti();
 }
 
-function mostrarDiamanteCentral() {
-  const diamond = document.getElementById("centerDiamond");
-  diamond.style.display = "block";
-  animateDiamond();
-}
+// Limpiar
+function limpiar(){beep(400);vibrar(80);calcForm.reset();resultado.innerText="Valor total: 0 €";if(chart)chart.destroy();}
 
-function limpiar() {
-  document.getElementById('donut').style.background='conic-gradient(transparent 0deg 360deg)';
-  document.getElementById('centerDiamond').style.display='none';
-  document.getElementById('valorTotal').textContent='0';
-}
+// Compartir
+function compartir(){navigator.clipboard.writeText(location.href);alert("Enlace copiado al portapapeles ✅");}
 
-// Contador de visitas (simulado)
-let visits = parseInt(localStorage.getItem('visits')) || 0;
-visits++;
-localStorage.setItem('visits', visits);
-document.getElementById('visitCount').textContent = visits;
-
-// Google Analytics
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
- m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','https://www.googletagmanager.com/gtm.js?id=GTM-5NWMXWTH','ga');
-
-ga('create', 'GTM-5NWMXWTH', 'auto');
-ga('send', 'pageview');
+// Eventos
+calcBtn.addEventListener("click", e=>{e.preventDefault();calcular();});
+clearBtn.addEventListener("click", e=>{e.preventDefault();limpiar();});
+shareBtn.addEventListener("click", e=>{e.preventDefault();compartir();});
 </script>
-
 </body>
 </html>
