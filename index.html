@@ -41,63 +41,35 @@
     background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
   }
   form {
     background: rgba(0,0,0,0.5);
     border-radius: 20px;
     padding: 20px;
-    width: 90%;
     max-width: 600px;
+    width:90%;
     margin-bottom: 25px;
   }
-  label {
-    display: flex;
-    justify-content: space-between;
-    margin: 8px 0;
-    font-size: 1.2rem;
-  }
-  input {
-    width: 100px;
-    text-align: center;
-    border-radius: 8px;
-    border: none;
-    padding: 5px;
-  }
-  .buttons {
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    margin-top: 15px;
-  }
-  button {
-    padding: 10px 20px;
-    border: none;
-    border-radius:12px;
-    font-size:1.5rem;
-    color:white;
-    font-family:'Bangers';
-    cursor:pointer;
-    transition:0.2s;
-  }
-  button:active { transform:scale(.92) }
-  #calcBtn  { background:linear-gradient(90deg,#ff0080,#7928ca); }
-  #clearBtn { background:linear-gradient(90deg,#00CFFF,#0077FF); }
-  #shareBtn{ background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite; }
-  @keyframes pulse {
-    0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}
-  }
+
+  label{display:flex;justify-content:space-between;margin:8px 0;}
+  input{width:100px;text-align:center;border:none;border-radius:8px;}
+
+  .buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
+  button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
+  #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
+  #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
+  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite;}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+
   #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
+  .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
   canvas{margin-top:15px;max-width:400px;}
-  .visitas{margin-top:10px;font-size:1.3rem;color:#FFD700;}
 </style>
 </head>
 <body>
 <div class="container">
   <h1>💎 Calculadora Brawl Stars 💎</h1>
+
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
     <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
@@ -115,83 +87,78 @@
     <button id="shareBtn">📤 Compartir</button>
   </div>
 
-  <!-- Resultado debajo de los botones -->
+  <!-- Valor total -->
   <div id="resultado">Valor total: 0 €</div>
 
-  <!-- Gráfico -->
-  <canvas id="myChart" width="400" height="400"></canvas>
-
+  <!-- Visitas -->
   <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
+
+  <!-- Donut gráfico -->
+  <canvas id="myChart" width="400" height="400"></canvas>
 </div>
 
 <script>
-let chart;
-
-// Confeti lento
+// ------------ Confeti lento
 function lanzarConfeti() {
   const duration = 4000;
   const end = Date.now() + duration;
   (function frame() {
     confetti({
-      particleCount: 20,
-      startVelocity: 8,
+      particleCount: 10,
+      startVelocity: 3,
+      gravity: 0.25,
       spread: 360,
-      origin: { x: Math.random(), y: Math.random()*0.4 },
+      ticks: 200,
+      origin: { x: Math.random(), y: Math.random() * 0.4 },
       colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
 }
 
-function playBeep(freq) {
-  const ctx = new (window.AudioContext||window.webkitAudioContext)();
-  const osc = ctx.createOscillator(), gain=ctx.createGain();
-  osc.type="square"; osc.frequency.value=freq;
-  osc.connect(gain); gain.connect(ctx.destination);
-  gain.gain.setValueAtTime(0.2, ctx.currentTime);
-  osc.start(); osc.stop(ctx.currentTime + 0.15);
+// sonido + vibracion
+function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
+function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
+
+// animación contador
+function animateNumber(finalValue){
+  const start=0,duration=2000,startTime=performance.now();
+  function step(now){
+    const p=Math.min((now-startTime)/duration,1);
+    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 }
 
-function vibrar(ms=100){ if(navigator.vibrate) navigator.vibrate(ms); }
-
+let chart;
 function calcular(){
-  playBeep(600); vibrar(80);
+  beep(600); vibrar(80);
+
   const valores={
-    "🎟️ Brawl Pass": bpass.value*10,
-    "🩵 Comunes": comunes.value*2,
-    "💚 Raras": raras.value*5,
-    "💜 Épicas": epicas.value*10,
-    "❤️ Míticas": miticas.value*12,
-    "🌟 Legendarias": legendarias.value*15,
-    "⚡ Hipercarga": hipercarga.value*20,
-    "🔥 Maxeados": maxeados.value*50
+    "🎟️ Brawl Pass":bpass.value*10,
+    "🩵 Comunes":comunes.value*2,
+    "💚 Raras":raras.value*5,
+    "💜 Épicas":epicas.value*10,
+    "❤️ Míticas":miticas.value*12,
+    "🌟 Legendarias":legendarias.value*15,
+    "⚡ Hipercarga":hipercarga.value*20,
+    "🔥 Maxeados":maxeados.value*50
   };
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  resultado.innerText="Valor total: "+total+" €";
+  animateNumber(total);
 
-  const data={labels:Object.keys(valores), datasets:[{ data:Object.values(valores),
+  const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
     backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
-    borderColor:"#111",borderWidth:2 }]};
+    borderColor:"#111",borderWidth:2}]};
 
-  if(chart) chart.destroy();
-  chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:"white"}}}}});
+  if(chart)chart.destroy();
+  chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:'white'}}}}});
 
   lanzarConfeti();
 }
-
-function limpiar(){
-  playBeep(400); vibrar(80);
-  calcForm.reset();
-  resultado.innerText="Valor total: 0 €";
-  if(chart) chart.destroy();
-}
-
-function compartir(){
-  playBeep(800); vibrar(120);
-  if(navigator.share){
-    navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});
-  }else alert("Tu navegador no soporta compartir directamente.");
-}
+function limpiar(){beep(400);vibrar(80);calcForm.reset();resultado.innerText="Valor total: 0 €";if(chart)chart.destroy();}
+function compartir(){beep(800);vibrar(120);if(navigator.share){navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});}else{alert("Tu navegador no soporta compartir directamente.");}}
 
 calcBtn.onclick=e=>{e.preventDefault();calcular();}
 clearBtn.onclick=e=>{e.preventDefault();limpiar();}
