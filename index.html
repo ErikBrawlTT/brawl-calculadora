@@ -38,7 +38,7 @@
   h1 {
     font-size: 3rem;
     margin-bottom: 20px;
-    background: linear-gradient(90deg, #ff66cc, #cc33ff, #ff99ff);
+    background: linear-gradient(90deg, #FF66CC, #CC66FF, #FF99FF);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: flex;
@@ -49,9 +49,10 @@
     animation: glow 1.5s infinite alternate;
   }
   @keyframes glow {
-    from { text-shadow: 0 0 5px #ff66cc, 0 0 10px #cc33ff; }
-    to { text-shadow: 0 0 15px #ff99ff, 0 0 25px #cc33ff; }
+    from { text-shadow: 0 0 5px #ff66cc, 0 0 10px #cc66ff; }
+    to   { text-shadow: 0 0 15px #ff99ff, 0 0 30px #ff66cc; }
   }
+
   form {
     background: rgba(0,0,0,0.5);
     border-radius: 20px;
@@ -68,16 +69,13 @@
   button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{
-    background:linear-gradient(90deg,#00CFFF,#0077FF);
-    animation:pulse 1s infinite;
-  }
+  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite;}
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
 
-  #resultado{
-    margin-top:10px;
-    font-size:1.8rem;
-    color:#00FF7F; /* Verde brillante */
+  #resultado {
+    margin-top: 10px;
+    font-size: 1.8rem;
+    color: #00FF7F; /* Verde brillante */
   }
   .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
   canvas{margin-top:15px;max-width:400px;}
@@ -103,10 +101,7 @@
     <button id="clearBtn">Limpiar</button>
   </div>
 
-  <!-- Botón compartir -->
-  <div class="share-container">
-    <button id="shareBtn">📤 Compartir</button>
-  </div>
+  <button id="shareBtn">📤 Compartir</button>
 
   <!-- Valor total -->
   <div id="resultado">Valor total: 0 €</div>
@@ -155,6 +150,7 @@ function animateNumber(finalValue){
 let chart;
 let total = 0;
 let valores = {};
+
 function calcular(){
   beep(600); vibrar(80);
 
@@ -175,7 +171,7 @@ function calcular(){
     backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
     borderColor:"#111",borderWidth:2}]};
 
-  // plugin para diamante central
+  // Plugin diamante en el centro
   const centerDiamond = {
     id: 'centerDiamond',
     beforeDraw(chart) {
@@ -185,18 +181,9 @@ function calcular(){
         const colorMasAlto = data.datasets[0].backgroundColor[maxIndex];
 
         const {ctx, chartArea: {top, left, width, height}} = chart;
-
-        // Degradado radial brillante
-        const grad = ctx.createRadialGradient(
-          left + width / 2, top + height / 2, 5,
-          left + width / 2, top + height / 2, 40
-        );
-        grad.addColorStop(0, colorMasAlto);
-        grad.addColorStop(1, "white");
-
         ctx.save();
         ctx.font = "bold 3rem 'Bangers'";
-        ctx.fillStyle = grad;
+        ctx.fillStyle = colorMasAlto; // 💎 adopta color de la skin dominante
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("💎", left + width / 2, top + height / 2);
@@ -209,14 +196,30 @@ function calcular(){
   chart=new Chart(myChart.getContext("2d"),{
     type:"doughnut",
     data:data,
-    options:{plugins:{legend:{labels:{color:'white'}}}},
+    options:{
+      plugins:{legend:{labels:{color:'white'}}}
+    },
     plugins:[centerDiamond]
   });
 
   lanzarConfeti();
 }
-function limpiar(){beep(400);vibrar(80);calcForm.reset();resultado.innerText="Valor total: 0 €";if(chart)chart.destroy();}
-function compartir(){beep(800);vibrar(120);if(navigator.share){navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});}else{alert("Tu navegador no soporta compartir directamente.");}}
+
+function limpiar(){
+  beep(400);vibrar(80);
+  calcForm.reset();
+  resultado.innerText="Valor total: 0 €";
+  if(chart)chart.destroy();
+}
+
+function compartir(){
+  beep(800);vibrar(120);
+  if(navigator.share){
+    navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});
+  }else{
+    alert("Tu navegador no soporta compartir directamente.");
+  }
+}
 
 calcBtn.onclick=e=>{e.preventDefault();calcular();}
 clearBtn.onclick=e=>{e.preventDefault();limpiar();}
