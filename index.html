@@ -76,7 +76,7 @@
   button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite;}
+  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite; margin-top:20px;}
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
 
   #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
@@ -90,18 +90,16 @@
   }
   canvas{max-width:400px;}
 
-  /* Diamante central dentro del donut */
+  /* Diamante central emoji */
   #centerDiamond {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 50px;
-    height: 50px;
+    font-size: 2.5rem;
     transform: translate(-50%, -50%);
-    border-radius: 8px;
     display: none;
-    box-shadow: 0 0 15px #fff, 0 0 30px #fff;
     animation: spinDiamond 2s linear infinite;
+    text-shadow: 0 0 15px #fff, 0 0 30px #fff;
   }
   @keyframes spinDiamond {
     0% { transform: translate(-50%, -50%) rotateY(0deg); }
@@ -145,7 +143,7 @@
   <!-- Donut gráfico con diamante central -->
   <div class="chart-container">
     <canvas id="myChart" width="400" height="400"></canvas>
-    <div id="centerDiamond"></div>
+    <div id="centerDiamond">💎</div>
   </div>
 </div>
 
@@ -207,12 +205,8 @@ function calcular(){
   if(chart)chart.destroy();
   chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:'white'}}}}});
 
-  // Mostrar diamante central con el color de la skin dominante
-  const maxIndex = Object.values(valores).indexOf(Math.max(...Object.values(valores)));
-  const maxColor = data.datasets[0].backgroundColor[maxIndex];
-  const diamond = document.getElementById('centerDiamond');
-  diamond.style.display = 'block';
-  diamond.style.background = maxColor;
+  // Mostrar diamante central cuando aparece el donut
+  document.getElementById('centerDiamond').style.display='block';
 
   lanzarConfeti();
 }
