@@ -35,17 +35,23 @@
     min-height: 100vh;
     padding: 20px;
   }
+
+  /* ---- Título ---- */
   h1 {
     font-size: 3rem;
     margin-bottom: 20px;
-    background: linear-gradient(90deg, #FF66CC, #CC66FF, #FF99FF);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 15px;
     text-align: center;
+  }
+  .titulo-texto {
+    background: linear-gradient(90deg, #00FFAA, #0077FF, #FF00FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .titulo-diamante {
     animation: glow 1.5s infinite alternate;
   }
   @keyframes glow {
@@ -83,7 +89,11 @@
 </head>
 <body>
 <div class="container">
-  <h1><span>💎</span> Calculadora Brawl Stars <span>💎</span></h1>
+  <h1>
+    <span class="titulo-diamante">💎</span>
+    <span class="titulo-texto">Calculadora Brawl Stars</span>
+    <span class="titulo-diamante">💎</span>
+  </h1>
 
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
@@ -150,6 +160,7 @@ function animateNumber(finalValue){
 let chart;
 let total = 0;
 let valores = {};
+let anguloRotacion = 0;
 
 function calcular(){
   beep(600); vibrar(80);
@@ -171,7 +182,7 @@ function calcular(){
     backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
     borderColor:"#111",borderWidth:2}]};
 
-  // Plugin diamante en el centro
+  // Plugin diamante en el centro con rotación
   const centerDiamond = {
     id: 'centerDiamond',
     beforeDraw(chart) {
@@ -179,15 +190,22 @@ function calcular(){
         const valoresArray = Object.values(valores);
         const maxIndex = valoresArray.indexOf(Math.max(...valoresArray));
         const colorMasAlto = data.datasets[0].backgroundColor[maxIndex];
-
         const {ctx, chartArea: {top, left, width, height}} = chart;
+
+        const centerX = left + width/2;
+        const centerY = top + height/2;
+
         ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(anguloRotacion);
         ctx.font = "bold 3rem 'Bangers'";
-        ctx.fillStyle = colorMasAlto; // 💎 adopta color de la skin dominante
+        ctx.fillStyle = colorMasAlto;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("💎", left + width / 2, top + height / 2);
+        ctx.fillText("💎", 0, 0);
         ctx.restore();
+
+        anguloRotacion += 0.01; // velocidad de giro
       }
     }
   };
@@ -197,10 +215,17 @@ function calcular(){
     type:"doughnut",
     data:data,
     options:{
-      plugins:{legend:{labels:{color:'white'}}}
+      plugins:{legend:{labels:{color:'white'}}},
+      animation:false
     },
     plugins:[centerDiamond]
   });
+
+  function animate() {
+    chart.update();
+    requestAnimationFrame(animate);
+  }
+  animate();
 
   lanzarConfeti();
 }
