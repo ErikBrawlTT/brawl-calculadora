@@ -4,9 +4,21 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Calculadora Brawl Stars</title>
+
+<!-- Google Tag Manager -->
+<script>
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-5NWMXWTH');
+</script>
+<!-- End Google Tag Manager -->
+
 <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
 <style>
   body {
     margin: 0;
@@ -36,27 +48,16 @@
     padding: 20px;
   }
 
-  /* ---- Título ---- */
   h1 {
     font-size: 3rem;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    text-align: center;
-  }
-  .titulo-texto {
-    background: linear-gradient(90deg, #00FFAA, #0077FF, #FF00FF);
+    gap: 10px;
+    background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-  }
-  .titulo-diamante {
-    animation: glow 1.5s infinite alternate;
-  }
-  @keyframes glow {
-    from { text-shadow: 0 0 5px #ff66cc, 0 0 10px #cc66ff; }
-    to   { text-shadow: 0 0 15px #ff99ff, 0 0 30px #ff66cc; }
   }
 
   form {
@@ -75,25 +76,34 @@
   button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite;}
+  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite;margin-top:15px;}
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
 
-  #resultado {
-    margin-top: 10px;
-    font-size: 1.8rem;
-    color: #00FF7F; /* Verde brillante */
-  }
+  #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
   .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
   canvas{margin-top:15px;max-width:400px;}
+
+  /* Diamante central giratorio */
+  #diamanteCentral {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%) rotate(0deg);
+    width: 60px;
+    height: 60px;
+    pointer-events:none;
+    z-index:2;
+  }
 </style>
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5NWMXWTH"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
 <div class="container">
-  <h1>
-    <span class="titulo-diamante">💎</span>
-    <span class="titulo-texto">Calculadora Brawl Stars</span>
-    <span class="titulo-diamante">💎</span>
-  </h1>
+  <h1>💎 Calculadora Brawl Stars 💎</h1>
 
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
@@ -117,13 +127,26 @@
   <div id="resultado">Valor total: 0 €</div>
 
   <!-- Visitas -->
-  <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
+  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
 
   <!-- Donut gráfico -->
   <canvas id="myChart" width="400" height="400"></canvas>
+
+  <!-- Diamante central -->
+  <div id="diamanteCentral">💎</div>
 </div>
 
 <script>
+// Rotación diamante central
+let angle = 0;
+const diamanteCentral = document.getElementById("diamanteCentral");
+function girarDiamante() {
+  angle += 0.5; // velocidad de giro
+  diamanteCentral.style.transform = `translate(-50%,-50%) rotate(${angle}deg)`;
+  requestAnimationFrame(girarDiamante);
+}
+girarDiamante();
+
 // ------------ Confeti lento
 function lanzarConfeti() {
   const duration = 4000;
@@ -158,14 +181,10 @@ function animateNumber(finalValue){
 }
 
 let chart;
-let total = 0;
-let valores = {};
-let anguloRotacion = 0;
-
 function calcular(){
   beep(600); vibrar(80);
 
-  valores={
+  const valores={
     "🎟️ Brawl Pass":bpass.value*10,
     "🩵 Comunes":comunes.value*2,
     "💚 Raras":raras.value*5,
@@ -175,80 +194,44 @@ function calcular(){
     "⚡ Hipercarga":hipercarga.value*20,
     "🔥 Maxeados":maxeados.value*50
   };
-  total = Object.values(valores).reduce((a,b)=>a+b,0);
+  const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
+  // colores violetas/rosados/arco
+  const colors = ["#ff00ff","#ff66ff","#800080","#cc00ff","#9933ff","#00ccff","#00ffcc","#ff3399"];
   const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
-    backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
+    backgroundColor:colors,
     borderColor:"#111",borderWidth:2}]};
 
-  // Plugin diamante en el centro con rotación
-  const centerDiamond = {
-    id: 'centerDiamond',
-    beforeDraw(chart) {
-      if (total > 0) {
-        const valoresArray = Object.values(valores);
-        const maxIndex = valoresArray.indexOf(Math.max(...valoresArray));
-        const colorMasAlto = data.datasets[0].backgroundColor[maxIndex];
-        const {ctx, chartArea: {top, left, width, height}} = chart;
-
-        const centerX = left + width/2;
-        const centerY = top + height/2;
-
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(anguloRotacion);
-        ctx.font = "bold 3rem 'Bangers'";
-        ctx.fillStyle = colorMasAlto;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("💎", 0, 0);
-        ctx.restore();
-
-        anguloRotacion += 0.01; // velocidad de giro
-      }
-    }
-  };
-
   if(chart)chart.destroy();
-  chart=new Chart(myChart.getContext("2d"),{
-    type:"doughnut",
-    data:data,
-    options:{
-      plugins:{legend:{labels:{color:'white'}}},
-      animation:false
-    },
-    plugins:[centerDiamond]
-  });
+  chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{
+    plugins:{legend:{labels:{color:'white'}}},
+    cutout: "50%",
+  }});
 
-  function animate() {
-    chart.update();
-    requestAnimationFrame(animate);
-  }
-  animate();
+  // Diamante central color dominante
+  const maxValor = Math.max(...Object.values(valores));
+  const indexDominante = Object.values(valores).indexOf(maxValor);
+  diamanteCentral.style.color = colors[indexDominante];
 
   lanzarConfeti();
 }
 
-function limpiar(){
-  beep(400);vibrar(80);
-  calcForm.reset();
-  resultado.innerText="Valor total: 0 €";
-  if(chart)chart.destroy();
-}
-
-function compartir(){
-  beep(800);vibrar(120);
-  if(navigator.share){
-    navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});
-  }else{
-    alert("Tu navegador no soporta compartir directamente.");
-  }
-}
+function limpiar(){beep(400);vibrar(80);calcForm.reset();resultado.innerText="Valor total: 0 €";if(chart)chart.destroy(); diamanteCentral.style.color="white";}
+function compartir(){beep(800);vibrar(120);if(navigator.share){navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});}else{alert("Tu navegador no soporta compartir directamente.");}}
 
 calcBtn.onclick=e=>{e.preventDefault();calcular();}
 clearBtn.onclick=e=>{e.preventDefault();limpiar();}
 shareBtn.onclick=e=>{e.preventDefault();compartir();}
+
+// ---------------- Contador de visitas con CountAPI
+const visitasElemento = document.getElementById("visitas");
+fetch("https://api.countapi.xyz/hit/brawl-calculadora.vercel.app/visitas")
+  .then(res => res.json())
+  .then(data => {
+    visitasElemento.innerText = data.value.toLocaleString();
+  })
+  .catch(err => console.error("Error al obtener visitas:", err));
 </script>
 </body>
 </html>
