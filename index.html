@@ -18,107 +18,96 @@ gtag('config', 'GTM-5NWMXWTH');
 </script>
 
 <style>
-  body {
-    margin: 0;
-    font-family: 'Bangers', cursive;
-    background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
-    background-size: cover;
-    color: white;
-    text-align: center;
-    position: relative;
-  }
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(6px);
-    z-index: 0;
-  }
-  .container {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
+body {
+  margin: 0;
+  font-family: 'Bangers', cursive;
+  background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  color: white;
+  text-align: center;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 0;
+}
+.container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
 
-  /* Título */
-  h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: linear-gradient(90deg, #00FFAA, #0077FF, #FF69B4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+/* Título centrado con diamantes alineados */
+h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
-  /* Diamantes del título */
-  .diamond-title {
-    font-size: 3rem;
-    background: linear-gradient(90deg, #00FFAA, #0077FF, #FF69B4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: sparkle 1.5s infinite alternate;
-  }
-  @keyframes sparkle{
-    0%{text-shadow: 0 0 5px #fff;}
-    100%{text-shadow: 0 0 20px #fff;}
-  }
+/* Formulario */
+form {
+  background: rgba(0,0,0,0.5);
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 600px;
+  width:90%;
+  margin-bottom: 25px;
+}
+label{display:flex;justify-content:space-between;margin:8px 0;}
+input{width:100px;text-align:center;border:none;border-radius:8px;}
+.buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
+button{
+  padding:10px 20px;
+  border:none;
+  border-radius:12px;
+  font-family:'Bangers';
+  font-size:1.5rem;
+  color:white;
+  cursor:pointer;
+}
+#calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
+#clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
+#shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:10px;}
 
-  form {
-    background: rgba(0,0,0,0.5);
-    border-radius: 20px;
-    padding: 20px;
-    max-width: 600px;
-    width:90%;
-    margin-bottom: 25px;
-  }
-  label{display:flex;justify-content:space-between;margin:8px 0;}
-  input{width:100px;text-align:center;border:none;border-radius:8px;}
+#resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
+.visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
+canvas{margin-top:15px;max-width:400px;}
 
-  .buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
-  button{
-    padding:10px 20px;border:none;border-radius:12px;
-    font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;
-  }
-  #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
-  #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{
-    background:linear-gradient(90deg,#00FFAA,#FF00FF);
-    animation:pulse 1s infinite;
-    margin-top:10px;
-  }
-  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-
-  #resultado{
-    margin-top:10px;font-size:1.8rem;color:#00FFAA;
-  }
-  .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;position:relative;z-index:2;}
-  canvas{margin-top:15px;max-width:400px;position:relative;z-index:1;}
-
-  /* Diamante central del donut */
-  .center-diamond{
-    position:absolute;
-    width:40px;
-    height:40px;
-    z-index:3;
-    transform-origin:center center;
-    pointer-events:none;
-  }
+/* Diamante central del donut */
+.center-diamond{
+  position:absolute;
+  width:50px;
+  height:50px;
+  border-radius:8px;
+  z-index:3;
+  pointer-events:none;
+  display:none;
+  box-shadow: 0 0 15px #fff, 0 0 30px #fff;
+}
+@keyframes spinDiamond{
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>
-    <span class="diamond-title">💎</span> Calculadora Brawl Stars <span class="diamond-title">💎</span>
-  </h1>
+  <h1>💎 Calculadora Brawl Stars 💎</h1>
 
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
@@ -135,22 +124,17 @@ gtag('config', 'GTM-5NWMXWTH');
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
   </div>
+
   <button id="shareBtn">📤 Compartir</button>
 
   <div id="resultado">Valor total: 0 €</div>
-  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
+  <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
 
   <canvas id="myChart" width="400" height="400"></canvas>
-  <img src="💎" id="centerDiamond" class="center-diamond" style="display:none;">
+  <div id="centerDiamond" class="center-diamond"></div>
 </div>
 
 <script>
-// Visitas
-fetch('https://api.countapi.xyz/hit/brawl-calculadora.vercel.app/visits')
-  .then(res => res.json())
-  .then(data => {document.getElementById('visitas').innerText = data.value;});
-
-// Confeti
 function lanzarConfeti() {
   const duration = 4000;
   const end = Date.now() + duration;
@@ -168,11 +152,8 @@ function lanzarConfeti() {
   })();
 }
 
-// Sonido y vibración
 function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
-
-// Animación número
 function animateNumber(finalValue){
   const start=0,duration=2000,startTime=performance.now();
   function step(now){
@@ -183,12 +164,18 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
-// Donut + diamante central
 let chart;
-let rotation = 0;
+function mostrarDiamante(color){
+  const diamond = document.getElementById('centerDiamond');
+  diamond.style.display = 'block';
+  diamond.style.background = color;
+  diamond.style.left = (myChart.offsetLeft + myChart.width/2 - 25) + 'px';
+  diamond.style.top = (myChart.offsetTop + myChart.height/2 - 25) + 'px';
+  diamond.style.animation = 'spinDiamond 2s linear infinite';
+}
+
 function calcular(){
   beep(600); vibrar(80);
-
   const valores={
     "🎟️ Brawl Pass":bpass.value*10,
     "🩵 Comunes":comunes.value*2,
@@ -202,62 +189,43 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  // Datos para gráfico
   const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
-    backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
+    backgroundColor:["#00CFFF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
     borderColor:"#111",borderWidth:2}]};
 
-  if(chart) chart.destroy();
-  chart=new Chart(myChart.getContext("2d"),{
-    type:"doughnut",
-    data:data,
-    options:{
-      plugins:{legend:{labels:{color:'white'}}},
-      cutout:'60%'
-    }
-  });
+  if(chart)chart.destroy();
+  chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:'white'}}}}});
 
   // Diamante central
   const maxIndex = Object.values(valores).indexOf(Math.max(...Object.values(valores)));
   const maxColor = data.datasets[0].backgroundColor[maxIndex];
-  const centerDiamond = document.getElementById('centerDiamond');
-  centerDiamond.style.display = 'block';
-  centerDiamond.style.background = maxColor;
-  centerDiamond.style.borderRadius = '50%';
-  centerDiamond.style.left = (myChart.offsetLeft + myChart.width/2 - 20) + 'px';
-  centerDiamond.style.top = (myChart.offsetTop + myChart.height/2 - 20) + 'px';
-
-  // Animación de giro
-  function girar(){
-    rotation += 2;
-    centerDiamond.style.transform = 'rotate(' + rotation + 'deg)';
-    requestAnimationFrame(girar);
-  }
-  girar();
+  mostrarDiamante(maxColor);
 
   lanzarConfeti();
 }
 
-// Limpiar
 function limpiar(){
-  beep(400); vibrar(80); calcForm.reset();
+  beep(400);vibrar(80);
+  calcForm.reset();
   resultado.innerText="Valor total: 0 €";
   if(chart) chart.destroy();
-  document.getElementById('centerDiamond').style.display='none';
+  document.getElementById('centerDiamond').style.display = 'none';
 }
 
-// Compartir
 function compartir(){
-  beep(800); vibrar(120);
+  beep(800);vibrar(120);
   if(navigator.share){
     navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});
-  } else { alert("Tu navegador no soporta compartir directamente."); }
+  }else{alert("Tu navegador no soporta compartir directamente.");}
 }
 
-// Eventos botones
 calcBtn.onclick=e=>{e.preventDefault();calcular();}
 clearBtn.onclick=e=>{e.preventDefault();limpiar();}
 shareBtn.onclick=e=>{e.preventDefault();compartir();}
+
+// Simulación visitas
+let visitas = 7156;
+setInterval(()=>{visitas++;document.getElementById('visitas').innerText=visitas;},5000);
 </script>
 </body>
 </html>
