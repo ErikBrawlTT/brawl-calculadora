@@ -38,7 +38,7 @@
   h1 {
     font-size: 3rem;
     margin-bottom: 20px;
-    background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
+    background: linear-gradient(90deg, #FF66CC, #CC33FF, #FF99FF);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: flex;
@@ -50,7 +50,7 @@
   }
   @keyframes glow {
     from { text-shadow: 0 0 10px #fff; }
-    to { text-shadow: 0 0 25px #00ffff, 0 0 35px #ff00ff; }
+    to { text-shadow: 0 0 25px #FF66CC, 0 0 35px #CC33FF; }
   }
   form {
     background: rgba(0,0,0,0.5);
@@ -66,10 +66,10 @@
   button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite;}
+  #shareBtn{background:linear-gradient(90deg,#FF66CC,#CC33FF);animation:pulse 1s infinite;}
   .share-container{margin-top:15px;}
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-  #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
+  #resultado{margin-top:10px;font-size:1.8rem;color:#FF99FF;}
   .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
   canvas{margin-top:15px;max-width:400px;}
 </style>
@@ -122,7 +122,7 @@ function lanzarConfeti() {
       spread: 360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
+      colors: ['#ff66cc','#cc33ff','#ff99ff','#ff0080','#ff00ff','#aa00ff']
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
@@ -190,6 +190,16 @@ function calcular(){
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("💎", left + width / 2, top + height / 2);
+        ctx.restore();
+
+        // efecto pulso luminoso
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(left + width/2, top + height/2, 30, 0, 2 * Math.PI);
+        ctx.strokeStyle = colorMasAlto;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.5 + 0.5*Math.sin(Date.now()/300);
+        ctx.stroke();
         ctx.restore();
       }
     }
