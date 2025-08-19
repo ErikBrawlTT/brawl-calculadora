@@ -49,6 +49,7 @@
   h1 span {
     animation: brillo 2s infinite alternate;
     font-size: 1.2em;
+    color: rgb(255,255,255);
   }
   @keyframes brillo {
     0% { text-shadow: 0 0 5px #ff00ff, 0 0 10px #00ffff; }
@@ -69,14 +70,14 @@
   button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:15px;animation:pulse 1s infinite;}
+  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
   #resultado{margin-top:10px;font-size:1.8rem;color:#00FF00;}
   .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
   canvas{margin-top:15px;max-width:400px;position:relative;}
   #diamanteCentral {
     position: absolute;
-    font-size: 2.5rem;
+    font-size: 3rem;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(0deg);
@@ -137,6 +138,7 @@ function lanzarConfeti() {
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
 }
+
 function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
 function animateNumber(finalValue){
@@ -166,7 +168,7 @@ function calcular(){
   animateNumber(total);
 
   const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
-    backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
+    backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#00FF00","#FF8C00","#FF1493"],
     borderColor:"#111",borderWidth:2}]};
 
   if(chart) chart.destroy();
@@ -175,7 +177,7 @@ function calcular(){
   // Color diamante central según skin dominante
   const maxVal = Math.max(...Object.values(valores));
   const idx = Object.values(valores).indexOf(maxVal);
-  const colors=["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"];
+  const colors=["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#00FF00","#FF8C00","#FF1493"];
   document.getElementById("diamanteCentral").style.color = colors[idx];
 
   lanzarConfeti();
@@ -190,5 +192,12 @@ function limpiar(){
 
 function compartir(){
   beep(800); vibrar(120);
-  const url = window.location.href;
-  navigator.clipboard.writeText(url).then(()=>{alert("URL cop
+  navigator.clipboard.writeText(window.location.href).then(()=>{alert("URL copiada!");});
+}
+
+calcBtn.addEventListener("click",calcular);
+clearBtn.addEventListener("click",limpiar);
+shareBtn.addEventListener("click",compartir);
+</script>
+</body>
+</html>
