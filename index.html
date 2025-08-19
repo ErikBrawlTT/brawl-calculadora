@@ -38,7 +38,7 @@
   h1 {
     font-size: 3rem;
     margin-bottom: 20px;
-    background: linear-gradient(90deg, #FF66CC, #CC33FF, #FF99FF);
+    background: linear-gradient(90deg, #ff66cc, #cc33ff, #ff99ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: flex;
@@ -49,8 +49,8 @@
     animation: glow 1.5s infinite alternate;
   }
   @keyframes glow {
-    from { text-shadow: 0 0 10px #fff; }
-    to { text-shadow: 0 0 25px #FF66CC, 0 0 35px #CC33FF; }
+    from { text-shadow: 0 0 5px #ff66cc, 0 0 10px #cc33ff; }
+    to { text-shadow: 0 0 15px #ff99ff, 0 0 25px #cc33ff; }
   }
   form {
     background: rgba(0,0,0,0.5);
@@ -60,16 +60,25 @@
     width:90%;
     margin-bottom: 25px;
   }
+
   label{display:flex;justify-content:space-between;margin:8px 0;}
   input{width:100px;text-align:center;border:none;border-radius:8px;}
+
   .buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
   button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{background:linear-gradient(90deg,#FF66CC,#CC33FF);animation:pulse 1s infinite;}
-  .share-container{margin-top:15px;}
+  #shareBtn{
+    background:linear-gradient(90deg,#00CFFF,#0077FF);
+    animation:pulse 1s infinite;
+  }
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-  #resultado{margin-top:10px;font-size:1.8rem;color:#FF99FF;}
+
+  #resultado{
+    margin-top:10px;
+    font-size:1.8rem;
+    color:#00FF7F; /* Verde brillante */
+  }
   .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
   canvas{margin-top:15px;max-width:400px;}
 </style>
@@ -94,7 +103,7 @@
     <button id="clearBtn">Limpiar</button>
   </div>
 
-  <!-- Botón compartir debajo -->
+  <!-- Botón compartir -->
   <div class="share-container">
     <button id="shareBtn">📤 Compartir</button>
   </div>
@@ -122,7 +131,7 @@ function lanzarConfeti() {
       spread: 360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff66cc','#cc33ff','#ff99ff','#ff0080','#ff00ff','#aa00ff']
+      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
@@ -146,8 +155,6 @@ function animateNumber(finalValue){
 let chart;
 let total = 0;
 let valores = {};
-let data = {};
-
 function calcular(){
   beep(600); vibrar(80);
 
@@ -164,10 +171,11 @@ function calcular(){
   total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
+  const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
     backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
     borderColor:"#111",borderWidth:2}]};
 
+  // plugin para diamante central
   const centerDiamond = {
     id: 'centerDiamond',
     beforeDraw(chart) {
@@ -177,6 +185,8 @@ function calcular(){
         const colorMasAlto = data.datasets[0].backgroundColor[maxIndex];
 
         const {ctx, chartArea: {top, left, width, height}} = chart;
+
+        // Degradado radial brillante
         const grad = ctx.createRadialGradient(
           left + width / 2, top + height / 2, 5,
           left + width / 2, top + height / 2, 40
@@ -191,26 +201,20 @@ function calcular(){
         ctx.textBaseline = "middle";
         ctx.fillText("💎", left + width / 2, top + height / 2);
         ctx.restore();
-
-        // efecto pulso luminoso
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(left + width/2, top + height/2, 30, 0, 2 * Math.PI);
-        ctx.strokeStyle = colorMasAlto;
-        ctx.lineWidth = 3;
-        ctx.globalAlpha = 0.5 + 0.5*Math.sin(Date.now()/300);
-        ctx.stroke();
-        ctx.restore();
       }
     }
   };
 
   if(chart)chart.destroy();
-  chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:'white'}}}},plugins:[centerDiamond]});
+  chart=new Chart(myChart.getContext("2d"),{
+    type:"doughnut",
+    data:data,
+    options:{plugins:{legend:{labels:{color:'white'}}}},
+    plugins:[centerDiamond]
+  });
 
   lanzarConfeti();
 }
-
 function limpiar(){beep(400);vibrar(80);calcForm.reset();resultado.innerText="Valor total: 0 €";if(chart)chart.destroy();}
 function compartir(){beep(800);vibrar(120);if(navigator.share){navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});}else{alert("Tu navegador no soporta compartir directamente.");}}
 
