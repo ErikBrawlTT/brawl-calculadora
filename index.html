@@ -7,95 +7,103 @@
 <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GTM-5NWMXWTH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GTM-5NWMXWTH');
+</script>
+
 <style>
-  body {
-    margin: 0;
-    font-family: 'Bangers', cursive;
-    background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
-    background-size: cover;
-    position: relative;
-    color: white;
-    text-align: center;
-  }
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(6px);
-    z-index: 0;
-  }
-  .container {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
-  h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: linear-gradient(90deg,#00FFAA,#00CFFF,#FF00FF);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  h1 span {
-    animation: brillo 2s infinite alternate;
-    font-size: 1.2em;
-    color: rgb(255,255,255);
-  }
-  @keyframes brillo {
-    0% { text-shadow: 0 0 5px #ff00ff, 0 0 10px #00ffff; }
-    50% { text-shadow: 0 0 15px #ff00ff, 0 0 25px #00ffff; }
-    100% { text-shadow: 0 0 5px #ff00ff, 0 0 10px #00ffff; }
-  }
-  form {
-    background: rgba(0,0,0,0.5);
-    border-radius: 20px;
-    padding: 20px;
-    max-width: 600px;
-    width: 90%;
-    margin-bottom: 25px;
-  }
-  label{display:flex;justify-content:space-between;margin:8px 0;}
-  input{width:100px;text-align:center;border:none;border-radius:8px;}
-  .buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
-  button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
-  #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
-  #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
-  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-  #resultado{margin-top:10px;font-size:1.8rem;color:#00FF00;}
-  .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
-  canvas{margin-top:15px;max-width:400px;position:relative;}
-  #diamanteCentral {
-    position: absolute;
-    font-size: 3rem;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(0deg);
-    animation: girar 4s linear infinite;
-    pointer-events: none;
-    z-index: 2;
-  }
-  @keyframes girar {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
-  }
+body {
+  margin: 0;
+  font-family: 'Bangers', cursive;
+  background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  color: white;
+  text-align: center;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 0;
+}
+.container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: transparent;
+  background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
+  -webkit-background-clip: text;
+  position: relative;
+}
+h1 .diamond {
+  animation: glow 2s infinite alternate;
+}
+@keyframes glow {
+  0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+  50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
+  100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+}
+form {
+  background: rgba(0,0,0,0.5);
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 600px;
+  width:90%;
+  margin-bottom: 25px;
+}
+label{display:flex;justify-content:space-between;margin:8px 0;}
+input{width:100px;text-align:center;border:none;border-radius:8px;}
+.buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
+button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
+#calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
+#clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
+#shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+#resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
+.visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
+canvas{margin-top:15px;max-width:400px;position:relative;}
+/* Diamante central del donut */
+#centerDiamond{
+  position:absolute;
+  font-size:50px;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%) rotate(0deg);
+  animation: spin 3s linear infinite;
+  z-index:5;
+  text-shadow: 0 0 15px #00FFFF, 0 0 25px #FF00FF, 0 0 35px #FFD700;
+}
+@keyframes spin{
+  from{transform:translate(-50%,-50%) rotate(0deg);}
+  to{transform:translate(-50%,-50%) rotate(360deg);}
+}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>
-    <span>💎</span> Calculadora Brawl Stars <span>💎</span>
-  </h1>
+  <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
 
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
@@ -112,16 +120,26 @@
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
   </div>
+
   <button id="shareBtn">📤 Compartir</button>
 
   <div id="resultado">Valor total: 0 €</div>
-  <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
+  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
 
-  <canvas id="myChart" width="400" height="400"></canvas>
-  <div id="diamanteCentral">💎</div>
+  <div style="position:relative; display:inline-block;">
+    <canvas id="myChart" width="400" height="400"></canvas>
+    <div id="centerDiamond">💎</div>
+  </div>
 </div>
 
 <script>
+// Contador de visitas
+let visitas = localStorage.getItem("visitas") || 0;
+visitas++; 
+localStorage.setItem("visitas", visitas);
+document.getElementById("visitas").innerText = visitas;
+
+// Confeti
 function lanzarConfeti() {
   const duration = 4000;
   const end = Date.now() + duration;
@@ -139,8 +157,11 @@ function lanzarConfeti() {
   })();
 }
 
+// Sonido y vibración
 function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
+
+// Animar número
 function animateNumber(finalValue){
   const start=0,duration=2000,startTime=performance.now();
   function step(now){
@@ -151,9 +172,11 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
+// Gráfico
 let chart;
 function calcular(){
   beep(600); vibrar(80);
+
   const valores={
     "🎟️ Brawl Pass":bpass.value*10,
     "🩵 Comunes":comunes.value*2,
@@ -172,32 +195,21 @@ function calcular(){
     borderColor:"#111",borderWidth:2}]};
 
   if(chart) chart.destroy();
-  chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:'white'}}}}});
-
-  // Color diamante central según skin dominante
-  const maxVal = Math.max(...Object.values(valores));
-  const idx = Object.values(valores).indexOf(maxVal);
-  const colors=["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#00FF00","#FF8C00","#FF1493"];
-  document.getElementById("diamanteCentral").style.color = colors[idx];
+  chart = new Chart(myChart.getContext("2d"), {type:"doughnut", data:data, options:{plugins:{legend:{labels:{color:'white'}}}}});
 
   lanzarConfeti();
 }
 
-function limpiar(){
-  beep(400); vibrar(80);
-  calcForm.reset();
-  resultado.innerText="Valor total: 0 €";
-  if(chart) chart.destroy();
-}
+// Limpiar
+function limpiar(){beep(400);vibrar(80);calcForm.reset();resultado.innerText="Valor total: 0 €";if(chart)chart.destroy();}
 
-function compartir(){
-  beep(800); vibrar(120);
-  navigator.clipboard.writeText(window.location.href).then(()=>{alert("URL copiada!");});
-}
+// Compartir
+function compartir(){navigator.clipboard.writeText(location.href);alert("Enlace copiado al portapapeles ✅");}
 
-calcBtn.addEventListener("click",calcular);
-clearBtn.addEventListener("click",limpiar);
-shareBtn.addEventListener("click",compartir);
+// Eventos
+calcBtn.addEventListener("click", e=>{e.preventDefault();calcular();});
+clearBtn.addEventListener("click", e=>{e.preventDefault();limpiar();});
+shareBtn.addEventListener("click", e=>{e.preventDefault();compartir();});
 </script>
 </body>
 </html>
