@@ -45,11 +45,12 @@
     align-items: center;
     justify-content: center;
     gap: 15px;
+    text-align: center;
     animation: glow 1.5s infinite alternate;
   }
   @keyframes glow {
-    from { text-shadow: 0 0 10px #00ffff; }
-    to   { text-shadow: 0 0 25px #ff00ff; }
+    from { text-shadow: 0 0 10px #fff; }
+    to { text-shadow: 0 0 25px #00ffff, 0 0 35px #ff00ff; }
   }
   form {
     background: rgba(0,0,0,0.5);
@@ -59,57 +60,23 @@
     width:90%;
     margin-bottom: 25px;
   }
-  label {
-    display:flex;
-    justify-content:space-between;
-    margin:8px 0;
-  }
-  input {
-    width:100px;
-    text-align:center;
-    border:none;
-    border-radius:8px;
-  }
-  .buttons {
-    display:flex;
-    justify-content:center;
-    gap:25px;
-    margin-top:15px;
-  }
-  button {
-    padding:10px 20px;
-    border:none;
-    border-radius:12px;
-    font-family:'Bangers';
-    font-size:1.5rem;
-    color:white;
-    cursor:pointer;
-    box-shadow: 0 0 10px rgba(255,255,255,0.5);
-    transition: transform 0.2s;
-  }
-  button:hover {
-    transform: scale(1.1);
-  }
+  label{display:flex;justify-content:space-between;margin:8px 0;}
+  input{width:100px;text-align:center;border:none;border-radius:8px;}
+  .buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
+  button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{
-    background:linear-gradient(90deg,#00FFAA,#FF00FF);
-    animation:pulse 1s infinite;
-    margin-top:15px;
-  }
-  @keyframes pulse{
-    0%{transform:scale(1)}
-    50%{transform:scale(1.1)}
-    100%{transform:scale(1)}
-  }
-  #resultado{margin-top:15px;font-size:1.8rem;color:#00FFAA;text-shadow:0 0 8px #00ffff;}
+  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite;}
+  .share-container{margin-top:15px;}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+  #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
   .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
   canvas{margin-top:15px;max-width:400px;}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>💎 Calculadora Brawl Stars 💎</h1>
+  <h1><span>💎</span> Calculadora Brawl Stars <span>💎</span></h1>
 
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
@@ -122,14 +89,15 @@
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
   </form>
 
-  <!-- Botones Calcular y Limpiar -->
   <div class="buttons">
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
   </div>
 
-  <!-- Botón Compartir debajo -->
-  <button id="shareBtn">📤 Compartir</button>
+  <!-- Botón compartir debajo -->
+  <div class="share-container">
+    <button id="shareBtn">📤 Compartir</button>
+  </div>
 
   <!-- Valor total -->
   <div id="resultado">Valor total: 0 €</div>
@@ -176,10 +144,14 @@ function animateNumber(finalValue){
 }
 
 let chart;
+let total = 0;
+let valores = {};
+let data = {};
+
 function calcular(){
   beep(600); vibrar(80);
 
-  const valores={
+  valores={
     "🎟️ Brawl Pass":bpass.value*10,
     "🩵 Comunes":comunes.value*2,
     "💚 Raras":raras.value*5,
@@ -189,23 +161,32 @@ function calcular(){
     "⚡ Hipercarga":hipercarga.value*20,
     "🔥 Maxeados":maxeados.value*50
   };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
+  total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores).map(v=>v>0?v:0.0001),
+  data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
     backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
     borderColor:"#111",borderWidth:2}]};
-
-  if(chart)chart.destroy();
 
   const centerDiamond = {
     id: 'centerDiamond',
     beforeDraw(chart) {
       if (total > 0) {
+        const valoresArray = Object.values(valores);
+        const maxIndex = valoresArray.indexOf(Math.max(...valoresArray));
+        const colorMasAlto = data.datasets[0].backgroundColor[maxIndex];
+
         const {ctx, chartArea: {top, left, width, height}} = chart;
+        const grad = ctx.createRadialGradient(
+          left + width / 2, top + height / 2, 5,
+          left + width / 2, top + height / 2, 40
+        );
+        grad.addColorStop(0, colorMasAlto);
+        grad.addColorStop(1, "white");
+
         ctx.save();
         ctx.font = "bold 3rem 'Bangers'";
-        ctx.fillStyle = "#00FFFF";
+        ctx.fillStyle = grad;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("💎", left + width / 2, top + height / 2);
@@ -214,29 +195,14 @@ function calcular(){
     }
   };
 
-  chart=new Chart(myChart.getContext("2d"),{
-    type:"doughnut",
-    data:data,
-    options:{
-      plugins:{legend:{labels:{color:'white'}},
-      tooltip:{callbacks:{label:function(context){
-        const value=Object.values(valores)[context.dataIndex];
-        return context.label+": "+value+" €";}}}}
-    },
-    plugins:[centerDiamond]
-  });
+  if(chart)chart.destroy();
+  chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:'white'}}}},plugins:[centerDiamond]});
 
   lanzarConfeti();
 }
+
 function limpiar(){beep(400);vibrar(80);calcForm.reset();resultado.innerText="Valor total: 0 €";if(chart)chart.destroy();}
-function compartir(){
-  beep(800);vibrar(120);
-  if(navigator.share){
-    navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});
-  }else{
-    alert("Tu navegador no soporta compartir directamente.");
-  }
-}
+function compartir(){beep(800);vibrar(120);if(navigator.share){navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});}else{alert("Tu navegador no soporta compartir directamente.");}}
 
 calcBtn.onclick=e=>{e.preventDefault();calcular();}
 clearBtn.onclick=e=>{e.preventDefault();limpiar();}
