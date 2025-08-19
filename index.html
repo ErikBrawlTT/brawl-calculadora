@@ -7,24 +7,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-<!-- Google Tag Manager -->
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GTM-5NWMXWTH"></script>
 <script>
-  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','GTM-5NWMXWTH');
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'GTM-5NWMXWTH');
 </script>
-<!-- End Google Tag Manager -->
+
 <style>
   body {
     margin: 0;
     font-family: 'Bangers', cursive;
     background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
     background-size: cover;
-    position: relative;
     color: white;
     text-align: center;
+    position: relative;
   }
   body::after {
     content: "";
@@ -44,6 +45,8 @@
     min-height: 100vh;
     padding: 20px;
   }
+
+  /* Título */
   h1 {
     font-size: 3rem;
     margin-bottom: 20px;
@@ -51,10 +54,24 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
+    background: linear-gradient(90deg, #00FFAA, #0077FF, #FF69B4);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+
+  /* Diamantes del título */
+  .diamond-title {
+    font-size: 3rem;
+    background: linear-gradient(90deg, #00FFAA, #0077FF, #FF69B4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: sparkle 1.5s infinite alternate;
+  }
+  @keyframes sparkle{
+    0%{text-shadow: 0 0 5px #fff;}
+    100%{text-shadow: 0 0 20px #fff;}
+  }
+
   form {
     background: rgba(0,0,0,0.5);
     border-radius: 20px;
@@ -65,35 +82,43 @@
   }
   label{display:flex;justify-content:space-between;margin:8px 0;}
   input{width:100px;text-align:center;border:none;border-radius:8px;}
+
   .buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
-  button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
+  button{
+    padding:10px 20px;border:none;border-radius:12px;
+    font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;
+  }
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite;margin-top:15px;}
+  #shareBtn{
+    background:linear-gradient(90deg,#00FFAA,#FF00FF);
+    animation:pulse 1s infinite;
+    margin-top:10px;
+  }
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-  #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
-  .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
-  canvas{margin-top:15px;max-width:400px;}
-  #diamanteCentral {
+
+  #resultado{
+    margin-top:10px;font-size:1.8rem;color:#00FFAA;
+  }
+  .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;position:relative;z-index:2;}
+  canvas{margin-top:15px;max-width:400px;position:relative;z-index:1;}
+
+  /* Diamante central del donut */
+  .center-diamond{
     position:absolute;
     width:40px;
     height:40px;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%) rotate(0deg);
-    z-index:2;
-    display:none;
-    animation: girar 3s linear infinite;
-  }
-  @keyframes girar{
-    0% { transform: translate(-50%,-50%) rotate(0deg);}
-    100% { transform: translate(-50%,-50%) rotate(360deg);}
+    z-index:3;
+    transform-origin:center center;
+    pointer-events:none;
   }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>💎 Calculadora Brawl Stars 💎</h1>
+  <h1>
+    <span class="diamond-title">💎</span> Calculadora Brawl Stars <span class="diamond-title">💎</span>
+  </h1>
 
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
@@ -110,17 +135,21 @@
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
   </div>
-
   <button id="shareBtn">📤 Compartir</button>
 
   <div id="resultado">Valor total: 0 €</div>
-  <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
+  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
 
   <canvas id="myChart" width="400" height="400"></canvas>
-  <img src="diamante.png" id="diamanteCentral" />
+  <img src="💎" id="centerDiamond" class="center-diamond" style="display:none;">
 </div>
 
 <script>
+// Visitas
+fetch('https://api.countapi.xyz/hit/brawl-calculadora.vercel.app/visits')
+  .then(res => res.json())
+  .then(data => {document.getElementById('visitas').innerText = data.value;});
+
 // Confeti
 function lanzarConfeti() {
   const duration = 4000;
@@ -154,7 +183,9 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
+// Donut + diamante central
 let chart;
+let rotation = 0;
 function calcular(){
   beep(600); vibrar(80);
 
@@ -171,48 +202,59 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  const colors=["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"];
-  const labels=Object.keys(valores);
-  const data={labels:labels,datasets:[{data:Object.values(valores),backgroundColor:colors,borderColor:"#111",borderWidth:2}]};
+  // Datos para gráfico
+  const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
+    backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
+    borderColor:"#111",borderWidth:2}]};
 
-  if(chart)chart.destroy();
-  chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:'white'}}}}});
+  if(chart) chart.destroy();
+  chart=new Chart(myChart.getContext("2d"),{
+    type:"doughnut",
+    data:data,
+    options:{
+      plugins:{legend:{labels:{color:'white'}}},
+      cutout:'60%'
+    }
+  });
 
   // Diamante central
-  let maxIndex=Object.values(valores).indexOf(Math.max(...Object.values(valores)));
-  diamanteCentral.style.display="block";
-  diamanteCentral.style.filter="drop-shadow(0 0 10px "+colors[maxIndex]+")";
-  diamanteCentral.style.backgroundColor=colors[maxIndex];
+  const maxIndex = Object.values(valores).indexOf(Math.max(...Object.values(valores)));
+  const maxColor = data.datasets[0].backgroundColor[maxIndex];
+  const centerDiamond = document.getElementById('centerDiamond');
+  centerDiamond.style.display = 'block';
+  centerDiamond.style.background = maxColor;
+  centerDiamond.style.borderRadius = '50%';
+  centerDiamond.style.left = (myChart.offsetLeft + myChart.width/2 - 20) + 'px';
+  centerDiamond.style.top = (myChart.offsetTop + myChart.height/2 - 20) + 'px';
+
+  // Animación de giro
+  function girar(){
+    rotation += 2;
+    centerDiamond.style.transform = 'rotate(' + rotation + 'deg)';
+    requestAnimationFrame(girar);
+  }
+  girar();
 
   lanzarConfeti();
-
-  // Evento GTM
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({'event':'calculo_realizado','valor_total':total});
 }
 
+// Limpiar
 function limpiar(){
-  beep(400);vibrar(80);
-  calcForm.reset();
+  beep(400); vibrar(80); calcForm.reset();
   resultado.innerText="Valor total: 0 €";
-  if(chart)chart.destroy();
-  diamanteCentral.style.display="none";
-
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({'event':'formulario_limpio'});
+  if(chart) chart.destroy();
+  document.getElementById('centerDiamond').style.display='none';
 }
 
+// Compartir
 function compartir(){
-  beep(800);vibrar(120);
+  beep(800); vibrar(120);
   if(navigator.share){
     navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});
-  }else{
-    alert("Tu navegador no soporta compartir directamente.");
-  }
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({'event':'compartir_click'});
+  } else { alert("Tu navegador no soporta compartir directamente."); }
 }
 
+// Eventos botones
 calcBtn.onclick=e=>{e.preventDefault();calcular();}
 clearBtn.onclick=e=>{e.preventDefault();limpiar();}
 shareBtn.onclick=e=>{e.preventDefault();compartir();}
