@@ -41,11 +41,15 @@
     background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
+    animation: glow 1.5s infinite alternate;
+  }
+  @keyframes glow {
+    from { text-shadow: 0 0 10px #00ffff; }
+    to   { text-shadow: 0 0 25px #ff00ff; }
   }
   form {
     background: rgba(0,0,0,0.5);
@@ -55,15 +59,50 @@
     width:90%;
     margin-bottom: 25px;
   }
-  label{display:flex;justify-content:space-between;margin:8px 0;}
-  input{width:100px;text-align:center;border:none;border-radius:8px;}
-  .buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
-  button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
+  label {
+    display:flex;
+    justify-content:space-between;
+    margin:8px 0;
+  }
+  input {
+    width:100px;
+    text-align:center;
+    border:none;
+    border-radius:8px;
+  }
+  .buttons {
+    display:flex;
+    justify-content:center;
+    gap:25px;
+    margin-top:15px;
+  }
+  button {
+    padding:10px 20px;
+    border:none;
+    border-radius:12px;
+    font-family:'Bangers';
+    font-size:1.5rem;
+    color:white;
+    cursor:pointer;
+    box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    transition: transform 0.2s;
+  }
+  button:hover {
+    transform: scale(1.1);
+  }
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-  #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite;}
-  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-  #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
+  #shareBtn{
+    background:linear-gradient(90deg,#00FFAA,#FF00FF);
+    animation:pulse 1s infinite;
+    margin-top:15px;
+  }
+  @keyframes pulse{
+    0%{transform:scale(1)}
+    50%{transform:scale(1.1)}
+    100%{transform:scale(1)}
+  }
+  #resultado{margin-top:15px;font-size:1.8rem;color:#00FFAA;text-shadow:0 0 8px #00ffff;}
   .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
   canvas{margin-top:15px;max-width:400px;}
 </style>
@@ -83,11 +122,14 @@
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
   </form>
 
+  <!-- Botones Calcular y Limpiar -->
   <div class="buttons">
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
-    <button id="shareBtn">📤 Compartir</button>
   </div>
+
+  <!-- Botón Compartir debajo -->
+  <button id="shareBtn">📤 Compartir</button>
 
   <!-- Valor total -->
   <div id="resultado">Valor total: 0 €</div>
@@ -137,56 +179,25 @@ let chart;
 function calcular(){
   beep(600); vibrar(80);
 
-  const valores = {
-    "🎟️ Brawl Pass": bpass.value * 10,
-    "🩵 Comunes": comunes.value * 2,
-    "💚 Raras": raras.value * 5,
-    "💜 Épicas": epicas.value * 10,
-    "❤️ Míticas": miticas.value * 12,
-    "🌟 Legendarias": legendarias.value * 15,
-    "⚡ Hipercarga": hipercarga.value * 20,
-    "🔥 Maxeados": maxeados.value * 50
+  const valores={
+    "🎟️ Brawl Pass":bpass.value*10,
+    "🩵 Comunes":comunes.value*2,
+    "💚 Raras":raras.value*5,
+    "💜 Épicas":epicas.value*10,
+    "❤️ Míticas":miticas.value*12,
+    "🌟 Legendarias":legendarias.value*15,
+    "⚡ Hipercarga":hipercarga.value*20,
+    "🔥 Maxeados":maxeados.value*50
   };
-
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  const data = {
-    labels: Object.keys(valores),
-    datasets: [{
-      data: Object.values(valores).map(v => v > 0 ? v : 0.0001),
-      backgroundColor: [
-        "#1E90FF", // Brawl Pass
-        "#CCCCCC", // Comunes
-        "#00FF00", // Raras
-        "#800080", // Épicas
-        "#FF0000", // Míticas
-        "#FFD700", // Legendarias
-        "#FF8C00", // Hipercarga
-        "#FF1493"  // Maxeados
-      ],
-      borderColor: "#111",
-      borderWidth: 2
-    }]
-  };
+  const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores).map(v=>v>0?v:0.0001),
+    backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#FFD700","#FF8C00","#FF1493"],
+    borderColor:"#111",borderWidth:2}]};
 
-  if(chart) chart.destroy();
+  if(chart)chart.destroy();
 
-  // 👉 Detectar categoría con mayor valor
-  const keys = Object.keys(valores);
-  const vals = Object.values(valores);
-  const maxIndex = vals.indexOf(Math.max(...vals));
-  let diamondColor = "#00FFFF"; // default turquesa
-
-  switch(keys[maxIndex]){
-    case "🌟 Legendarias": diamondColor = "#FFD700"; break;
-    case "❤️ Míticas": diamondColor = "#FF0000"; break;
-    case "💜 Épicas": diamondColor = "#800080"; break;
-    case "⚡ Hipercarga": diamondColor = "#FF8C00"; break;
-    case "🔥 Maxeados": diamondColor = "#FF1493"; break;
-  }
-
-  // 💎 en el centro si total > 0
   const centerDiamond = {
     id: 'centerDiamond',
     beforeDraw(chart) {
@@ -194,7 +205,7 @@ function calcular(){
         const {ctx, chartArea: {top, left, width, height}} = chart;
         ctx.save();
         ctx.font = "bold 3rem 'Bangers'";
-        ctx.fillStyle = diamondColor;
+        ctx.fillStyle = "#00FFFF";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("💎", left + width / 2, top + height / 2);
@@ -203,38 +214,23 @@ function calcular(){
     }
   };
 
-  chart = new Chart(myChart.getContext("2d"), {
-    type: "doughnut",
-    data: data,
-    options: {
-      plugins: {
-        legend: {
-          labels: { color: "white" }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const value = Object.values(valores)[context.dataIndex];
-              return context.label + ": " + value + " €";
-            }
-          }
-        }
-      }
+  chart=new Chart(myChart.getContext("2d"),{
+    type:"doughnut",
+    data:data,
+    options:{
+      plugins:{legend:{labels:{color:'white'}},
+      tooltip:{callbacks:{label:function(context){
+        const value=Object.values(valores)[context.dataIndex];
+        return context.label+": "+value+" €";}}}}
     },
-    plugins: [centerDiamond]
+    plugins:[centerDiamond]
   });
 
   lanzarConfeti();
 }
-
-function limpiar(){
-  beep(400); vibrar(80);
-  calcForm.reset();
-  resultado.innerText="Valor total: 0 €";
-  if(chart) chart.destroy();
-}
+function limpiar(){beep(400);vibrar(80);calcForm.reset();resultado.innerText="Valor total: 0 €";if(chart)chart.destroy();}
 function compartir(){
-  beep(800); vibrar(120);
+  beep(800);vibrar(120);
   if(navigator.share){
     navigator.share({title:"Calculadora Brawl Stars",text:"¡Mira mi cálculo!",url:location.href});
   }else{
