@@ -35,32 +35,38 @@
     min-height: 100vh;
     padding: 20px;
   }
-
-  /* Título centrado con diamantes alineados */
-  .title {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+  h1 {
     font-size: 3rem;
     margin-bottom: 20px;
-  }
-  .title span {
-    background: linear-gradient(90deg, #00ffcc, #ff66ff, #66ccff);
+    background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
   }
-  .title .diamond {
-    color: #fff;
-    font-size: 3rem;
-    text-shadow: 0 0 10px #fff, 0 0 20px currentColor;
-    animation: shine 2s infinite alternate;
+  .chart-container {
+    position: relative;
+    display: inline-block;
   }
-  @keyframes shine {
-    from { text-shadow: 0 0 10px #fff, 0 0 20px currentColor; }
-    to { text-shadow: 0 0 20px #fff, 0 0 40px currentColor; }
+  #centerDiamond {
+    position: absolute;
+    inset: 0;              
+    display: flex;
+    align-items: center;   
+    justify-content: center; 
+    font-size: 4rem; /* más grande */
+    max-width: 60%;  
+    max-height: 60%; 
+    display: none;
+    animation: spinDiamond 2s linear infinite;
+    text-shadow: 0 0 15px #fff, 0 0 30px #fff;
   }
-
+  @keyframes spinDiamond {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
   form {
     background: rgba(0,0,0,0.5);
     border-radius: 20px;
@@ -71,50 +77,20 @@
   }
   label{display:flex;justify-content:space-between;margin:8px 0;}
   input{width:100px;text-align:center;border:none;border-radius:8px;}
-
   .buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
   button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
   #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
   #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);animation:pulse 1s infinite; margin-top:20px;}
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-
   #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
   .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
-
-  /* Contenedor del gráfico */
-  .chart-container {
-    position: relative;
-    display: inline-block;
-    margin-top: 15px;
-  }
-  canvas{max-width:400px;}
-
-  /* Diamante central emoji */
-  #centerDiamond {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    font-size: 2.5rem;
-    transform: translate(-50%, -50%);
-    display: none;
-    animation: spinDiamond 2s linear infinite;
-    text-shadow: 0 0 15px #fff, 0 0 30px #fff;
-  }
-  @keyframes spinDiamond {
-    0% { transform: translate(-50%, -50%) rotateY(0deg); }
-    100% { transform: translate(-50%, -50%) rotateY(360deg); }
-  }
+  canvas{margin-top:15px;max-width:400px;}
 </style>
 </head>
 <body>
 <div class="container">
-  <!-- Título centrado con diamantes alineados -->
-  <div class="title">
-    <span class="diamond">💎</span>
-    <span>Calculadora Brawl Stars</span>
-    <span class="diamond">💎</span>
-  </div>
+  <h1>💎 Calculadora Brawl Stars 💎</h1>
 
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
@@ -140,7 +116,7 @@
   <!-- Visitas -->
   <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
 
-  <!-- Donut gráfico con diamante central -->
+  <!-- Donut gráfico -->
   <div class="chart-container">
     <canvas id="myChart" width="400" height="400"></canvas>
     <div id="centerDiamond">💎</div>
@@ -148,7 +124,7 @@
 </div>
 
 <script>
-// Confeti lento
+// ------------ Confeti lento
 function lanzarConfeti() {
   const duration = 4000;
   const end = Date.now() + duration;
@@ -205,20 +181,18 @@ function calcular(){
   if(chart)chart.destroy();
   chart=new Chart(myChart.getContext("2d"),{type:"doughnut",data:data,options:{plugins:{legend:{labels:{color:'white'}}}}});
 
-  // Mostrar diamante central cuando aparece el donut
-  document.getElementById('centerDiamond').style.display='block';
+  // mostrar el diamante al centro
+  document.getElementById("centerDiamond").style.display="flex";
 
   lanzarConfeti();
 }
-
 function limpiar(){
   beep(400);vibrar(80);
   calcForm.reset();
   resultado.innerText="Valor total: 0 €";
   if(chart)chart.destroy();
-  document.getElementById('centerDiamond').style.display='none';
+  document.getElementById("centerDiamond").style.display="none";
 }
-
 function compartir(){
   beep(800);vibrar(120);
   if(navigator.share){
