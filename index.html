@@ -7,98 +7,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=GTM-5NWMXWTH"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'GTM-5NWMXWTH');
-</script>
-
 <style>
-body {
-  margin: 0;
-  font-family: 'Bangers', cursive;
-  background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
-  background-size: cover;
-  position: relative;
-  color: white;
-  text-align: center;
-}
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(6px);
-  z-index: 0;
-}
-.container {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
-}
-h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: transparent;
-  background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
-  -webkit-background-clip: text;
-  position: relative;
-}
-h1 .diamond {
-  animation: glow 2s infinite alternate;
-}
-@keyframes glow {
-  0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-  50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
-  100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-}
-form {
-  background: rgba(0,0,0,0.5);
-  border-radius: 20px;
-  padding: 20px;
-  max-width: 600px;
-  width:90%;
-  margin-bottom: 25px;
-}
+body {margin:0;font-family:'Bangers',cursive;background:url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;background-size:cover;position:relative;color:white;text-align:center;}
+body::after {content:"";position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:0;}
+.container{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+h1{font-size:3rem;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:10px;color:transparent;background:linear-gradient(90deg,#00FFAA,#00CFFF,#FF00FF);-webkit-background-clip:text;position:relative;}
+h1 .diamond{animation:glow 2s infinite alternate;}
+@keyframes glow{0%{text-shadow:0 0 5px rgba(255,255,255,0.5);}50%{text-shadow:0 0 15px rgba(255,255,255,1);}100%{text-shadow:0 0 5px rgba(255,255,255,0.5);}}
+form{background:rgba(0,0,0,0.5);border-radius:20px;padding:20px;max-width:600px;width:90%;margin-bottom:25px;}
 label{display:flex;justify-content:space-between;margin:8px 0;}
 input{width:100px;text-align:center;border:none;border-radius:8px;}
 .buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
 button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
-#calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
+#calcBtn{background:linear-gradient(90deg,#ff0080,#7928ca);}
 #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
 #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.1);}100%{transform:scale(1);}}
 #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
 .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
 canvas{margin-top:15px;max-width:400px;position:relative;}
-/* Diamante central del donut */
-#centerDiamond{
-  position:absolute;
-  font-size:50px;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%) rotate(0deg);
-  animation: spin 3s linear infinite;
-  z-index:5;
-  text-shadow: 0 0 15px #00FFFF, 0 0 25px #FF00FF, 0 0 35px #FFD700;
-}
-@keyframes spin{
-  from{transform:translate(-50%,-50%) rotate(0deg);}
-  to{transform:translate(-50%,-50%) rotate(360deg);}
-}
+#centerDiamond{position:absolute;font-size:50px;left:50%;top:50%;transform:translate(-50%,-50%) rotate(0deg);z-index:5;text-shadow:0 0 15px #00FFFF,0 0 25px #FF00FF,0 0 35px #FFD700;display:none;}
 </style>
 </head>
 <body>
@@ -133,29 +61,14 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 </div>
 
 <script>
-// Contador de visitas
-let visitas = localStorage.getItem("visitas") || 0;
+// Visitas
+let visitas = localStorage.getItem("visitas")||0;
 visitas++; 
 localStorage.setItem("visitas", visitas);
-document.getElementById("visitas").innerText = visitas;
+document.getElementById("visitas").innerText=visitas;
 
 // Confeti
-function lanzarConfeti() {
-  const duration = 4000;
-  const end = Date.now() + duration;
-  (function frame() {
-    confetti({
-      particleCount: 10,
-      startVelocity: 3,
-      gravity: 0.25,
-      spread: 360,
-      ticks: 200,
-      origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
-    });
-    if (Date.now() < end) requestAnimationFrame(frame);
-  })();
-}
+function lanzarConfeti(){const duration=4000,end=Date.now()+duration;(function frame(){confetti({particleCount:10,startVelocity:3,gravity:0.25,spread:360,ticks:200,origin:{x:Math.random(),y:Math.random()*0.4},colors:['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']});if(Date.now()<end)requestAnimationFrame(frame);})();}
 
 // Sonido y vibración
 function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
@@ -174,42 +87,56 @@ function animateNumber(finalValue){
 
 // Gráfico
 let chart;
-function calcular(){
-  beep(600); vibrar(80);
-
-  const valores={
-    "🎟️ Brawl Pass":bpass.value*10,
-    "🩵 Comunes":comunes.value*2,
-    "💚 Raras":raras.value*5,
-    "💜 Épicas":epicas.value*10,
-    "❤️ Míticas":miticas.value*12,
-    "🌟 Legendarias":legendarias.value*15,
-    "⚡ Hipercarga":hipercarga.value*20,
-    "🔥 Maxeados":maxeados.value*50
-  };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  animateNumber(total);
-
-  const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores),
-    backgroundColor:["#1E90FF","#CCCCCC","#00FF00","#800080","#FF0000","#00FF00","#FF8C00","#FF1493"],
-    borderColor:"#111",borderWidth:2}]};
-
-  if(chart) chart.destroy();
-  chart = new Chart(myChart.getContext("2d"), {type:"doughnut", data:data, options:{plugins:{legend:{labels:{color:'white'}}}}});
-
-  lanzarConfeti();
+const centerDiamond=document.getElementById("centerDiamond");
+function animateDiamond(){
+  centerDiamond.style.display="block";
+  let angle=0,dx=1.5,dy=1.2,posX=0,posY=0,maxOffset=70;
+  function randomColor(){return `rgb(${Math.floor(Math.random()*256)},${Math.floor(Math.random()*256)},${Math.floor(Math.random()*256)})`;}
+  function frame(){
+    angle+=3; posX+=dx; posY+=dy;
+    if(Math.abs(posX)>maxOffset) dx=-dx;
+    if(Math.abs(posY)>maxOffset) dy=-dy;
+    centerDiamond.style.transform=`translate(-50%,-50%) translate(${posX}px,${posY}px) rotate(${angle}deg)`;
+    centerDiamond.style.color=randomColor();
+    requestAnimationFrame(frame);
+  }
+  frame();
 }
 
-// Limpiar
-function limpiar(){beep(400);vibrar(80);calcForm.reset();resultado.innerText="Valor total: 0 €";if(chart)chart.destroy();}
+// Cálculo
+document.getElementById("calcBtn").addEventListener("click",function(){
+  const bpass=+document.getElementById("bpass").value;
+  const comunes=+document.getElementById("comunes").value;
+  const raras=+document.getElementById("raras").value;
+  const epicas=+document.getElementById("epicas").value;
+  const miticas=+document.getElementById("miticas").value;
+  const legendarias=+document.getElementById("legendarias").value;
+  const hipercarga=+document.getElementById("hipercarga").value;
+  const maxeados=+document.getElementById("maxeados").value;
+  const total=bpass*20 + comunes*5 + raras*10 + epicas*15 + miticas*25 + legendarias*40 + hipercarga*30 + maxeados*50;
+  animateNumber(total);
+  lanzarConfeti();
+  beep(440);vibrar();
+  
+  const data=[comunes,raras,epicas,miticas,legendarias,hipercarga,maxeados];
+  const labels=["Comunes","Raras","Epicas","Miticas","Legendarias","Hipercarga","Maxeados"];
+  const colors=["#00FFFF","#00FF00","#FF00FF","#FF0000","#FFFF00","#FF8800","#FFFFFF"];
+  if(chart) chart.destroy();
+  chart=new Chart(document.getElementById("myChart"),{
+    type:"doughnut",
+    data:{labels:labels,datasets:[{data:data,backgroundColor:colors}]},
+    options:{plugins:{legend:{position:"bottom"}}}
+  });
+  
+  animateDiamond(); // Inicia animación del diamante
+});
 
-// Compartir
-function compartir(){navigator.clipboard.writeText(location.href);alert("Enlace copiado al portapapeles ✅");}
-
-// Eventos
-calcBtn.addEventListener("click", e=>{e.preventDefault();calcular();});
-clearBtn.addEventListener("click", e=>{e.preventDefault();limpiar();});
-shareBtn.addEventListener("click", e=>{e.preventDefault();compartir();});
+document.getElementById("clearBtn").addEventListener("click",function(){
+  document.getElementById("calcForm").reset();
+  document.getElementById("resultado").innerText="Valor total: 0 €";
+  if(chart) chart.destroy();
+  centerDiamond.style.display="none";
+});
 </script>
 </body>
 </html>
