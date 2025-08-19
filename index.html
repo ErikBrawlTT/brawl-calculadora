@@ -42,7 +42,9 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    color: white;
+    background: linear-gradient(90deg,#00FFAA,#00CFFF,#FF00FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   h1 span {
     animation: brillo 2s infinite alternate;
@@ -69,7 +71,7 @@
   #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
   #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:15px;animation:pulse 1s infinite;}
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-  #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
+  #resultado{margin-top:10px;font-size:1.8rem;color:#00FF00;}
   .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
   canvas{margin-top:15px;max-width:400px;position:relative;}
   #diamanteCentral {
@@ -111,13 +113,9 @@
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <!-- Valor total -->
   <div id="resultado">Valor total: 0 €</div>
-
-  <!-- Visitas -->
   <div class="visitas">👀 Visitas: <span id="visitas">7.156</span></div>
 
-  <!-- Donut gráfico -->
   <canvas id="myChart" width="400" height="400"></canvas>
   <div id="diamanteCentral">💎</div>
 </div>
@@ -193,12 +191,4 @@ function limpiar(){
 function compartir(){
   beep(800); vibrar(120);
   const url = window.location.href;
-  navigator.clipboard.writeText(url).then(()=>{alert("URL copiada al portapapeles!");});
-}
-
-calcBtn.addEventListener("click", e=>{e.preventDefault();calcular();});
-clearBtn.addEventListener("click", e=>{e.preventDefault();limpiar();});
-shareBtn.addEventListener("click", e=>{e.preventDefault();compartir();});
-</script>
-</body>
-</html>
+  navigator.clipboard.writeText(url).then(()=>{alert("URL cop
