@@ -69,11 +69,11 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
 #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
 #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}
+}
 #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
 .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
 canvas{margin-top:15px;max-width:400px;position:relative;}
-/* 💎 Imagen central */
 #centerDiamond {
   position: absolute;
   left:50%;
@@ -114,7 +114,6 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
-    <!-- Imagen fija que irá cambiando -->
     <div id="centerDiamond"><img id="brawlerImage" src=""></div>
   </div>
 </div>
@@ -160,18 +159,17 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
-// ▶ Brawlers para rotar en el centro
+// 🚨 Brawlers oficiales del FanKit
 const brawlersAlternativos = [
-  "elprimo.png",
-  "colt.png",
-  "spike.png",
-  "bea.png",
-  "leon.png"
+  "https://fankit.supercell.com/brawlstars/assets/character/brawler_el-primo.png",
+  "https://fankit.supercell.com/brawlstars/assets/character/brawler_colt.png",
+  "https://fankit.supercell.com/brawlstars/assets/character/brawler_spike.png",
+  "https://fankit.supercell.com/brawlstars/assets/character/brawler_bea.png",
+  "https://fankit.supercell.com/brawlstars/assets/character/brawler_leon.png"
 ];
 let currentBrawler = 0;
 let brawlerInterval;
 
-// Cambiar brawler cada 3 segundos (sin movimiento)
 function startBrawlerRotation(){
   clearInterval(brawlerInterval);
   const img = document.getElementById("brawlerImage");
@@ -208,10 +206,9 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  // Mostrar imagen central
   const diamond = document.getElementById("centerDiamond");
   diamond.style.display="block";
-  startBrawlerRotation(); // 🔄
+  startBrawlerRotation();
 
   const data={
     labels:Object.keys(valores),
@@ -238,7 +235,6 @@ function calcular(){
   lanzarConfeti();
 }
 
-// Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
@@ -247,7 +243,6 @@ function limpiar(){
   clearInterval(brawlerInterval);
 }
 
-// Botón compartir
 document.getElementById("shareBtn").addEventListener("click", async () => {
   const url = window.location.href;
   const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
