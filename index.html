@@ -250,34 +250,6 @@ document.getElementById("clearBtn").addEventListener("click",(e)=>{
   if(chart) chart.destroy();
   document.getElementById("centerDiamond").style.display="none";
 });
-  <!-- Coloca esto al final de tu código, justo antes del cierre de </body> -->
-<script>
-// Ajuste automático del brawler central al agujero del doughnut
-function ajustarBrawlerCentral() {
-  if(!chart) return; // Espera a que el chart exista
-  const canvas = document.getElementById('myChart');
-  const img = document.getElementById('brawlerImg'); // tu imagen del brawler central
-
-  const chartArea = chart.chartArea;
-  const radius = (chartArea.right - chartArea.left) / 2;
-  const cutoutPercent = parseFloat(chart.options.cutout) / 100 || 0.6; // 60% por defecto
-
-  // Tamaño del brawler = diámetro del agujero central
-  const holeDiameter = radius * 2 * cutoutPercent;
-  img.style.width = img.style.height = holeDiameter + 'px';
-
-  // Posicionar centrado
-  img.style.position = 'absolute';
-  img.style.top = canvas.offsetTop + radius + 'px';
-  img.style.left = canvas.offsetLeft + radius + 'px';
-  img.style.transform = 'translate(-50%, -50%)';
-  img.style.display = 'block';
-}
-
-// Llamar al calcular y al renderizar chart
-setTimeout(ajustarBrawlerCentral, 100); // espera a que chart esté dibujado
-window.addEventListener('resize', ajustarBrawlerCentral);
-</script>
 </script>
 </body>
 </html>
