@@ -7,15 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
 <style>
 body {
   margin: 0;
   font-family: 'Bangers', cursive;
   background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
   background-size: cover;
+  position: relative;
   color: white;
   text-align: center;
-  position: relative;
 }
 body::after {
   content: "";
@@ -45,6 +46,7 @@ h1 {
   color: transparent;
   background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
   -webkit-background-clip: text;
+  position: relative;
 }
 h1 .diamond {
   animation: glow 2s infinite alternate;
@@ -73,14 +75,14 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
 .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
 canvas{margin-top:15px;max-width:400px;position:relative;}
-/* 💎 Diamante central */
-#centerDiamond {
-  position: absolute;
-  font-size: 60px;
-  display: none;
-  color: cyan;
-  text-shadow: 0 0 15px cyan;
-  transform-origin: center center;
+#centerBrawler{
+  position:absolute;
+  width:100px;
+  height:100px;
+  display:none;
+  z-index:5;
+  filter: drop-shadow(0 0 10px #fff);
+  pointer-events:none;
 }
 </style>
 </head>
@@ -106,166 +108,69 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 
   <button id="shareBtn">📤 Compartir</button>
 
-  <div id="resultado">Valor total: 0 €</div>
-  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
-
-  <div style="position:relative; display:inline-block;">
-    <canvas id="myChart" width="400" height="400"></canvas>
-    <div id="centerDiamond">💎</div>
+  <div id="resultado"></div>
+  <div class="visitas" id="visitas"></div>
+  <div style="position:relative;display:inline-block;">
+    <canvas id="myChart"></canvas>
+    <img id="centerBrawler" src="" alt="Brawler">
   </div>
 </div>
 
 <script>
-// Contador de visitas
-let visitas = localStorage.getItem("visitas") || 0;
-visitas++; 
-localStorage.setItem("visitas", visitas);
-document.getElementById("visitas").innerText = visitas;
+const ctx = document.getElementById('myChart').getContext('2d');
+let myChart;
 
-// Confeti
-function lanzarConfeti() {
-  const duration = 4000;
-  const end = Date.now() + duration;
-  (function frame() {
-    confetti({
-      particleCount: 10,
-      startVelocity: 3,
-      gravity: 0.25,
-      spread: 360,
-      ticks: 200,
-      origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
-    });
-    if (Date.now() < end) requestAnimationFrame(frame);
-  })();
-}
+const brawlers = [
+  "https://static.wikia.nocookie.net/brawlstars/images/d/d1/El_Primo_Skin-Default.png",
+  "https://static.wikia.nocookie.net/brawlstars/images/1/12/Shelly_Skin-Default.png",
+  "https://static.wikia.nocookie.net/brawlstars/images/7/70/Colt_Skin-Default.png",
+  "https://static.wikia.nocookie.net/brawlstars/images/8/88/Nita_Skin-Default.png"
+];
 
-// Sonido y vibración
-function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
-function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
+document.getElementById("calcBtn").addEventListener("click", function(e){
+  e.preventDefault();
 
-// Animar número
-function animateNumber(finalValue){
-  const resultado = document.getElementById("resultado");
-  const start=0,duration=2000,startTime=performance.now();
-  function step(now){
-    const p=Math.min((now-startTime)/duration,1);
-    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";
-    if(p<1)requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
+  const valores = [
+    parseInt(document.getElementById("bpass").value)||0,
+    parseInt(document.getElementById("comunes").value)||0,
+    parseInt(document.getElementById("raras").value)||0,
+    parseInt(document.getElementById("epicas").value)||0,
+    parseInt(document.getElementById("miticas").value)||0,
+    parseInt(document.getElementById("legendarias").value)||0,
+    parseInt(document.getElementById("hipercarga").value)||0,
+    parseInt(document.getElementById("maxeados").value)||0
+  ];
+  const total = valores.reduce((a,b)=>a+b,0);
+  document.getElementById("resultado").textContent="Valor total: "+total;
 
-// Gráfico
-let chart;
-function calcular(){
-  beep(600); vibrar(80);
-  const bpass = document.getElementById("bpass").value || 0;
-  const comunes = document.getElementById("comunes").value || 0;
-  const raras = document.getElementById("raras").value || 0;
-  const epicas = document.getElementById("epicas").value || 0;
-  const miticas = document.getElementById("miticas").value || 0;
-  const legendarias = document.getElementById("legendarias").value || 0;
-  const hipercarga = document.getElementById("hipercarga").value || 0;
-  const maxeados = document.getElementById("maxeados").value || 0;
-
-  const valores={
-    "🎟️ Brawl Pass":bpass*10,
-    "🩵 Comunes":comunes*2,
-    "💚 Raras":raras*5,
-    "💜 Épicas":epicas*10,
-    "❤️ Míticas":miticas*12,
-    "🌟 Legendarias":legendarias*15,
-    "⚡ Hipercarga":hipercarga*20,
-    "🔥 Maxeados":maxeados*50
-  };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  animateNumber(total);
-
-  // Mostrar SIEMPRE el diamante
-  const diamond = document.getElementById("centerDiamond");
-  diamond.style.display="block";
-  startDiamondBounce();
-
-  const data={
-    labels:Object.keys(valores),
-    datasets:[{
-      data:Object.values(valores),
-      backgroundColor:["#1E90FF","#00CED1","#32CD32","#BA55D3","#FF4500","#FFD700","#FF69B4","#FF0000"],
-      borderWidth:2
-    }]
-  };
-
-  const config={
+  if(myChart) myChart.destroy();
+  myChart=new Chart(ctx,{
     type:'doughnut',
-    data:data,
-    options:{
-      cutout:"50%", // 🔽 agujero más pequeño
-      plugins:{legend:{display:true,position:'bottom'}}
-    }
-  };
+    data:{
+      labels:["Brawl Pass","Comunes","Raras","Epicas","Miticas","Legendarias","Hipercarga","Maxeados"],
+      datasets:[{data:valores,backgroundColor:["#FFD700","#00CFFF","#00FFAA","#8000FF","#FF0040","#FF8000","#FF0000","#00FF00"]}]
+    },
+    options:{cutout:"70%"}
+  });
 
-  if(chart){chart.destroy();}
-  const ctx = document.getElementById('myChart').getContext('2d');
-  chart = new Chart(ctx,config);
+  // Elegir Brawler aleatorio y mostrar en el centro
+  const img=document.getElementById("centerBrawler");
+  img.src=brawlers[Math.floor(Math.random()*brawlers.length)];
+  img.style.display="block";
 
-  lanzarConfeti();
-}
-
-// Animación de rebote dentro del agujero central
-let diamondInterval;
-function startDiamondBounce(){
-  stopDiamondBounce();
-  const diamond=document.getElementById("centerDiamond");
+  // Posicionarlo centrado al canvas
   const canvas=document.getElementById("myChart");
-  const size=canvas.width;
-  const center=size/2;
-  const radius=55; // ajustado al agujero más pequeño
-  let angleX=0,angleY=0,vx=2,vy=3,rotation=0;
-
-  function animate(){
-    angleX+=vx; angleY+=vy;
-
-    if(angleX<-radius || angleX>radius) vx*=-1;
-    if(angleY<-radius || angleY>radius) vy*=-1;
-
-    rotation+=10;
-    diamond.style.left=(center+angleX-30)+"px"; 
-    diamond.style.top=(center+angleY-30)+"px";
-    diamond.style.transform=`rotate(${rotation}deg)`;
-    diamond.style.color="hsl("+Math.floor(Math.random()*360)+",100%,50%)";
-    diamond.style.textShadow=`0 0 15px ${diamond.style.color}`;
-  }
-  diamondInterval=setInterval(animate,40);
-}
-function stopDiamondBounce(){
-  if(diamondInterval)clearInterval(diamondInterval);
-}
-
-// Limpiar
-function limpiar(){
-  document.getElementById("calcForm").reset();
-  document.getElementById("resultado").innerText="Valor total: 0 €";
-  if(chart){chart.destroy();}
-  stopDiamondBounce();
-  document.getElementById("centerDiamond").style.display="none";
-}
-
-// Botón compartir
-document.getElementById("shareBtn").addEventListener("click", async () => {
-  const url = window.location.href;
-  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
-    } catch (err) { console.log("Cancelado", err); }
-  } else {
-    alert("Tu navegador no soporta compartir nativo.");
-  }
+  const rect=canvas.getBoundingClientRect();
+  img.style.left=(canvas.width/2-50)+"px";
+  img.style.top=(canvas.height/2-50)+"px";
 });
 
-document.getElementById("calcBtn").addEventListener("click",calcular);
-document.getElementById("clearBtn").addEventListener("click",limpiar);
+document.getElementById("clearBtn").addEventListener("click",()=>{
+  document.getElementById("calcForm").reset();
+  document.getElementById("resultado").textContent="";
+  if(myChart) myChart.destroy();
+  document.getElementById("centerBrawler").style.display="none";
+});
 </script>
 </body>
 </html>
