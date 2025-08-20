@@ -182,14 +182,10 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
+  // Mostrar SIEMPRE el diamante
   const diamond = document.getElementById("centerDiamond");
-  if(total>0){
-    diamond.style.display="block";
-    startDiamondBounce();
-  } else {
-    diamond.style.display="none";
-    stopDiamondBounce();
-  }
+  diamond.style.display="block";
+  startDiamondBounce();
 
   const data={
     labels:Object.keys(valores),
@@ -204,7 +200,7 @@ function calcular(){
     type:'doughnut',
     data:data,
     options:{
-      cutout:"70%", // agujero central grande
+      cutout:"50%", // 🔽 agujero más pequeño
       plugins:{legend:{display:true,position:'bottom'}}
     }
   };
@@ -224,7 +220,7 @@ function startDiamondBounce(){
   const canvas=document.getElementById("myChart");
   const size=canvas.width;
   const center=size/2;
-  const radius=80; // radio del agujero central (ajustable según cutout)
+  const radius=55; // ajustado al agujero más pequeño
   let angleX=0,angleY=0,vx=2,vy=3,rotation=0;
 
   function animate(){
