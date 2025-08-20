@@ -77,25 +77,9 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 #centerDiamond {
   position: absolute;
   font-size: 60px;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  animation: moveAround 4s infinite alternate ease-in-out, colorShift 4s infinite;
-  z-index: 5;
-}
-@keyframes moveAround {
-  0%   { transform: translate(-60%, -60%); }
-  25%  { transform: translate(-40%, -60%); }
-  50%  { transform: translate(-40%, -40%); }
-  75%  { transform: translate(-60%, -40%); }
-  100% { transform: translate(-60%, -60%); }
-}
-@keyframes colorShift {
-  0% { color: #00FFFF; text-shadow: 0 0 15px #00FFFF; }
-  25% { color: #FF00FF; text-shadow: 0 0 15px #FF00FF; }
-  50% { color: #FFD700; text-shadow: 0 0 15px #FFD700; }
-  75% { color: #00FF00; text-shadow: 0 0 15px #00FF00; }
-  100% { color: #00FFFF; text-shadow: 0 0 15px #00FFFF; }
+  display: none;
+  color: cyan;
+  text-shadow: 0 0 15px cyan;
 }
 </style>
 </head>
@@ -126,7 +110,7 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
-    <div id="centerDiamond" style="display:none;">💎</div>
+    <div id="centerDiamond">💎</div>
   </div>
 </div>
 
@@ -197,7 +181,14 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  document.getElementById("centerDiamond").style.display = total>0 ? "block":"none";
+  const diamond = document.getElementById("centerDiamond");
+  if(total>0){
+    diamond.style.display="block";
+    startDiamondBounce();
+  } else {
+    diamond.style.display="none";
+    stopDiamondBounce();
+  }
 
   const data={
     labels:Object.keys(valores),
@@ -212,9 +203,7 @@ function calcular(){
     type:'doughnut',
     data:data,
     options:{
-      plugins:{
-        legend:{display:true,position:'bottom'}
-      }
+      plugins:{legend:{display:true,position:'bottom'}}
     }
   };
 
@@ -225,11 +214,36 @@ function calcular(){
   lanzarConfeti();
 }
 
+// Animación de rebote del diamante central
+let diamondInterval;
+function startDiamondBounce(){
+  stopDiamondBounce();
+  const diamond=document.getElementById("centerDiamond");
+  const container=diamond.parentElement;
+  const size=container.querySelector("canvas").width;
+  let x=size/2, y=size/2, vx=2, vy=3;
+  function animate(){
+    x+=vx; y+=vy;
+    if(x<100||x>size-100)vx*=-1;
+    if(y<100||y>size-100)vy*=-1;
+    diamond.style.left=x+"px";
+    diamond.style.top=y+"px";
+    diamond.style.color="hsl("+Math.floor(Math.random()*360)+",100%,50%)";
+    diamond.style.textShadow=`0 0 15px ${diamond.style.color}`;
+  }
+  diamond.style.position="absolute";
+  diamondInterval=setInterval(animate,40);
+}
+function stopDiamondBounce(){
+  if(diamondInterval)clearInterval(diamondInterval);
+}
+
 // Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart){chart.destroy();}
+  stopDiamondBounce();
   document.getElementById("centerDiamond").style.display="none";
 }
 
@@ -240,9 +254,7 @@ document.getElementById("shareBtn").addEventListener("click", async () => {
   if (navigator.share) {
     try {
       await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
-    } catch (err) {
-      console.log("Cancelado", err);
-    }
+    } catch (err) { console.log("Cancelado", err); }
   } else {
     alert("Tu navegador no soporta compartir nativo.");
   }
