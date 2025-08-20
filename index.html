@@ -73,14 +73,17 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
 .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
 canvas{margin-top:15px;max-width:400px;position:relative;}
-/* 💎 Diamante central */
+/* 💎 Imagen central */
 #centerDiamond {
   position: absolute;
-  font-size: 60px;
-  display: none;
-  color: cyan;
-  text-shadow: 0 0 15px cyan;
-  transform-origin: center center;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  display:none;
+}
+#centerDiamond img{
+  width:60px;
+  height:60px;
 }
 </style>
 </head>
@@ -111,7 +114,8 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
-    <div id="centerDiamond">💎</div>
+    <!-- Imagen fija que irá cambiando -->
+    <div id="centerDiamond"><img id="brawlerImage" src=""></div>
   </div>
 </div>
 
@@ -156,6 +160,28 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
+// ▶ Brawlers para rotar en el centro
+const brawlersAlternativos = [
+  "elprimo.png",
+  "colt.png",
+  "spike.png",
+  "bea.png",
+  "leon.png"
+];
+let currentBrawler = 0;
+let brawlerInterval;
+
+// Cambiar brawler cada 3 segundos (sin movimiento)
+function startBrawlerRotation(){
+  clearInterval(brawlerInterval);
+  const img = document.getElementById("brawlerImage");
+  img.src = brawlersAlternativos[0];
+  brawlerInterval = setInterval(()=>{
+    currentBrawler = (currentBrawler + 1) % brawlersAlternativos.length;
+    img.src = brawlersAlternativos[currentBrawler];
+  },3000);
+}
+
 // Gráfico
 let chart;
 function calcular(){
@@ -182,10 +208,10 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  // Mostrar SIEMPRE el diamante
+  // Mostrar imagen central
   const diamond = document.getElementById("centerDiamond");
   diamond.style.display="block";
-  startDiamondBounce();
+  startBrawlerRotation(); // 🔄
 
   const data={
     labels:Object.keys(valores),
@@ -200,7 +226,7 @@ function calcular(){
     type:'doughnut',
     data:data,
     options:{
-      cutout:"50%", // 🔽 agujero más pequeño
+      cutout:"50%",
       plugins:{legend:{display:true,position:'bottom'}}
     }
   };
@@ -212,43 +238,13 @@ function calcular(){
   lanzarConfeti();
 }
 
-// Animación de rebote dentro del agujero central
-let diamondInterval;
-function startDiamondBounce(){
-  stopDiamondBounce();
-  const diamond=document.getElementById("centerDiamond");
-  const canvas=document.getElementById("myChart");
-  const size=canvas.width;
-  const center=size/2;
-  const radius=55; // ajustado al agujero más pequeño
-  let angleX=0,angleY=0,vx=2,vy=3,rotation=0;
-
-  function animate(){
-    angleX+=vx; angleY+=vy;
-
-    if(angleX<-radius || angleX>radius) vx*=-1;
-    if(angleY<-radius || angleY>radius) vy*=-1;
-
-    rotation+=10;
-    diamond.style.left=(center+angleX-30)+"px"; 
-    diamond.style.top=(center+angleY-30)+"px";
-    diamond.style.transform=`rotate(${rotation}deg)`;
-    diamond.style.color="hsl("+Math.floor(Math.random()*360)+",100%,50%)";
-    diamond.style.textShadow=`0 0 15px ${diamond.style.color}`;
-  }
-  diamondInterval=setInterval(animate,40);
-}
-function stopDiamondBounce(){
-  if(diamondInterval)clearInterval(diamondInterval);
-}
-
 // Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart){chart.destroy();}
-  stopDiamondBounce();
   document.getElementById("centerDiamond").style.display="none";
+  clearInterval(brawlerInterval);
 }
 
 // Botón compartir
