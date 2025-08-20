@@ -73,17 +73,16 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
 .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
 canvas{margin-top:15px;max-width:400px;position:relative;}
-/* 🟡 Imagen central */
+/* Imagen del brawler en el centro */
 #centerBrawler {
   position: absolute;
   display: none;
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
-  left: 50%;
+  width: 120px;
+  height: auto;
   top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10;
+  pointer-events: none;
 }
 </style>
 </head>
@@ -114,51 +113,34 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
-    <img id="centerBrawler" src="">
+    <img id="centerBrawler" src="" alt="Brawler">
   </div>
 </div>
 
 <script>
-// Contador de visitas
+// Contador visitas
 let visitas = localStorage.getItem("visitas") || 0;
 visitas++; 
 localStorage.setItem("visitas", visitas);
 document.getElementById("visitas").innerText = visitas;
 
-// Lista de Brawlers (pon aquí todas las imágenes que quieras usar)
-const brawlers = [
-  "https://static.wikia.nocookie.net/brawlstars/images/4/40/El_Primo_Skin-Default.png",
-  "https://static.wikia.nocookie.net/brawlstars/images/2/21/Shelly_Skin-Default.png",
-  "https://static.wikia.nocookie.net/brawlstars/images/f/fd/Colt_Skin-Default.png",
-  "https://static.wikia.nocookie.net/brawlstars/images/5/5d/Nita_Skin-Default.png"
-];
-let brawlerIndex = 0;
-
 // Confeti
 function lanzarConfeti() {
-  const duration = 4000;
+  const duration = 3000;
   const end = Date.now() + duration;
   (function frame() {
     confetti({
       particleCount: 10,
-      startVelocity: 3,
-      gravity: 0.25,
       spread: 360,
-      ticks: 200,
-      origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
+      origin: { x: Math.random(), y: Math.random() * 0.5 },
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
 }
 
-// Sonido y vibración
-function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
-function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
-
 // Animar número
 function animateNumber(finalValue){
-  const resultado = document.getElementById("resultado");
+  const resultado=document.getElementById("resultado");
   const start=0,duration=2000,startTime=performance.now();
   function step(now){
     const p=Math.min((now-startTime)/duration,1);
@@ -168,18 +150,25 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
-// Gráfico
+// Lista de brawlers (asegúrate de tener estas imágenes en /brawlers/)
+const brawlers = [
+  "brawlers/elprimo.png",
+  "brawlers/shelly.png",
+  "brawlers/nita.png",
+  "brawlers/colt.png"
+];
+let brawlerIndex = 0;
+
 let chart;
 function calcular(){
-  beep(600); vibrar(80);
-  const bpass = document.getElementById("bpass").value || 0;
-  const comunes = document.getElementById("comunes").value || 0;
-  const raras = document.getElementById("raras").value || 0;
-  const epicas = document.getElementById("epicas").value || 0;
-  const miticas = document.getElementById("miticas").value || 0;
-  const legendarias = document.getElementById("legendarias").value || 0;
-  const hipercarga = document.getElementById("hipercarga").value || 0;
-  const maxeados = document.getElementById("maxeados").value || 0;
+  const bpass=document.getElementById("bpass").value||0;
+  const comunes=document.getElementById("comunes").value||0;
+  const raras=document.getElementById("raras").value||0;
+  const epicas=document.getElementById("epicas").value||0;
+  const miticas=document.getElementById("miticas").value||0;
+  const legendarias=document.getElementById("legendarias").value||0;
+  const hipercarga=document.getElementById("hipercarga").value||0;
+  const maxeados=document.getElementById("maxeados").value||0;
 
   const valores={
     "🎟️ Brawl Pass":bpass*10,
@@ -191,15 +180,16 @@ function calcular(){
     "⚡ Hipercarga":hipercarga*20,
     "🔥 Maxeados":maxeados*50
   };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
+  const total=Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  // Mostrar SIEMPRE un brawler en el centro (alternando)
-  const brawlerImg = document.getElementById("centerBrawler");
-  brawlerImg.src = brawlers[brawlerIndex];
+  // Mostrar brawler alternando
+  const brawlerImg=document.getElementById("centerBrawler");
+  brawlerImg.src=brawlers[brawlerIndex];
   brawlerImg.style.display="block";
-  brawlerIndex = (brawlerIndex+1) % brawlers.length;
+  brawlerIndex=(brawlerIndex+1)%brawlers.length;
 
+  // Chart
   const data={
     labels:Object.keys(valores),
     datasets:[{
@@ -208,19 +198,17 @@ function calcular(){
       borderWidth:2
     }]
   };
-
   const config={
     type:'doughnut',
     data:data,
     options:{
-      cutout:"50%", // agujero más pequeño
+      cutout:"50%",
       plugins:{legend:{display:true,position:'bottom'}}
     }
   };
-
   if(chart){chart.destroy();}
-  const ctx = document.getElementById('myChart').getContext('2d');
-  chart = new Chart(ctx,config);
+  const ctx=document.getElementById('myChart').getContext('2d');
+  chart=new Chart(ctx,config);
 
   lanzarConfeti();
 }
@@ -233,21 +221,18 @@ function limpiar(){
   document.getElementById("centerBrawler").style.display="none";
 }
 
-// Botón compartir
-document.getElementById("shareBtn").addEventListener("click", async () => {
-  const url = window.location.href;
-  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
-    } catch (err) { console.log("Cancelado", err); }
-  } else {
-    alert("Tu navegador no soporta compartir nativo.");
-  }
-});
-
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
+
+// Botón compartir
+document.getElementById("shareBtn").addEventListener("click", async () => {
+  const url=window.location.href;
+  const text="Mira cuánto valen mis Brawlers en Brawl Stars!";
+  if(navigator.share){
+    try{await navigator.share({title:"Calculadora Brawl Stars",text:url});}
+    catch(e){console.log("Cancelado",e);}
+  } else {alert("Tu navegador no soporta compartir nativo.");}
+});
 </script>
 </body>
 </html>
