@@ -46,47 +46,27 @@ h1 {
   background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
   -webkit-background-clip: text;
 }
-h1 .diamond {
-  animation: glow 2s infinite alternate;
-}
 @keyframes glow {
   0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
   50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
   100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
 }
-form {
-  background: rgba(0,0,0,0.5);
-  border-radius: 20px;
-  padding: 20px;
-  max-width: 600px;
-  width:90%;
-  margin-bottom: 25px;
-}
-label{display:flex;justify-content:space-between;margin:8px 0;}
-input{width:100px;text-align:center;border:none;border-radius:8px;}
-.buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
-button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
-#calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
-#clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-#shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-#resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
-.visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
-canvas{margin-top:15px;max-width:400px;position:relative;}
-/* 💎 Diamante central */
 #centerDiamond {
   position: absolute;
-  font-size: 60px;
-  display: none;
-  color: cyan;
-  text-shadow: 0 0 15px cyan;
-  transform-origin: center center;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  display:none;
+}
+#centerDiamond img{
+  width:60px;
+  height:60px;
 }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
+  <h1>💎 Calculadora Brawl Stars 💎</h1>
 
   <form id="calcForm">
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
@@ -111,42 +91,39 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
-    <div id="centerDiamond">💎</div>
+    <!-- 🔽 imagen central -->
+    <div id="centerDiamond"><img id="brawlerImage" src=""></div>
   </div>
 </div>
 
 <script>
-// Contador de visitas
+// contador de visitas
 let visitas = localStorage.getItem("visitas") || 0;
-visitas++; 
+visitas++;
 localStorage.setItem("visitas", visitas);
 document.getElementById("visitas").innerText = visitas;
 
-// Confeti
-function lanzarConfeti() {
+// confeti
+function lanzarConfeti(){
   const duration = 4000;
   const end = Date.now() + duration;
-  (function frame() {
+  (function frame(){
     confetti({
-      particleCount: 10,
-      startVelocity: 3,
-      gravity: 0.25,
-      spread: 360,
-      ticks: 200,
-      origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
+      particleCount:10,
+      startVelocity:3,
+      gravity:0.25,
+      spread:360,
+      ticks:200,
+      origin:{x:Math.random(),y:Math.random()*0.4},
+      colors:['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
     });
-    if (Date.now() < end) requestAnimationFrame(frame);
+    if(Date.now() < end) requestAnimationFrame(frame);
   })();
 }
 
-// Sonido y vibración
-function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
-function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
-
-// Animar número
+// animar número
 function animateNumber(finalValue){
-  const resultado = document.getElementById("resultado");
+  const resultado=document.getElementById("resultado");
   const start=0,duration=2000,startTime=performance.now();
   function step(now){
     const p=Math.min((now-startTime)/duration,1);
@@ -156,10 +133,31 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
-// Gráfico
+// ⚡ brawlers alternativos (imagenes)
+const brawlersAlternativos = [
+  'leon.webp',
+  'spike.webp',
+  'colt.webp',
+  'bea.webp'
+];
+let currentBrawler = 0;
+function startBrawlerSwap(){
+  const img=document.getElementById("brawlerImage");
+  setInterval(()=>{
+    currentBrawler = (currentBrawler + 1) % brawlersAlternativos.length;
+    img.src=brawlersAlternativos[currentBrawler];
+  },2000);
+}
+
 let chart;
 function calcular(){
-  beep(600); vibrar(80);
+  const diamond = document.getElementById("centerDiamond");
+  diamond.style.display="block";
+
+  // 🟡 empezar rotación de brawlers
+  document.getElementById("brawlerImage").src = brawlersAlternativos[0];
+  startBrawlerSwap();
+
   const bpass = document.getElementById("bpass").value || 0;
   const comunes = document.getElementById("comunes").value || 0;
   const raras = document.getElementById("raras").value || 0;
@@ -182,11 +180,6 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  // Mostrar SIEMPRE el diamante
-  const diamond = document.getElementById("centerDiamond");
-  diamond.style.display="block";
-  startDiamondBounce();
-
   const data={
     labels:Object.keys(valores),
     datasets:[{
@@ -199,69 +192,30 @@ function calcular(){
   const config={
     type:'doughnut',
     data:data,
-    options:{
-      cutout:"50%", // 🔽 agujero más pequeño
-      plugins:{legend:{display:true,position:'bottom'}}
-    }
+    options:{cutout:"50%",plugins:{legend:{display:true,position:'bottom'}}}
   };
 
   if(chart){chart.destroy();}
-  const ctx = document.getElementById('myChart').getContext('2d');
-  chart = new Chart(ctx,config);
+  const ctx=document.getElementById('myChart').getContext('2d');
+  chart=new Chart(ctx,config);
 
   lanzarConfeti();
 }
 
-// Animación de rebote dentro del agujero central
-let diamondInterval;
-function startDiamondBounce(){
-  stopDiamondBounce();
-  const diamond=document.getElementById("centerDiamond");
-  const canvas=document.getElementById("myChart");
-  const size=canvas.width;
-  const center=size/2;
-  const radius=55; // ajustado al agujero más pequeño
-  let angleX=0,angleY=0,vx=2,vy=3,rotation=0;
-
-  function animate(){
-    angleX+=vx; angleY+=vy;
-
-    if(angleX<-radius || angleX>radius) vx*=-1;
-    if(angleY<-radius || angleY>radius) vy*=-1;
-
-    rotation+=10;
-    diamond.style.left=(center+angleX-30)+"px"; 
-    diamond.style.top=(center+angleY-30)+"px";
-    diamond.style.transform=`rotate(${rotation}deg)`;
-    diamond.style.color="hsl("+Math.floor(Math.random()*360)+",100%,50%)";
-    diamond.style.textShadow=`0 0 15px ${diamond.style.color}`;
-  }
-  diamondInterval=setInterval(animate,40);
-}
-function stopDiamondBounce(){
-  if(diamondInterval)clearInterval(diamondInterval);
-}
-
-// Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart){chart.destroy();}
-  stopDiamondBounce();
   document.getElementById("centerDiamond").style.display="none";
 }
 
-// Botón compartir
-document.getElementById("shareBtn").addEventListener("click", async () => {
-  const url = window.location.href;
-  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
-    } catch (err) { console.log("Cancelado", err); }
-  } else {
-    alert("Tu navegador no soporta compartir nativo.");
-  }
+document.getElementById("shareBtn").addEventListener("click",async()=>{
+  const url=window.location.href;
+  const text="Mira cuánto valen mis Brawlers en Brawl Stars!";
+  if(navigator.share){
+    try{await navigator.share({title:"Calculadora Brawl Stars",text:text,url:url});}
+    catch(err){console.log("Cancelado",err);}
+  }else{alert("Tu navegador no soporta compartir nativo.");}
 });
 
 document.getElementById("calcBtn").addEventListener("click",calcular);
