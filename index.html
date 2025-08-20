@@ -80,6 +80,7 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
   display: none;
   color: cyan;
   text-shadow: 0 0 15px cyan;
+  transform-origin: center center;
 }
 </style>
 </head>
@@ -203,6 +204,7 @@ function calcular(){
     type:'doughnut',
     data:data,
     options:{
+      cutout:"70%", // agujero central grande
       plugins:{legend:{display:true,position:'bottom'}}
     }
   };
@@ -214,24 +216,30 @@ function calcular(){
   lanzarConfeti();
 }
 
-// Animación de rebote del diamante central
+// Animación de rebote dentro del agujero central
 let diamondInterval;
 function startDiamondBounce(){
   stopDiamondBounce();
   const diamond=document.getElementById("centerDiamond");
-  const container=diamond.parentElement;
-  const size=container.querySelector("canvas").width;
-  let x=size/2, y=size/2, vx=2, vy=3;
+  const canvas=document.getElementById("myChart");
+  const size=canvas.width;
+  const center=size/2;
+  const radius=80; // radio del agujero central (ajustable según cutout)
+  let angleX=0,angleY=0,vx=2,vy=3,rotation=0;
+
   function animate(){
-    x+=vx; y+=vy;
-    if(x<100||x>size-100)vx*=-1;
-    if(y<100||y>size-100)vy*=-1;
-    diamond.style.left=x+"px";
-    diamond.style.top=y+"px";
+    angleX+=vx; angleY+=vy;
+
+    if(angleX<-radius || angleX>radius) vx*=-1;
+    if(angleY<-radius || angleY>radius) vy*=-1;
+
+    rotation+=10;
+    diamond.style.left=(center+angleX-30)+"px"; 
+    diamond.style.top=(center+angleY-30)+"px";
+    diamond.style.transform=`rotate(${rotation}deg)`;
     diamond.style.color="hsl("+Math.floor(Math.random()*360)+",100%,50%)";
     diamond.style.textShadow=`0 0 15px ${diamond.style.color}`;
   }
-  diamond.style.position="absolute";
   diamondInterval=setInterval(animate,40);
 }
 function stopDiamondBounce(){
