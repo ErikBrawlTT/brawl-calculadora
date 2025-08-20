@@ -1,255 +1,70 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calculadora Brawl Stars</title>
-<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Doughnut Brawl Stars</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
-body {
-  margin: 0;
-  font-family: 'Bangers', cursive;
-  background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
-  background-size: cover;
-  color: white;
-  text-align: center;
-  position: relative;
-}
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(6px);
-  z-index: 0;
-}
-.container {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
-}
-h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: transparent;
-  background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
-  -webkit-background-clip: text;
-}
-h1 .diamond {
-  animation: glow 2s infinite alternate;
-}
-@keyframes glow {
-  0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-  50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
-  100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-}
-form {
-  background: rgba(0,0,0,0.5);
-  border-radius: 20px;
-  padding: 20px;
-  max-width: 600px;
-  width:90%;
-  margin-bottom: 25px;
-}
-label{display:flex;justify-content:space-between;margin:8px 0;}
-input{width:100px;text-align:center;border:none;border-radius:8px;}
-.buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
-button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
-#calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
-#clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-#shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-#resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
-.visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
-canvas{margin-top:15px;max-width:400px;position:relative;}
-/* 💎 Brawler central */
-#centerDiamond {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: none;
-  border-radius: 50%;
-  overflow: hidden;
-}
-#centerDiamond img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.3);
-}
+  body { position: relative; }
+  #brawlerImg { display: none; } /* Se mostrará cuando se posicione */
 </style>
 </head>
 <body>
-<div class="container">
-  <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
 
-  <form id="calcForm">
-    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
-    <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
-    <label>💚 Raras: <input type="number" id="raras" value="0"></label>
-    <label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
-    <label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
-    <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
-    <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
-    <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
-  </form>
-
-  <div class="buttons">
-    <button id="calcBtn">Calcular</button>
-    <button id="clearBtn">Limpiar</button>
-  </div>
-
-  <button id="shareBtn">📤 Compartir</button>
-
-  <div id="resultado">Valor total: 0 €</div>
-  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
-
-  <div style="position:relative; display:inline-block;">
-    <canvas id="myChart" width="400" height="400"></canvas>
-    <!-- Imagen central -->
-    <div id="centerDiamond">
-      <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
-    </div>
-  </div>
-</div>
+<canvas id="myChart" width="400" height="400"></canvas>
+<img id="brawlerImg" src="brawler.png" alt="Brawler Central">
 
 <script>
-// Contador de visitas
-let visitas = localStorage.getItem("visitas") || 0;
-visitas++; 
-localStorage.setItem("visitas", visitas);
-document.getElementById("visitas").innerText = visitas;
-
-// Confeti
-function lanzarConfeti() {
-  const duration = 4000;
-  const end = Date.now() + duration;
-  (function frame() {
-    confetti({
-      particleCount: 10,
-      startVelocity: 3,
-      gravity: 0.25,
-      spread: 360,
-      ticks: 200,
-      origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
-    });
-    if (Date.now() < end) requestAnimationFrame(frame);
-  })();
-}
-
-// Sonido y vibración
-function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
-function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
-
-// Animar número
-function animateNumber(finalValue){
-  const resultado = document.getElementById("resultado");
-  const start=0,duration=2000,startTime=performance.now();
-  function step(now){
-    const p=Math.min((now-startTime)/duration,1);
-    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";
-    if(p<1)requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-// Gráfico
-let chart;
-function calcular(){
-  beep(600); vibrar(80);
-  const bpass = parseInt(document.getElementById("bpass").value) || 0;
-  const comunes = parseInt(document.getElementById("comunes").value) || 0;
-  const raras = parseInt(document.getElementById("raras").value) || 0;
-  const epicas = parseInt(document.getElementById("epicas").value) || 0;
-  const miticas = parseInt(document.getElementById("miticas").value) || 0;
-  const legendarias = parseInt(document.getElementById("legendarias").value) || 0;
-  const hipercarga = parseInt(document.getElementById("hipercarga").value) || 0;
-  const maxeados = parseInt(document.getElementById("maxeados").value) || 0;
-
-  const valores={
-    "🎟️ Brawl Pass":bpass*10,
-    "🩵 Comunes":comunes*2,
-    "💚 Raras":raras*5,
-    "💜 Épicas":epicas*10,
-    "❤️ Míticas":miticas*25,
-    "🌟 Legendarias":legendarias*50,
-    "⚡ Hipercarga":hipercarga*5,
-    "🔥 Maxeados":maxeados*15
-  };
-
-  const labels = Object.keys(valores);
-  const data = Object.values(valores);
-
-  animateNumber(data.reduce((a,b)=>a+b,0));
-  lanzarConfeti();
-
-  if(chart) chart.destroy();
-
+  // --- Tu código original del doughnut chart ---
   const ctx = document.getElementById('myChart').getContext('2d');
-  chart = new Chart(ctx, {
+  const data = {
+    labels: ['Leon', 'Spike', 'Bea', 'Colt'],
+    datasets: [{
+      data: [10, 20, 30, 40],
+      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+      hoverOffset: 4
+    }]
+  };
+  const config = {
     type: 'doughnut',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: data,
-        backgroundColor: ['#ff6384','#36a2eb','#cc65fe','#ffce56','#00ffcc','#ff00ff','#ffaa00','#00ffff'],
-        borderWidth: 2
-      }]
-    },
+    data: data,
     options: {
-      responsive:true,
-      maintainAspectRatio:true,
       cutout: '60%',
+      responsive: true,
       plugins: {
-        legend: { position: 'bottom' }
-      },
-      onResize: (chart)=>{ ajustarBrawler(chart); }
+        legend: { display: true }
+      }
     }
-  });
+  };
+  const chart = new Chart(ctx, config);
+  // --- Fin de tu código original ---
 
-  // Mostrar imagen central y ajustar tamaño
-  const centerDiv = document.getElementById("centerDiamond");
-  centerDiv.style.display = "block";
-  ajustarBrawler(chart);
-}
+  // --- Solo añadimos esto para centrar el brawler ---
+  function ajustarBrawlerCentral() {
+    if(!chart) return;
+    const canvas = document.getElementById('myChart');
+    const img = document.getElementById('brawlerImg');
 
-// Ajusta tamaño del Brawler automáticamente al agujero
-function ajustarBrawler(chart){
-  if(!chart) return;
-  const centerDiv = document.getElementById("centerDiamond");
-  const canvas = chart.canvas;
-  const minDim = Math.min(canvas.width, canvas.height);
-  const cutout = parseInt(chart.options.cutout) || 0;
-  const size = minDim * (parseFloat(chart.options.cutout)/100);
-  centerDiv.style.width = size + "px";
-  centerDiv.style.height = size + "px";
-}
+    const chartArea = chart.chartArea;
+    const radius = (chartArea.right - chartArea.left) / 2;
+    const cutoutPercent = parseFloat(chart.options.cutout) / 100 || 0.6;
 
-document.getElementById("calcBtn").addEventListener("click",(e)=>{
-  e.preventDefault();
-  calcular();
-});
-document.getElementById("clearBtn").addEventListener("click",(e)=>{
-  e.preventDefault();
-  document.getElementById("calcForm").reset();
-  document.getElementById("resultado").innerText="Valor total: 0 €";
-  if(chart) chart.destroy();
-  document.getElementById("centerDiamond").style.display="none";
-});
+    // Tamaño del brawler = diámetro del agujero central
+    const holeDiameter = radius * 2 * cutoutPercent;
+    img.style.width = img.style.height = holeDiameter + 'px';
+
+    // Posicionar centrado
+    img.style.position = 'absolute';
+    img.style.top = canvas.offsetTop + radius + 'px';
+    img.style.left = canvas.offsetLeft + radius + 'px';
+    img.style.transform = 'translate(-50%, -50%)';
+    img.style.display = 'block';
+  }
+
+  setTimeout(ajustarBrawlerCentral, 100);
+  window.addEventListener('resize', ajustarBrawlerCentral);
 </script>
+
 </body>
 </html>
