@@ -1,1 +1,7 @@
-https://fankit.supercell.com/d/YvtsWV4pUQVm/game-assets/show/eyJpZCI6NTg4NTksInNjb3BlIjoiYXNzZXQ6dmlldyIsInRpbWVzdGFtcCI6IjE3NTU2OTk2NjEifQ:supercell:2AY2l7kn9vHJNPBW-C2asYkr4FZ4-Zv0Srx58bsFDww
+const brawlersAlternativos = [
+  "elprimo.png",
+  "colt.png",
+  "spike.png",
+  "bea.png",
+  "leon.png"
+];
