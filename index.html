@@ -69,18 +69,23 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
 #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
 #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}
+}
 #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
 .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
 canvas{margin-top:15px;max-width:400px;position:relative;}
 /* 💎 Diamante central */
 #centerDiamond {
   position: absolute;
-  font-size: 60px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: none;
-  color: cyan;
-  text-shadow: 0 0 15px cyan;
-  transform-origin: center center;
+}
+#centerDiamond img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
 }
 </style>
 </head>
@@ -111,7 +116,10 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
-    <div id="centerDiamond">💎</div>
+    <!-- NUEVO CENTRO -->
+    <div id="centerDiamond">
+      <img id="brawlerImg" src="https://i.imgur.com/ABCDE1.png" alt="Brawler">
+    </div>
   </div>
 </div>
 
@@ -182,10 +190,8 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
 
-  // Mostrar SIEMPRE el diamante
-  const diamond = document.getElementById("centerDiamond");
-  diamond.style.display="block";
-  startDiamondBounce();
+  // Mostrar SIEMPRE el Brawler
+  document.getElementById("centerDiamond").style.display = "block";
 
   const data={
     labels:Object.keys(valores),
@@ -200,7 +206,7 @@ function calcular(){
     type:'doughnut',
     data:data,
     options:{
-      cutout:"50%", // 🔽 agujero más pequeño
+      cutout:"50%",
       plugins:{legend:{display:true,position:'bottom'}}
     }
   };
@@ -212,35 +218,8 @@ function calcular(){
   lanzarConfeti();
 }
 
-// Animación de rebote dentro del agujero central
-let diamondInterval;
-function startDiamondBounce(){
-  stopDiamondBounce();
-  const diamond=document.getElementById("centerDiamond");
-  const canvas=document.getElementById("myChart");
-  const size=canvas.width;
-  const center=size/2;
-  const radius=55; // ajustado al agujero más pequeño
-  let angleX=0,angleY=0,vx=2,vy=3,rotation=0;
-
-  function animate(){
-    angleX+=vx; angleY+=vy;
-
-    if(angleX<-radius || angleX>radius) vx*=-1;
-    if(angleY<-radius || angleY>radius) vy*=-1;
-
-    rotation+=10;
-    diamond.style.left=(center+angleX-30)+"px"; 
-    diamond.style.top=(center+angleY-30)+"px";
-    diamond.style.transform=`rotate(${rotation}deg)`;
-    diamond.style.color="hsl("+Math.floor(Math.random()*360)+",100%,50%)";
-    diamond.style.textShadow=`0 0 15px ${diamond.style.color}`;
-  }
-  diamondInterval=setInterval(animate,40);
-}
-function stopDiamondBounce(){
-  if(diamondInterval)clearInterval(diamondInterval);
-}
+// ⛔ Anulación de la animación original para que no rebote
+function startDiamondBounce(){}
 
 // Limpiar
 function limpiar(){
@@ -266,6 +245,30 @@ document.getElementById("shareBtn").addEventListener("click", async () => {
 
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
+
+
+// 🔄 Cambiar Brawler central cada 3 segundos (10 imágenes)
+const brawlers = [
+  "https://i.imgur.com/ABCDE1.png",
+  "https://i.imgur.com/ABCDE2.png",
+  "https://i.imgur.com/ABCDE3.png",
+  "https://i.imgur.com/ABCDE4.png",
+  "https://i.imgur.com/ABCDE5.png",
+  "https://i.imgur.com/ABCDE6.png",
+  "https://i.imgur.com/ABCDE7.png",
+  "https://i.imgur.com/ABCDE8.png",
+  "https://i.imgur.com/ABCDE9.png",
+  "https://i.imgur.com/ABCDE10.png"
+];
+
+let current = 0;
+const brawlerImg = document.getElementById("brawlerImg");
+document.getElementById("centerDiamond").style.display = "block";
+
+setInterval(() => {
+  current = (current + 1) % brawlers.length;
+  brawlerImg.src = brawlers[current];
+}, 3000);
 </script>
 </body>
 </html>
