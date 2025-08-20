@@ -73,22 +73,22 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}
 .visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}
 canvas{margin-top:15px;max-width:400px;position:relative;}
-
-/* 💎 Brawler central perfectamente ajustado */
+/* 💎 Brawler central */
 #centerDiamond {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: none;
-  pointer-events: none;
+  border-radius: 50%;
+  overflow: hidden;
 }
 #centerDiamond img {
-  width: 90px; /* Ajusta al agujero central */
-  height: 90px;
-  border-radius: 50%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  background: rgba(0,0,0,0.3); 
+  border-radius: 50%;
+  background: rgba(0,0,0,0.3);
 }
 </style>
 </head>
@@ -171,57 +171,84 @@ function animateNumber(finalValue){
 let chart;
 function calcular(){
   beep(600); vibrar(80);
-  const bpass = Number(document.getElementById("bpass").value)||0;
-  const comunes = Number(document.getElementById("comunes").value)||0;
-  const raras = Number(document.getElementById("raras").value)||0;
-  const epicas = Number(document.getElementById("epicas").value)||0;
-  const miticas = Number(document.getElementById("miticas").value)||0;
-  const legendarias = Number(document.getElementById("legendarias").value)||0;
-  const hipercarga = Number(document.getElementById("hipercarga").value)||0;
-  const maxeados = Number(document.getElementById("maxeados").value)||0;
+  const bpass = parseInt(document.getElementById("bpass").value) || 0;
+  const comunes = parseInt(document.getElementById("comunes").value) || 0;
+  const raras = parseInt(document.getElementById("raras").value) || 0;
+  const epicas = parseInt(document.getElementById("epicas").value) || 0;
+  const miticas = parseInt(document.getElementById("miticas").value) || 0;
+  const legendarias = parseInt(document.getElementById("legendarias").value) || 0;
+  const hipercarga = parseInt(document.getElementById("hipercarga").value) || 0;
+  const maxeados = parseInt(document.getElementById("maxeados").value) || 0;
 
   const valores={
     "🎟️ Brawl Pass":bpass*10,
     "🩵 Comunes":comunes*2,
     "💚 Raras":raras*5,
     "💜 Épicas":epicas*10,
-    "❤️ Míticas":miticas*12,
-    "🌟 Legendarias":legendarias*15,
-    "⚡ Hipercarga":hipercarga*20,
-    "🔥 Maxeados":maxeados*50
+    "❤️ Míticas":miticas*25,
+    "🌟 Legendarias":legendarias*50,
+    "⚡ Hipercarga":hipercarga*5,
+    "🔥 Maxeados":maxeados*15
   };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  animateNumber(total);
 
-  // Mostrar imagen central
-  document.getElementById("centerDiamond").style.display = 'block';
+  const labels = Object.keys(valores);
+  const data = Object.values(valores);
+
+  animateNumber(data.reduce((a,b)=>a+b,0));
+  lanzarConfeti();
+
+  if(chart) chart.destroy();
 
   const ctx = document.getElementById('myChart').getContext('2d');
-  if(chart) chart.destroy();
   chart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: Object.keys(valores),
-      datasets:[{
-        data: Object.values(valores),
-        backgroundColor:['#FF6384','#36A2EB','#FFCE56','#9b59b6','#e74c3c','#1abc9c','#f1c40f','#e67e22'],
-        borderWidth:2
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: ['#ff6384','#36a2eb','#cc65fe','#ffce56','#00ffcc','#ff00ff','#ffaa00','#00ffff'],
+        borderWidth: 2
       }]
     },
-    options:{
+    options: {
       responsive:true,
+      maintainAspectRatio:true,
       cutout: '60%',
-      plugins:{legend:{position:'bottom'}}
+      plugins: {
+        legend: { position: 'bottom' }
+      },
+      onResize: (chart)=>{ ajustarBrawler(chart); }
     }
   });
+
+  // Mostrar imagen central y ajustar tamaño
+  const centerDiv = document.getElementById("centerDiamond");
+  centerDiv.style.display = "block";
+  ajustarBrawler(chart);
 }
 
-document.getElementById('calcBtn').addEventListener('click',calcular);
-document.getElementById('clearBtn').addEventListener('click',()=>{
-  document.getElementById('calcForm').reset();
-  document.getElementById('resultado').innerText="Valor total: 0 €";
-  document.getElementById('centerDiamond').style.display = 'none';
+// Ajusta tamaño del Brawler automáticamente al agujero
+function ajustarBrawler(chart){
+  if(!chart) return;
+  const centerDiv = document.getElementById("centerDiamond");
+  const canvas = chart.canvas;
+  const minDim = Math.min(canvas.width, canvas.height);
+  const cutout = parseInt(chart.options.cutout) || 0;
+  const size = minDim * (parseFloat(chart.options.cutout)/100);
+  centerDiv.style.width = size + "px";
+  centerDiv.style.height = size + "px";
+}
+
+document.getElementById("calcBtn").addEventListener("click",(e)=>{
+  e.preventDefault();
+  calcular();
+});
+document.getElementById("clearBtn").addEventListener("click",(e)=>{
+  e.preventDefault();
+  document.getElementById("calcForm").reset();
+  document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart) chart.destroy();
+  document.getElementById("centerDiamond").style.display="none";
 });
 </script>
 </body>
