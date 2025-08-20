@@ -83,10 +83,11 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
   display: none;
 }
 #centerDiamond img {
-  width: 80px;
-  height: 90px;
+  width: 200px;   /* ajustado al diámetro del centro */
+  height: 200px;
   border-radius: 50%;
-  background: rgba(0,0,0,0.3);  /* para que se vea bien sobre el gráfico */
+  object-fit: contain;  /* asegura que la imagen no se deforme */
+  background: rgba(0,0,0,0.3); 
 }
 </style>
 </head>
