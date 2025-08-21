@@ -74,7 +74,7 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}  
 @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}  
 
-/* 💡 Recuadro Valor Total - verde neón dentro del formulario */  
+/* 💡 Recuadro Valor Total dentro del formulario - verde neón */  
 #resultado-container {
   display: inline-block;
   margin-top: 15px;
@@ -118,6 +118,7 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 }
 
 canvas{margin-top:15px;max-width:400px;position:relative;}  
+
 /* 💎 Brawler central */  
 #centerDiamond {  
   position: absolute;  
@@ -153,3 +154,167 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
   </form>  
 
   <div class="buttons">  
+    <button id="calcBtn">Calcular</button>  
+    <button id="clearBtn">Limpiar</button>  
+  </div>  
+  <button id="shareBtn">📤 Compartir</button>  
+
+  <!-- Visitas azul neon -->
+  <div class="visitas-container">👀 Visitas: <span id="visitas">0</span></div>
+
+  <div style="position:relative; display:inline-block;">  
+    <canvas id="myChart" width="400" height="400"></canvas>  
+    <!-- Imagen central -->  
+    <div id="centerDiamond">  
+      <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">  
+    </div>  
+  </div>  
+</div>  
+
+<script>  
+// Contador de visitas (localStorage)  
+let visitas = localStorage.getItem("visitas") || 0;  
+visitas++;   
+localStorage.setItem("visitas", visitas);  
+document.getElementById("visitas").innerText = visitas;  
+
+// Confeti  
+function lanzarConfeti() {  
+  const duration = 4000;  
+  const end = Date.now() + duration;  
+  (function frame() {  
+    confetti({  
+      particleCount: 10,  
+      startVelocity: 3,  
+      gravity: 0.25,  
+      spread: 360,  
+      ticks: 200,  
+      origin: { x: Math.random(), y: Math.random() * 0.4 },  
+      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']  
+    });  
+    if (Date.now() < end) requestAnimationFrame(frame);  
+  })();  
+}  
+
+// Sonido y vibración  
+function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}  
+function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}  
+
+// Animar número  
+function animateNumber(finalValue){  
+  const resultado = document.getElementById("resultado-container");  
+  const start=0,duration=2000,startTime=performance.now();  
+  function step(now){  
+    const p=Math.min((now-startTime)/duration,1);  
+    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";  
+    if(p<1)requestAnimationFrame(step);  
+  }  
+  requestAnimationFrame(step);  
+}  
+
+// Gráfico  
+let chart;  
+function calcular(){  
+  beep(600); vibrar(80);  
+  const bpass = document.getElementById("bpass").value || 0;  
+  const comunes = document.getElementById("comunes").value || 0;  
+  const raras = document.getElementById("raras").value || 0;  
+  const epicas = document.getElementById("epicas").value || 0;  
+  const miticas = document.getElementById("miticas").value || 0;  
+  const legendarias = document.getElementById("legendarias").value || 0;  
+  const hipercarga = document.getElementById("hipercarga").value || 0;  
+  const maxeados = document.getElementById("maxeados").value || 0;  
+
+  const valores={  
+    "🎟️ Brawl Pass":bpass*10,  
+    "🩵 Comunes":comunes*2,  
+    "💚 Raras":raras*5,  
+    "💜 Épicas":epicas*10,  
+    "❤️ Míticas":miticas*12,  
+    "🌟 Legendarias":legendarias*15,  
+    "⚡ Hipercarga":hipercarga*20,  
+    "🔥 Maxeados":maxeados*50  
+  };  
+  const total = Object.values(valores).reduce((a,b)=>a+b,0);  
+  animateNumber(total);  
+
+  document.getElementById("centerDiamond").style.display = "block";  
+
+  const data={  
+    labels:Object.keys(valores),  
+    datasets:[{  
+      data:Object.values(valores),  
+      backgroundColor:["#1E90FF","#00CED1","#32CD32","#BA55D3","#FF4500","#FFD700","#FF69B4","#FF0000"],  
+      borderWidth:2  
+    }]  
+  };  
+
+  const config={  
+    type:'doughnut',  
+    data:data,  
+    options:{  
+      cutout:"70%",  
+      plugins:{legend:{display:true,position:'bottom'}}  
+    }  
+  };  
+
+  if(chart){chart.destroy();}  
+  const ctx = document.getElementById('myChart').getContext('2d');  
+  chart = new Chart(ctx,config);  
+
+  lanzarConfeti();  
+}  
+
+// ⛔ Desactivar rebote original  
+function startDiamondBounce(){}  
+
+// Limpiar  
+function limpiar(){  
+  document.getElementById("calcForm").reset();  
+  document.getElementById("resultado-container").innerText="Valor total: 0 €";  
+  if(chart){chart.destroy();}  
+  stopDiamondBounce();  
+  document.getElementById("centerDiamond").style.display="none";  
+}  
+
+// Botón compartir  
+document.getElementById("shareBtn").addEventListener("click", async () => {  
+  const url = window.location.href;  
+  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";  
+  if (navigator.share) {  
+    try {  
+      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });  
+    } catch (err) { console.log("Cancelado", err); }  
+  } else {  
+    alert("Tu navegador no soporta compartir nativo.");  
+  }  
+});  
+
+document.getElementById("calcBtn").addEventListener("click",calcular);  
+document.getElementById("clearBtn").addEventListener("click",limpiar);  
+
+// 🔄 Cambiar Brawler central cada 3 segundos (10 imágenes)  
+const brawlers = [  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png",  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png",  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/penny.png",  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/darryl.png",  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",  
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"  
+];  
+
+let current = 0;  
+const brawlerImg = document.getElementById("brawlerImg");  
+document.getElementById("centerDiamond").style.display = "block";  
+
+setInterval(() => {  
+  current = (current + 1) % brawlers.length;  
+  brawlerImg.src = brawlers[current];  
+}, 3000);  
+</script>  
+</body>  
+</html>
