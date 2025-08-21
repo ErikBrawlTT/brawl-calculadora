@@ -132,7 +132,7 @@ button {
   background: rgba(0,0,0,0.7);
   border: 2px solid #00CFFF;
   border-radius: 12px;
-  color: #00CFFF;
+  color: #00CFFF; /* Azul neon */
   text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
   animation: blink 1.5s infinite;
 }
@@ -213,7 +213,7 @@ function lanzarConfeti() {
       spread: 360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
+      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF'] // neon
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
@@ -278,7 +278,16 @@ function calcular(){
     labels:Object.keys(valores),
     datasets:[{
       data:Object.values(valores),
-      backgroundColor:["#1E90FF","#00CED1","#32CD32","#BA55D3","#FF4500","#FFD700","#FF69B4","#FF0000"],
+      backgroundColor:[
+        "#00FFFF", // neon cyan
+        "#00FF00", // neon green
+        "#FF00FF", // neon magenta
+        "#FFFF00", // neon yellow
+        "#FF4500", // neon orange
+        "#00CFFF", // neon blue
+        "#FF69B4", // neon pink
+        "#FF0000"  // neon red
+      ],
       borderWidth:2
     }]
   };
