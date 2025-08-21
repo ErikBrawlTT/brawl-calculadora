@@ -82,44 +82,14 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
   transform: translate(-50%, -50%);  
   display: none; 
 } 
-#centerDiamond img {
+  #centerDiamond img {
   width: 210px;
   height: 210px;
   border-radius: 50%;
   object-fit: contain;
   background: rgba(0,0,0,0.3);
-  transform: translate(-0,5%, -0,5%); /* (mantengo tu línea original) */
-}
-
-/* === NUEVO: Display digital 7 segmentos para visitas globales === */
-.seven-seg {
-  display: inline-flex;
-  gap: 6px;
-  padding: 8px 12px;
-  background: rgba(0,0,0,0.85);
-  border: 2px solid #FFD700;
-  border-radius: 12px;
-  margin-top: 8px;
-}
-.digit {
-  position: relative;
-  width: 22px;
-  height: 36px;
-}
-.seg {
-  position: absolute;
-  background: #003300;
-  transition: background .25s, box-shadow .25s;
-  border-radius: 2px;
-}
-.seg.on { background: #00FF66; box-shadow: 0 0 8px #00FF66; }
-.seg.a { top: 0; left: 4px; width: 14px; height: 4px; }
-.seg.b { top: 3px; right: 0; width: 4px; height: 14px; }
-.seg.c { bottom: 3px; right: 0; width: 4px; height: 14px; }
-.seg.d { bottom: 0; left: 4px; width: 14px; height: 4px; }
-.seg.e { bottom: 3px; left: 0; width: 4px; height: 14px; }
-.seg.f { top: 3px; left: 0; width: 4px; height: 14px; }
-.seg.g { top: 50%; left: 4px; width: 14px; height: 4px; transform: translateY(-50%); }
+  transform: translate(-0,5%, -0,5%); /* <- cambiamos el Y para subirla */
+  }
 </style>  
 </head>  
 <body>  
@@ -142,14 +112,7 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
   <button id="shareBtn">📤 Compartir</button>  
 
   <div id="resultado">Valor total: 0 €</div>  
-
-  <!-- Mantengo tu contador original (local) -->
-  <div class="visitas">👀 Visitas (local): <span id="visitas">0</span></div>
-
-  <!-- NUEVO: contador global con display 7 segmentos -->
-  <div class="visitas">🌍 Visitas globales:</div>
-  <div id="visitasSevenSeg" class="seven-seg" aria-label="Visitas globales"></div>
-
+  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>  
   <div style="position:relative; display:inline-block;">  
     <canvas id="myChart" width="400" height="400"></canvas>  
     <!-- Imagen central -->  
@@ -160,123 +123,12 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 </div>  
 
 <script>  
-// =================== TU CONTADOR ORIGINAL (localStorage) ===================
+// Contador de visitas  
 let visitas = localStorage.getItem("visitas") || 0;  
 visitas++;   
 localStorage.setItem("visitas", visitas);  
 document.getElementById("visitas").innerText = visitas;  
-
-// =================== NUEVO: contador GLOBAL con 7 segmentos ===================
-const GLOBAL_NAMESPACE = "calculadora-brawlstars";  // cámbialo si quieres
-const GLOBAL_KEY = "visitas";
-
-const DIGIT_MAP = {
-  0: ["a","b","c","d","e","f"],
-  1: ["b","c"],
-  2: ["a","b","g","e","d"],
-  3: ["a","b","g","c","d"],
-  4: ["f","g","b","c"],
-  5: ["a","f","g","c","d"],
-  6: ["a","f","g","e","c","d"],
-  7: ["a","b","c"],
-  8: ["a","b","c","d","e","f","g"],
-  9: ["a","b","c","d","f","g"]
-};
-
-function crearDigito(num){
-  const d = document.createElement("div");
-  d.className = "digit";
-  ["a","b","c","d","e","f","g"].forEach(s=>{
-    const seg = document.createElement("div");
-    seg.className = "seg "+s+(DIGIT_MAP[num]?.includes(s)?" on":"");
-    d.appendChild(seg);
-  });
-  return d;
-}
-function dibujarSevenSeg(valor){
-  const box = document.getElementById("visitasSevenSeg");
-  if(!box) return;
-  box.innerHTML = "";
-  String(valor).split("").forEach(ch=>{
-    const n = parseInt(ch);
-    if (Number.isNaN(n)) return; // ignora caracteres no numéricos
-    box.appendChild(crearDigito(n));
-  });
-}
-function animarSevenSeg(desde, hasta, dur=800){
-  let start=null;
-  function step(ts){
-    if(!start) start=ts;
-    const p = Math.min((ts-start)/dur,1);
-    const val = Math.floor(desde + (hasta-desde)*p);
-    dibujarSevenSeg(val);
-    if(p<1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-// Preferencia: CounterAPI (principal). Fallback: CountAPI.
-async function incrementarGlobal(){
-  // 1) CounterAPI
-  try{
-    const res = await fetch(`https://counterapi.dev/api/increment?namespace=${encodeURIComponent(GLOBAL_NAMESPACE)}&key=${encodeURIComponent(GLOBAL_KEY)}`);
-    if(res.ok){
-      const data = await res.json();
-      const actual = parseInt(document.getElementById("visitasSevenSeg")?.dataset?.val || "0");
-      animarSevenSeg(isNaN(actual)?0:actual, data.value);
-      document.getElementById("visitasSevenSeg").dataset.val = data.value;
-      return;
-    }
-    throw new Error("CounterAPI no OK");
-  }catch(e){
-    console.warn("CounterAPI falló, probando CountAPI...", e);
-  }
-  // 2) CountAPI (fallback)
-  try{
-    // crea si no existe
-    await fetch(`https://api.countapi.xyz/create?namespace=${encodeURIComponent(GLOBAL_NAMESPACE)}&key=${encodeURIComponent(GLOBAL_KEY)}&value=0`);
-    const res2 = await fetch(`https://api.countapi.xyz/update/${encodeURIComponent(GLOBAL_NAMESPACE)}/${encodeURIComponent(GLOBAL_KEY)}/?amount=1`);
-    const data2 = await res2.json();
-    const actual = parseInt(document.getElementById("visitasSevenSeg")?.dataset?.val || "0");
-    animarSevenSeg(isNaN(actual)?0:actual, data2.value);
-    document.getElementById("visitasSevenSeg").dataset.val = data2.value;
-  }catch(e){
-    console.error("CountAPI también falló:", e);
-  }
-}
-async function leerGlobal(){
-  // 1) CounterAPI
-  try{
-    const res = await fetch(`https://counterapi.dev/api/value?namespace=${encodeURIComponent(GLOBAL_NAMESPACE)}&key=${encodeURIComponent(GLOBAL_KEY)}`);
-    if(res.ok){
-      const data = await res.json();
-      const actual = parseInt(document.getElementById("visitasSevenSeg")?.dataset?.val || "0");
-      animarSevenSeg(isNaN(actual)?0:actual, data.value, 600);
-      document.getElementById("visitasSevenSeg").dataset.val = data.value;
-      return;
-    }
-    throw new Error("CounterAPI no OK");
-  }catch(e){
-    console.warn("CounterAPI value falló, probando CountAPI...", e);
-  }
-  // 2) CountAPI (fallback)
-  try{
-    const res2 = await fetch(`https://api.countapi.xyz/get/${encodeURIComponent(GLOBAL_NAMESPACE)}/${encodeURIComponent(GLOBAL_KEY)}`);
-    const data2 = await res2.json();
-    const actual = parseInt(document.getElementById("visitasSevenSeg")?.dataset?.val || "0");
-    animarSevenSeg(isNaN(actual)?0:actual, data2.value, 600);
-    document.getElementById("visitasSevenSeg").dataset.val = data2.value;
-  }catch(e){
-    console.error("CountAPI get falló:", e);
-  }
-}
-
-// Inicializa display y arranca
-dibujarSevenSeg(0);
-incrementarGlobal();
-setInterval(leerGlobal, 10000);
-
-// =================== RESTO DE TU CÓDIGO ORIGINAL ===================
+  
 // Confeti  
 function lanzarConfeti() {  
   const duration = 4000;  
