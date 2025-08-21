@@ -80,15 +80,15 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
   top: 50%;  
   left: 50%;  
   transform: translate(-50%, -50%);  
-  display: none;  
-}  
-#centerDiamond img {  
-  width: 160px;   /* aumentado para no cortarse */  
-  height: 160px;  
-  border-radius: 50%;  
-  object-fit: cover;  
-  background: rgba(0,0,0,0.3);  
-}  
+  display: none; 
+} 
+  #centerDiamond img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: contain; /* <- Cambiado de cover a contain */
+  background: rgba(0,0,0,0.3);
+}
 </style>  
 </head>  
 <body>  
