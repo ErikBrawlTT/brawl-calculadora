@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />  
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
 <title>Calculadora Brawl Stars</title>  
-<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">  
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@700&display=swap" rel="stylesheet">  
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>  
 <style>  
@@ -72,7 +72,30 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}  
 }  
 #resultado{margin-top:10px;font-size:1.8rem;color:#00FFAA;}  
-.visitas{margin-top:10px;font-size:1.4rem;color:#FFD700;}  
+
+/* 💡 Estilo digital odómetro visitas */
+.visitas {
+  margin-top: 15px;
+  font-size: 1.4rem;
+  color: #fff;
+}
+#visitas {
+  display: inline-block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.2rem;
+  padding: 8px 18px;
+  background: #000;
+  border: 2px solid #00ffff;
+  border-radius: 8px;
+  color: #00ffff;
+  text-shadow: 0 0 8px #00ffff, 0 0 15px #00ffff;
+  animation: blink 1.5s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 canvas{margin-top:15px;max-width:400px;position:relative;}  
 /* 💎 Brawler central */  
 #centerDiamond {  
@@ -82,14 +105,13 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
   transform: translate(-50%, -50%);  
   display: none; 
 } 
-  #centerDiamond img {
+#centerDiamond img {
   width: 210px;
   height: 210px;
   border-radius: 50%;
   object-fit: contain;
   background: rgba(0,0,0,0.3);
-  transform: translate(-0,5%, -0,5%); /* <- cambiamos el Y para subirla */
-  }
+}
 </style>  
 </head>  
 <body>  
@@ -123,12 +145,12 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 </div>  
 
 <script>  
-// Contador de visitas  
+// Contador de visitas (localStorage)  
 let visitas = localStorage.getItem("visitas") || 0;  
 visitas++;   
 localStorage.setItem("visitas", visitas);  
 document.getElementById("visitas").innerText = visitas;  
-  
+
 // Confeti  
 function lanzarConfeti() {  
   const duration = 4000;  
@@ -146,11 +168,11 @@ function lanzarConfeti() {
     if (Date.now() < end) requestAnimationFrame(frame);  
   })();  
 }  
-  
+
 // Sonido y vibración  
 function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}  
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}  
-  
+
 // Animar número  
 function animateNumber(finalValue){  
   const resultado = document.getElementById("resultado");  
@@ -162,7 +184,7 @@ function animateNumber(finalValue){
   }  
   requestAnimationFrame(step);  
 }  
-  
+
 // Gráfico  
 let chart;  
 function calcular(){  
@@ -175,7 +197,7 @@ function calcular(){
   const legendarias = document.getElementById("legendarias").value || 0;  
   const hipercarga = document.getElementById("hipercarga").value || 0;  
   const maxeados = document.getElementById("maxeados").value || 0;  
-  
+
   const valores={  
     "🎟️ Brawl Pass":bpass*10,  
     "🩵 Comunes":comunes*2,  
@@ -188,10 +210,10 @@ function calcular(){
   };  
   const total = Object.values(valores).reduce((a,b)=>a+b,0);  
   animateNumber(total);  
-  
+
   // Mostrar SIEMPRE el Brawler  
   document.getElementById("centerDiamond").style.display = "block";  
-  
+
   const data={  
     labels:Object.keys(valores),  
     datasets:[{  
@@ -200,26 +222,26 @@ function calcular(){
       borderWidth:2  
     }]  
   };  
-  
+
   const config={  
     type:'doughnut',  
     data:data,  
     options:{  
-      cutout:"70%",   // agrandamos hueco para que no se corte la imagen  
+      cutout:"70%",  
       plugins:{legend:{display:true,position:'bottom'}}  
     }  
   };  
-  
+
   if(chart){chart.destroy();}  
   const ctx = document.getElementById('myChart').getContext('2d');  
   chart = new Chart(ctx,config);  
-  
+
   lanzarConfeti();  
 }  
-  
+
 // ⛔ Desactivar rebote original  
 function startDiamondBounce(){}  
-  
+
 // Limpiar  
 function limpiar(){  
   document.getElementById("calcForm").reset();  
@@ -228,7 +250,7 @@ function limpiar(){
   stopDiamondBounce();  
   document.getElementById("centerDiamond").style.display="none";  
 }  
-  
+
 // Botón compartir  
 document.getElementById("shareBtn").addEventListener("click", async () => {  
   const url = window.location.href;  
@@ -241,10 +263,10 @@ document.getElementById("shareBtn").addEventListener("click", async () => {
     alert("Tu navegador no soporta compartir nativo.");  
   }  
 });  
-  
+
 document.getElementById("calcBtn").addEventListener("click",calcular);  
 document.getElementById("clearBtn").addEventListener("click",limpiar);  
-  
+
 // 🔄 Cambiar Brawler central cada 3 segundos (10 imágenes)  
 const brawlers = [  
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",  
@@ -258,11 +280,11 @@ const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",  
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"  
 ];  
-  
+
 let current = 0;  
 const brawlerImg = document.getElementById("brawlerImg");  
 document.getElementById("centerDiamond").style.display = "block";  
-  
+
 setInterval(() => {  
   current = (current + 1) % brawlers.length;  
   brawlerImg.src = brawlers[current];  
