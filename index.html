@@ -74,49 +74,52 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}  
 @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}  
 
-/* 💡 Recuadros visitas y valor total dentro del formulario */  
-#visitas-container {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.4rem;
-  padding: 8px 16px;
-  background: rgba(0,0,0,0.3);
-  border: 2px solid #00CFFF;
-  border-radius: 10px;
-  color: #00CFFF;
-  text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
-  animation: blink 1.5s infinite;
-  margin-bottom: 15px;
-  text-align: center;
-  width: 80%;
-}
+/* 💎 Recuadro valor total verde neon */  
+#resultado {  
+  margin-top: 15px;  
+  font-family: 'Bangers', cursive;  
+  font-size: 1.8rem;  
+  padding: 8px 18px;  
+  background: #000;  
+  border: 2px solid #00FF00;  
+  border-radius: 8px;  
+  color: #00FF00;  
+  text-shadow: 0 0 8px #00FF00, 0 0 15px #00FF00;  
+  display: inline-block;  
+  text-align: center;  
+}  
 
-#visitas {
-  font-size: 2.2rem;
-  padding: 0 8px;
-}
+/* 💡 Estilo digital odómetro visitas azul neon */  
+.visitas {  
+  margin-top: 25px;  
+  font-size: 1.4rem;  
+  color: #00CFFF;  
+  text-align: center;  
+}  
+#visitas {  
+  display: inline-block;  
+  font-family: 'Orbitron', sans-serif;  
+  font-size: 2.2rem;  
+  padding: 8px 18px;  
+  background: #000;  
+  border: 2px solid #00CFFF;  
+  border-radius: 8px;  
+  color: #00CFFF;  
+  text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;  
+  animation: blink 1.5s infinite;  
+}  
+@keyframes blink {  
+  0%, 100% { opacity: 1; }  
+  50% { opacity: 0.7; }  
+}  
 
-#resultado-container {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.8rem;
-  padding: 8px 20px;
-  background: rgba(0,0,0,0.3);
-  border: 2px solid #00FF00;
-  border-radius: 10px;
-  color: #00FF00;
-  text-shadow: 0 0 8px #00FF00, 0 0 15px #00FF00;
-  animation: blink 1.5s infinite;
-  text-align: center;
-  width: 80%;
-  margin-top: 10px;
-}
-
-/* Parpadeo */
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-canvas{margin-top:15px;max-width:400px;position:relative;}  
+/* Centrar canvas dentro del container */  
+#myChart {  
+  display: block;  
+  margin: 20px auto 0 auto;  
+  max-width: 400px;  
+  position: relative;  
+}  
 
 /* 💎 Brawler central */  
 #centerDiamond {  
@@ -124,25 +127,21 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
   top: 43%;  
   left: 50%;  
   transform: translate(-50%, -50%);  
-  display: none; 
+  display: none;  
 } 
-#centerDiamond img {
-  width: 210px;
-  height: 210px;
-  border-radius: 50%;
-  object-fit: contain;
-  background: rgba(0,0,0,0.3);
-}
+#centerDiamond img {  
+  width: 210px;  
+  height: 210px;  
+  border-radius: 50%;  
+  object-fit: contain;  
+  background: rgba(0,0,0,0.3);  
+}  
 </style>  
 </head>  
 <body>  
 <div class="container">  
   <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>  
   <form id="calcForm">  
-
-    <!-- Visitas azul neon dentro del formulario -->
-    <div id="visitas-container">👀 Visitas: <span id="visitas">0</span></div>
-
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>  
     <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>  
     <label>💚 Raras: <input type="number" id="raras" value="0"></label>  
@@ -151,9 +150,7 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
     <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>  
     <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>  
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>  
-
-    <!-- Valor total verde neon dentro del formulario -->
-    <div id="resultado-container">Valor total: 0 €</div>
+    <div id="resultado">Valor total: 0 €</div>  
   </form>  
 
   <div class="buttons">  
@@ -162,12 +159,12 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
   </div>  
   <button id="shareBtn">📤 Compartir</button>  
 
-  <div style="position:relative; display:inline-block;">  
-    <canvas id="myChart" width="400" height="400"></canvas>  
-    <!-- Imagen central -->  
-    <div id="centerDiamond">  
-      <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">  
-    </div>  
+  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>  
+
+  <canvas id="myChart" width="400" height="400"></canvas>  
+
+  <div id="centerDiamond">  
+    <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">  
   </div>  
 </div>  
 
@@ -202,7 +199,7 @@ function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
 
 // Animar número  
 function animateNumber(finalValue){  
-  const resultado = document.getElementById("resultado-container");  
+  const resultado = document.getElementById("resultado");  
   const start=0,duration=2000,startTime=performance.now();  
   function step(now){  
     const p=Math.min((now-startTime)/duration,1);  
@@ -238,6 +235,7 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);  
   animateNumber(total);  
 
+  // Mostrar SIEMPRE el Brawler  
   document.getElementById("centerDiamond").style.display = "block";  
 
   const data={  
@@ -271,11 +269,10 @@ function startDiamondBounce(){}
 // Limpiar  
 function limpiar(){  
   document.getElementById("calcForm").reset();  
-  document.getElementById("resultado-container").innerText="Valor total: 0 €";  
+  document.getElementById("resultado").innerText="Valor total: 0 €";  
   if(chart){chart.destroy();}  
   stopDiamondBounce();  
   document.getElementById("centerDiamond").style.display="none";  
-  document.getElementById("visitas").innerText = visitas;  
 }  
 
 // Botón compartir  
