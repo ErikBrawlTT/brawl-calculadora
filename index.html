@@ -120,24 +120,20 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
       <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">  
     </div>  
   </div>  
-<div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
+</div>  
 
-<script>
-// Contador de visitas global con countapi.xyz
-const NAMESPACE = "brawl-stars-calculadora"; // nombre único para tu proyecto
-const KEY = "visitas";
+<script>  
+// ✅ Contador de visitas global (countapi.xyz)
+const NAMESPACE = "calculadora-brawlstars-demo";  
+const KEY = "visitas";  
 
-// Incrementa y obtiene el contador
-fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`)
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("visitas").innerText = data.value;
-  })
-  .catch(err => {
-    console.error("Error con contador:", err);
-  });
-</script> 
-  
+fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`)  
+  .then(res => res.json())  
+  .then(data => {  
+    document.getElementById("visitas").innerText = data.value;  
+  })  
+  .catch(err => console.error("Error contador:", err));  
+
 // Confeti  
 function lanzarConfeti() {  
   const duration = 4000;  
@@ -155,11 +151,11 @@ function lanzarConfeti() {
     if (Date.now() < end) requestAnimationFrame(frame);  
   })();  
 }  
-  
+
 // Sonido y vibración  
 function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}  
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}  
-  
+
 // Animar número  
 function animateNumber(finalValue){  
   const resultado = document.getElementById("resultado");  
@@ -171,7 +167,7 @@ function animateNumber(finalValue){
   }  
   requestAnimationFrame(step);  
 }  
-  
+
 // Gráfico  
 let chart;  
 function calcular(){  
@@ -184,7 +180,7 @@ function calcular(){
   const legendarias = document.getElementById("legendarias").value || 0;  
   const hipercarga = document.getElementById("hipercarga").value || 0;  
   const maxeados = document.getElementById("maxeados").value || 0;  
-  
+
   const valores={  
     "🎟️ Brawl Pass":bpass*10,  
     "🩵 Comunes":comunes*2,  
@@ -197,10 +193,10 @@ function calcular(){
   };  
   const total = Object.values(valores).reduce((a,b)=>a+b,0);  
   animateNumber(total);  
-  
+
   // Mostrar SIEMPRE el Brawler  
   document.getElementById("centerDiamond").style.display = "block";  
-  
+
   const data={  
     labels:Object.keys(valores),  
     datasets:[{  
@@ -209,7 +205,7 @@ function calcular(){
       borderWidth:2  
     }]  
   };  
-  
+
   const config={  
     type:'doughnut',  
     data:data,  
@@ -218,17 +214,17 @@ function calcular(){
       plugins:{legend:{display:true,position:'bottom'}}  
     }  
   };  
-  
+
   if(chart){chart.destroy();}  
   const ctx = document.getElementById('myChart').getContext('2d');  
   chart = new Chart(ctx,config);  
-  
+
   lanzarConfeti();  
 }  
-  
+
 // ⛔ Desactivar rebote original  
 function startDiamondBounce(){}  
-  
+
 // Limpiar  
 function limpiar(){  
   document.getElementById("calcForm").reset();  
@@ -237,7 +233,7 @@ function limpiar(){
   stopDiamondBounce();  
   document.getElementById("centerDiamond").style.display="none";  
 }  
-  
+
 // Botón compartir  
 document.getElementById("shareBtn").addEventListener("click", async () => {  
   const url = window.location.href;  
@@ -250,10 +246,10 @@ document.getElementById("shareBtn").addEventListener("click", async () => {
     alert("Tu navegador no soporta compartir nativo.");  
   }  
 });  
-  
+
 document.getElementById("calcBtn").addEventListener("click",calcular);  
 document.getElementById("clearBtn").addEventListener("click",limpiar);  
-  
+
 // 🔄 Cambiar Brawler central cada 3 segundos (10 imágenes)  
 const brawlers = [  
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",  
@@ -267,11 +263,11 @@ const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",  
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"  
 ];  
-  
+
 let current = 0;  
 const brawlerImg = document.getElementById("brawlerImg");  
 document.getElementById("centerDiamond").style.display = "block";  
-  
+
 setInterval(() => {  
   current = (current + 1) % brawlers.length;  
   brawlerImg.src = brawlers[current];  
