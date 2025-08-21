@@ -61,96 +61,53 @@ form {
   max-width: 600px;
   width:90%;
   margin-bottom: 25px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  position: relative;
 }
-label {
-  display:flex;
-  justify-content:space-between;
-  margin:8px 0;
-  width:100%;
-}
-input {
-  width:100px;
-  text-align:center;
-  border:none;
-  border-radius:8px;
-}
-.buttons {
-  display:flex;
-  justify-content:center;
-  gap:25px;
-  margin-top:15px;
-}
-button {
-  padding:10px 20px;
-  border:none;
-  border-radius:12px;
-  font-family:'Bangers';
-  font-size:1.5rem;
-  color:white;
-  cursor:pointer;
-}
+label{display:flex;justify-content:space-between;margin:8px 0;}
+input{width:100px;text-align:center;border:none;border-radius:8px;}
+.buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
+button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
 #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
 #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-#shareBtn{
-  background:linear-gradient(90deg,#00FFAA,#FF00FF);
-  margin-top:20px;
-  animation:pulse 1s infinite;
-}
-@keyframes pulse{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.1)}
-  100%{transform:scale(1)}
-}
-
-/* Recuadro valor total */
-#resultado {
-  margin-top: 20px;
-  font-size: 2rem;
-  font-family: 'Bangers', cursive;
-  padding: 10px 20px;
-  background: rgba(0,0,0,0.7);
-  border: 2px solid #00FF00;
-  border-radius: 12px;
-  color: #00FF00;
-  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-}
-
-/* Estilo digital odómetro visitas */
-.visitas {
-  margin-top: 20px;
+#shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+#resultado{
+  margin-top:15px;
+  font-size:1.8rem;
   font-family:'Bangers';
-  font-size: 1.4rem;
+  color:#00FF00;
+  display:inline-block;
+  padding:10px 18px;
+  background:#000;
+  border:2px solid #00FF00;
+  border-radius:8px;
+  text-shadow: 0 0 8px #00FF00, 0 0 15px #00FF00;
+}
+.visitas {
+  margin-top:20px;
+  font-size:1.4rem;
+  font-family:'Bangers';
 }
 #visitas {
   display: inline-block;
   font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
+  font-size: 2.2rem;
   padding: 8px 18px;
-  background: rgba(0,0,0,0.7);
-  border: 2px solid #00CFFF;
-  border-radius: 12px;
-  color: #00CFFF; /* Azul neon */
-  text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
+  background: #000;
+  border: 2px solid #00FFFF;
+  border-radius: 8px;
+  color: #00FFFF;
+  text-shadow: 0 0 8px #00FFFF, 0 0 15px #00FFFF;
   animation: blink 1.5s infinite;
 }
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
 }
-
-canvas{
-  margin-top:15px;
-  max-width:400px;
-  position:relative;
-}
-
-/* Brawler central */
+canvas{margin-top:15px;max-width:400px;position:relative;}
 #centerDiamond {
   position: absolute;
-  top: 43%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: none;
@@ -176,16 +133,16 @@ canvas{
     <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
     <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
+    <div style="margin-top:25px;">
+      <div id="resultado">Valor total: 0 €</div>
+    </div>
   </form>
   <div class="buttons">
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
   </div>
   <button id="shareBtn">📤 Compartir</button>
-
   <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
-  <div id="resultado">Valor total: 0 €</div>
-
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
     <div id="centerDiamond">
@@ -213,25 +170,14 @@ function lanzarConfeti() {
       spread: 360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF'] // neon
+      colors: ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
 }
 
 // Sonido y vibración
-function beep(freq){
-  const ctx=new (AudioContext||webkitAudioContext)(),
-        o=ctx.createOscillator(),
-        g=ctx.createGain();
-  o.type="square";
-  o.frequency.value=freq;
-  o.connect(g);
-  g.connect(ctx.destination);
-  g.gain.setValueAtTime(.15,ctx.currentTime);
-  o.start();
-  o.stop(ctx.currentTime+.15);
-}
+function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
 
 // Animar número
@@ -278,17 +224,10 @@ function calcular(){
     labels:Object.keys(valores),
     datasets:[{
       data:Object.values(valores),
-      backgroundColor:[
-        "#00FFFF", // neon cyan
-        "#00FF00", // neon green
-        "#FF00FF", // neon magenta
-        "#FFFF00", // neon yellow
-        "#FF4500", // neon orange
-        "#00CFFF", // neon blue
-        "#FF69B4", // neon pink
-        "#FF0000"  // neon red
-      ],
-      borderWidth:2
+      backgroundColor:["#00FF00","#00FFFF","#32CD32","#BA55D3","#FF4500","#FFD700","#FF69B4","#FF0000"],
+      borderColor:["#00FF00","#00FFFF","#32CD32","#BA55D3","#FF4500","#FFD700","#FF69B4","#FF0000"],
+      borderWidth:6,
+      hoverOffset:10
     }]
   };
 
@@ -303,15 +242,15 @@ function calcular(){
 
   if(chart){chart.destroy();}
   const ctx = document.getElementById('myChart').getContext('2d');
-  chart = new Chart(ctx,config);
+  chart = new Chart(ctx, config);
+  
+  // Glow efecto canvas
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = 'rgba(0,255,0,0.6)';
 
   lanzarConfeti();
-
-  // Scroll automático al gráfico
-  document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-// Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
@@ -319,21 +258,19 @@ function limpiar(){
   document.getElementById("centerDiamond").style.display="none";
 }
 
-// Botón compartir
 document.getElementById("shareBtn").addEventListener("click", async () => {
   const url = window.location.href;
   const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
   if (navigator.share) {
-    try {
-      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
-    } catch (err) { console.log("Cancelado", err); }
+    try { await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url }); }
+    catch (err) { console.log("Cancelado", err); }
   } else { alert("Tu navegador no soporta compartir nativo."); }
 });
 
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
 
-// Cambiar Brawler central cada 3 segundos
+// Cambiar Brawler central
 const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
@@ -346,11 +283,9 @@ const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
 ];
-
 let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
-
 setInterval(() => {
   current = (current + 1) % brawlers.length;
   brawlerImg.src = brawlers[current];
