@@ -120,14 +120,23 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
       <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">  
     </div>  
   </div>  
-</div>  
+<div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
 
-<script>  
-// Contador de visitas  
-let visitas = localStorage.getItem("visitas") || 0;  
-visitas++;   
-localStorage.setItem("visitas", visitas);  
-document.getElementById("visitas").innerText = visitas;  
+<script>
+// Contador de visitas global con countapi.xyz
+const NAMESPACE = "brawl-stars-calculadora"; // nombre único para tu proyecto
+const KEY = "visitas";
+
+// Incrementa y obtiene el contador
+fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`)
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("visitas").innerText = data.value;
+  })
+  .catch(err => {
+    console.error("Error con contador:", err);
+  });
+</script> 
   
 // Confeti  
 function lanzarConfeti() {  
