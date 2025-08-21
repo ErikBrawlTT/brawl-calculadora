@@ -105,11 +105,11 @@ button {
   100%{transform:scale(1)}
 }
 
-/* 💡 Recuadro valor total */
+/* Recuadro valor total */
 #resultado {
   margin-top: 20px;
   font-size: 2rem;
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Bangers', cursive;
   padding: 10px 20px;
   background: rgba(0,0,0,0.7);
   border: 2px solid #00FF00;
@@ -118,11 +118,11 @@ button {
   text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
 }
 
-/* 💡 Estilo digital odómetro visitas */
+/* Estilo digital odómetro visitas */
 .visitas {
   margin-top: 20px;
-  font-size: 1.4rem;
   font-family:'Bangers';
+  font-size: 1.4rem;
 }
 #visitas {
   display: inline-block;
@@ -147,7 +147,7 @@ canvas{
   position:relative;
 }
 
-/* 💎 Brawler central */
+/* Brawler central */
 #centerDiamond {
   position: absolute;
   top: 43%;
@@ -183,8 +183,8 @@ canvas{
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <div id="resultado">Valor total: 0 €</div>
   <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
+  <div id="resultado">Valor total: 0 €</div>
 
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
@@ -297,6 +297,9 @@ function calcular(){
   chart = new Chart(ctx,config);
 
   lanzarConfeti();
+
+  // Scroll automático al gráfico
+  document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 // Limpiar
