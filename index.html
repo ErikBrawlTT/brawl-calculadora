@@ -74,10 +74,28 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}  
 @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}  
 
-/* 💡 Recuadro Valor Total dentro del formulario - verde neón */  
+/* 💡 Recuadros visitas y valor total dentro del formulario */  
+#visitas-container {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.4rem;
+  padding: 8px 16px;
+  background: rgba(0,0,0,0.3);
+  border: 2px solid #00CFFF;
+  border-radius: 10px;
+  color: #00CFFF;
+  text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
+  animation: blink 1.5s infinite;
+  margin-bottom: 15px;
+  text-align: center;
+  width: 80%;
+}
+
+#visitas {
+  font-size: 2.2rem;
+  padding: 0 8px;
+}
+
 #resultado-container {
-  display: inline-block;
-  margin-top: 15px;
   font-family: 'Orbitron', sans-serif;
   font-size: 1.8rem;
   padding: 8px 20px;
@@ -88,27 +106,8 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
   text-shadow: 0 0 8px #00FF00, 0 0 15px #00FF00;
   animation: blink 1.5s infinite;
   text-align: center;
-  width: 60%;
-}
-
-/* 💡 Estilo digital odómetro visitas - azul neón */  
-.visitas-container {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.4rem;
-  padding: 8px 16px;
-  background: #000;
-  border: 2px solid #00CFFF;
-  border-radius: 10px;
-  color: #00CFFF;
-  text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
-  animation: blink 1.5s infinite;
-}
-#visitas {
-  font-size: 2.2rem;
-  padding: 0 8px;
+  width: 80%;
+  margin-top: 10px;
 }
 
 /* Parpadeo */
@@ -140,6 +139,10 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
 <div class="container">  
   <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>  
   <form id="calcForm">  
+
+    <!-- Visitas azul neon dentro del formulario -->
+    <div id="visitas-container">👀 Visitas: <span id="visitas">0</span></div>
+
     <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>  
     <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>  
     <label>💚 Raras: <input type="number" id="raras" value="0"></label>  
@@ -149,7 +152,7 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
     <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>  
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>  
 
-    <!-- Valor total dentro del formulario -->
+    <!-- Valor total verde neon dentro del formulario -->
     <div id="resultado-container">Valor total: 0 €</div>
   </form>  
 
@@ -158,9 +161,6 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
     <button id="clearBtn">Limpiar</button>  
   </div>  
   <button id="shareBtn">📤 Compartir</button>  
-
-  <!-- Visitas azul neon -->
-  <div class="visitas-container">👀 Visitas: <span id="visitas">0</span></div>
 
   <div style="position:relative; display:inline-block;">  
     <canvas id="myChart" width="400" height="400"></canvas>  
@@ -275,6 +275,7 @@ function limpiar(){
   if(chart){chart.destroy();}  
   stopDiamondBounce();  
   document.getElementById("centerDiamond").style.display="none";  
+  document.getElementById("visitas").innerText = visitas;  
 }  
 
 // Botón compartir  
