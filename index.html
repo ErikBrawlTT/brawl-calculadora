@@ -65,45 +65,73 @@ form {
   flex-direction: column;
   align-items: center;
 }
-label{display:flex;justify-content:space-between;margin:8px 0;width:100%;}
-input{width:100px;text-align:center;border:none;border-radius:8px;}
-.buttons{display:flex;justify-content:center;gap:25px;margin-top:15px;}
-button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';font-size:1.5rem;color:white;cursor:pointer;}
+label {
+  display:flex;
+  justify-content:space-between;
+  margin:8px 0;
+  width:100%;
+}
+input {
+  width:100px;
+  text-align:center;
+  border:none;
+  border-radius:8px;
+}
+.buttons {
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  margin-top:15px;
+}
+button {
+  padding:10px 20px;
+  border:none;
+  border-radius:12px;
+  font-family:'Bangers';
+  font-size:1.5rem;
+  color:white;
+  cursor:pointer;
+}
 #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
 #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
-#shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-
-/* 💎 Recuadro valor total verde neon */
-#resultado {
-  margin-top: 15px;
-  font-family: 'Bangers', cursive;
-  font-size: 1.8rem;
-  padding: 8px 18px;
-  background: #000;
-  border: 2px solid #00FF00;
-  border-radius: 8px;
-  color: #00FF00;
-  text-shadow: 0 0 8px #00FF00, 0 0 15px #00FF00;
-  display: inline-block;
-  text-align: center;
+#shareBtn{
+  background:linear-gradient(90deg,#00FFAA,#FF00FF);
+  margin-top:20px;
+  animation:pulse 1s infinite;
+}
+@keyframes pulse{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.1)}
+  100%{transform:scale(1)}
 }
 
-/* 💡 Estilo digital odómetro visitas azul neon */
+/* 💡 Recuadro valor total */
+#resultado {
+  margin-top: 20px;
+  font-size: 2rem;
+  font-family: 'Orbitron', sans-serif;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #00FF00;
+  border-radius: 12px;
+  color: #00FF00;
+  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+}
+
+/* 💡 Estilo digital odómetro visitas */
 .visitas {
-  margin-top: 25px;
+  margin-top: 20px;
   font-size: 1.4rem;
-  color: #00CFFF;
-  text-align: center;
+  font-family:'Bangers';
 }
 #visitas {
   display: inline-block;
   font-family: 'Orbitron', sans-serif;
-  font-size: 2.2rem;
+  font-size: 2rem;
   padding: 8px 18px;
-  background: #000;
+  background: rgba(0,0,0,0.7);
   border: 2px solid #00CFFF;
-  border-radius: 8px;
+  border-radius: 12px;
   color: #00CFFF;
   text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
   animation: blink 1.5s infinite;
@@ -113,22 +141,20 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
   50% { opacity: 0.7; }
 }
 
-/* Centrar canvas dentro del container */
-#myChart {
-  display: block;
-  margin: 20px auto 0 auto;
-  max-width: 400px;
-  position: relative;
+canvas{
+  margin-top:15px;
+  max-width:400px;
+  position:relative;
 }
 
-/* 💎 Brawler central dentro del circulo */
+/* 💎 Brawler central */
 #centerDiamond {
   position: absolute;
   top: 43%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: none;
-} 
+}
 #centerDiamond img {
   width: 210px;
   height: 210px;
@@ -150,15 +176,14 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
     <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
     <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
-    <div id="resultado">Valor total: 0 €</div>
   </form>
-
   <div class="buttons">
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
+  <div id="resultado">Valor total: 0 €</div>
   <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
 
   <div style="position:relative; display:inline-block;">
@@ -170,7 +195,7 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 </div>
 
 <script>
-// Contador de visitas (localStorage)
+// Contador de visitas
 let visitas = localStorage.getItem("visitas") || 0;
 visitas++;
 localStorage.setItem("visitas", visitas);
@@ -195,7 +220,18 @@ function lanzarConfeti() {
 }
 
 // Sonido y vibración
-function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
+function beep(freq){
+  const ctx=new (AudioContext||webkitAudioContext)(),
+        o=ctx.createOscillator(),
+        g=ctx.createGain();
+  o.type="square";
+  o.frequency.value=freq;
+  o.connect(g);
+  g.connect(ctx.destination);
+  g.gain.setValueAtTime(.15,ctx.currentTime);
+  o.start();
+  o.stop(ctx.currentTime+.15);
+}
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
 
 // Animar número
@@ -263,12 +299,11 @@ function calcular(){
   lanzarConfeti();
 }
 
-function startDiamondBounce(){}
+// Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart){chart.destroy();}
-  stopDiamondBounce();
   document.getElementById("centerDiamond").style.display="none";
 }
 
@@ -280,14 +315,13 @@ document.getElementById("shareBtn").addEventListener("click", async () => {
     try {
       await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
     } catch (err) { console.log("Cancelado", err); }
-  } else {
-    alert("Tu navegador no soporta compartir nativo.");
-  }
+  } else { alert("Tu navegador no soporta compartir nativo."); }
 });
 
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
 
+// Cambiar Brawler central cada 3 segundos
 const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
