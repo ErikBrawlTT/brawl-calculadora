@@ -128,16 +128,12 @@ const NAMESPACE = "calculadora-brawlstars-demo";
 const KEY = "visitas";  
 
 // Primero intentamos crear el contador (si ya existe, no pasa nada)
-fetch(`https://api.countapi.xyz/create?namespace=${NAMESPACE}&key=${KEY}&value=0`)  
-  .then(() => {  
-    // Luego incrementamos el contador
-    return fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`);  
-  })  
-  .then(res => res.json())  
-  .then(data => {  
-    document.getElementById("visitas").innerText = data.value;  
-  })  
-  .catch(err => console.error("Error contador:", err));  
+fetch(`https://api.countapi.xyz/update/${NAMESPACE}/${KEY}/?amount=1`)
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("visitas").innerText = data.value;
+  })
+  .catch(err => console.error("Error contador:", err));
 
 // Confeti  
 function lanzarConfeti() {  
