@@ -200,7 +200,7 @@ canvas{
   <!-- Contador global de visitas -->
   <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
 
-  <!-- Botones de Like / Dislike (en el hueco pedido) -->
+  <!-- Botones de Like / Dislike -->
   <div class="likeDislikeContainer">
     <div>
       <button class="like" onclick="sumarLike()">❤️</button>
@@ -228,72 +228,39 @@ canvas{
 </div>
 
 <script>
-// =================== CONTADORES (CountAPI) ===================
-// Namespace fijo del proyecto
-const NS = "brawl-calculadora";
+// ==== CONTADORES GLOBALES CON VERCEL KV ====
 
-// Helpers CountAPI
-async function countapiGet(key) {
-  const url = `https://api.countapi.xyz/get/${NS}/${key}`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("GET not ok");
-    const data = await res.json();
-    if (typeof data.value === "number") return data.value;
-    throw new Error("no value");
-  } catch (e) {
-    // Si no existe, lo creamos en 0
-    await fetch(`https://api.countapi.xyz/create?namespace=${encodeURIComponent(NS)}&key=${encodeURIComponent(key)}&value=0`);
-    const res2 = await fetch(url);
-    const data2 = await res2.json();
-    return data2.value || 0;
-  }
-}
-async function countapiHit(key) {
-  const res = await fetch(`https://api.countapi.xyz/hit/${NS}/${key}`);
-  const data = await res.json();
-  return data.value;
-}
-
-// Visitas (incrementa al entrar)
+// Contador global de visitas
 async function contarVisita() {
   try {
-    const value = await countapiHit("visitas");
-    document.getElementById("visitas").innerText = value;
-  } catch (e) {
-    console.error(e);
-  }
+    const res = await fetch('/api/counter?type=visitas');
+    const data = await res.json();
+    document.getElementById("visitas").innerText = data.value;
+  } catch(e){ console.error("Error visitas", e); }
 }
 
-// Likes / Dislikes
-async function cargarContadores() {
-  try {
-    const likes = await countapiGet("likes");
-    const dislikes = await countapiGet("dislikes");
-    document.getElementById("likes").innerText = likes;
-    document.getElementById("dislikes").innerText = dislikes;
-  } catch (e) {
-    console.error(e);
-  }
-}
+// Likes y Dislikes
 async function sumarLike() {
   try {
-    const value = await countapiHit("likes");
-    document.getElementById("likes").innerText = value;
-  } catch (e) { console.error(e); }
+    const res = await fetch('/api/counter?type=likes');
+    const data = await res.json();
+    document.getElementById("likes").innerText = data.value;
+  } catch(e){ console.error("Error likes", e); }
 }
+
 async function sumarDislike() {
   try {
-    const value = await countapiHit("dislikes");
-    document.getElementById("dislikes").innerText = value;
-  } catch (e) { console.error(e); }
+    const res = await fetch('/api/counter?type=dislikes');
+    const data = await res.json();
+    document.getElementById("dislikes").innerText = data.value;
+  } catch(e){ console.error("Error dislikes", e); }
 }
 
-// Inicializar contadores
+// Inicializar contadores al cargar la página
 contarVisita();
-cargarContadores();
 
-// =================== TU CÓDIGO ORIGINAL ===================
+
+// ==== RESTO DEL CÓDIGO ORIGINAL ====
 
 // Confeti
 function lanzarConfeti() {
@@ -307,7 +274,7 @@ function lanzarConfeti() {
       spread: 360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF'] // neon
+      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
@@ -395,7 +362,6 @@ function calcular(){
 
   lanzarConfeti();
 
-  // Scroll automático al gráfico
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
@@ -438,6 +404,7 @@ const brawlers = [
 let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
+
 
 setInterval(() => {
   current = (current + 1) % brawlers.length;
