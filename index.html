@@ -61,6 +61,7 @@ form {
   max-width: 600px;  
   width:90%;  
   margin-bottom: 25px;  
+  position: relative;  
 }  
 label{display:flex;justify-content:space-between;margin:8px 0;}  
 input{width:100px;text-align:center;border:none;border-radius:8px;}  
@@ -71,33 +72,37 @@ button{padding:10px 20px;border:none;border-radius:12px;font-family:'Bangers';fo
 #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF);margin-top:20px;animation:pulse 1s infinite;}  
 @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}  
 
-/* 💡 Recuadro para valor total y visitas */  
-#resultado, .visitas {  
-  font-family: 'Bangers', cursive;  
-  display: block;  
-  padding: 10px 20px;  
-  margin: 5px auto;  
-  background: rgba(0,0,0,0.7);  
-  border-radius: 12px;  
-  border: 2px solid;  
-  text-align: center;  
-  width: fit-content;  
-}  
-
+/* 💡 Recuadro para valor total dentro del formulario */  
 #resultado {  
+  font-family: 'Bangers', cursive;  
   color: #00FF00;  
-  border-color: #00FF00;  
+  border: 2px solid #00FF00;  
   text-shadow: 0 0 8px #00FF00, 0 0 15px #00FF00;  
+  padding: 10px 20px;  
+  border-radius: 12px;  
+  text-align: center;  
+  position: absolute;  
+  bottom: -50px;  
+  left: 50%;  
+  transform: translateX(-50%);  
+  width: fit-content;  
+  background: rgba(0,0,0,0.7);  
 }  
 
+/* 💡 Visitas separadas del botón compartir */  
 .visitas {  
+  font-family: 'Bangers', cursive;  
   color: #00FFFF;  
-  border-color: #00FFFF;  
+  border: 2px solid #00FFFF;  
   text-shadow: 0 0 8px #00FFFF, 0 0 15px #00FFFF;  
-}  
-
-#visitas {  
   display: inline-block;  
+  font-size: 1.4rem;  
+  padding: 8px 18px;  
+  border-radius: 12px;  
+  margin: 10px 0;  
+  background: rgba(0,0,0,0.7);  
+}  
+#visitas {  
   font-family: 'Orbitron', sans-serif;  
   font-size: 2.2rem;  
   animation: blink 1.5s infinite;  
@@ -137,15 +142,15 @@ canvas{margin-top:15px;max-width:400px;position:relative;}
     <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>  
     <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>  
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>  
+    <div id="resultado">Valor total: 0 €</div>
   </form>  
   <div class="buttons">  
     <button id="calcBtn">Calcular</button>  
     <button id="clearBtn">Limpiar</button>  
   </div>  
-  <button id="shareBtn">📤 Compartir</button>  
 
   <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>  
-  <div id="resultado">Valor total: 0 €</div>  
+  <button id="shareBtn">📤 Compartir</button>  
 
   <div style="position:relative; display:inline-block;">  
     <canvas id="myChart" width="400" height="400"></canvas>  
