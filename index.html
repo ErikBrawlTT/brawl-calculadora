@@ -118,9 +118,27 @@ button {
   text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
 }
 
-/* Estilo digital odómetro visitas */
+/* Likes y Dislikes */
+.likeDislikeContainer {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 15px 0;
+}
+.likeDislikeContainer div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.likeDislikeContainer button {
+  font-size: 28px;
+  padding: 6px 12px;
+}
+.like { color: #e1306c; }
+.dislike { color: #555; }
+
 .visitas {
-  margin-top: 20px;
+  margin-top: 15px;
   font-family:'Bangers';
   font-size: 1.4rem;
 }
@@ -140,25 +158,6 @@ button {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
 }
-
-/* Likes y Dislikes */
-.likeDislikeContainer {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin: 15px 0;
-}
-.likeDislikeContainer div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.likeDislikeContainer button {
-  font-size: 28px;
-  padding: 6px 12px;
-}
-.like { color: #e1306c; }
-.dislike { color: #555; }
 
 canvas{
   margin-top:15px;
@@ -197,17 +196,14 @@ canvas{
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
   </form>
 
-  <!-- Contador global de visitas -->
-  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
-
   <!-- Botones de Like / Dislike -->
   <div class="likeDislikeContainer">
     <div>
-      <button class="like" onclick="sumarLike()">❤️</button>
+      <button class="like" onclick="sumarLike(event)">❤️</button>
       <div>Likes: <span id="likes">0</span></div>
     </div>
     <div>
-      <button class="dislike" onclick="sumarDislike()">👎</button>
+      <button class="dislike" onclick="sumarDislike(event)">👎</button>
       <div>No me gusta: <span id="dislikes">0</span></div>
     </div>
   </div>
@@ -217,6 +213,10 @@ canvas{
     <button id="clearBtn">Limpiar</button>
   </div>
   <button id="shareBtn">📤 Compartir</button>
+
+  <!-- Contador global de visitas debajo de compartir -->
+  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
+
   <div id="resultado">Valor total: 0 €</div>
 
   <div style="position:relative; display:inline-block;">
@@ -228,41 +228,57 @@ canvas{
 </div>
 
 <script>
-// ==== CONTADORES GLOBALES CON VERCEL KV ====
+// URL base CountAPI
+const API_BASE = "https://api.countapi.xyz";
 
-// Contador global de visitas
+// Evitar submit
+function preventDefault(e){ e.preventDefault(); }
+
+// Contador visitas
 async function contarVisita() {
   try {
-    const res = await fetch('/api/counter?type=visitas');
+    const res = await fetch(`${API_BASE}/hit/brawl-calculadora/visitas`);
     const data = await res.json();
     document.getElementById("visitas").innerText = data.value;
-  } catch(e){ console.error("Error visitas", e); }
+  } catch(e){ console.log("Error visitas", e); }
 }
 
-// Likes y Dislikes
-async function sumarLike() {
+// Likes / Dislikes
+async function cargarContadores() {
   try {
-    const res = await fetch('/api/counter?type=likes');
+    let res = await fetch(`${API_BASE}/get/brawl-calculadora/likes`);
+    let data = await res.json();
+    document.getElementById("likes").innerText = data.value || 0;
+
+    res = await fetch(`${API_BASE}/get/brawl-calculadora/dislikes`);
+    data = await res.json();
+    document.getElementById("dislikes").innerText = data.value || 0;
+  } catch(e){ console.log("Error likes/dislikes", e); }
+}
+
+async function sumarLike(e){
+  preventDefault(e);
+  try {
+    const res = await fetch(`${API_BASE}/hit/brawl-calculadora/likes`);
     const data = await res.json();
     document.getElementById("likes").innerText = data.value;
-  } catch(e){ console.error("Error likes", e); }
+  } catch(e){ console.log(e); }
 }
 
-async function sumarDislike() {
+async function sumarDislike(e){
+  preventDefault(e);
   try {
-    const res = await fetch('/api/counter?type=dislikes');
+    const res = await fetch(`${API_BASE}/hit/brawl-calculadora/dislikes`);
     const data = await res.json();
     document.getElementById("dislikes").innerText = data.value;
-  } catch(e){ console.error("Error dislikes", e); }
+  } catch(e){ console.log(e); }
 }
 
-// Inicializar contadores al cargar la página
+// Inicializar contadores
 contarVisita();
+cargarContadores();
 
-
-// ==== RESTO DEL CÓDIGO ORIGINAL ====
-
-// Confeti
+// ----- Resto de tu código original -----
 function lanzarConfeti() {
   const duration = 4000;
   const end = Date.now() + duration;
@@ -271,7 +287,7 @@ function lanzarConfeti() {
       particleCount: 10,
       startVelocity: 3,
       gravity: 0.25,
-      spread: 360,
+      spread:360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
       colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']
@@ -280,7 +296,6 @@ function lanzarConfeti() {
   })();
 }
 
-// Sonido y vibración
 function beep(freq){
   const ctx=new (AudioContext||webkitAudioContext)(),
         o=ctx.createOscillator(),
@@ -293,9 +308,9 @@ function beep(freq){
   o.start();
   o.stop(ctx.currentTime+.15);
 }
+
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
 
-// Animar número
 function animateNumber(finalValue){
   const resultado = document.getElementById("resultado");
   const start=0,duration=2000,startTime=performance.now();
@@ -307,7 +322,6 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
-// Gráfico
 let chart;
 function calcular(){
   beep(600); vibrar(80);
@@ -332,17 +346,13 @@ function calcular(){
   };
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
-
   document.getElementById("centerDiamond").style.display = "block";
 
   const data={
     labels:Object.keys(valores),
     datasets:[{
       data:Object.values(valores),
-      backgroundColor:[
-        "#00FFFF", "#00FF00", "#FF00FF", "#FFFF00",
-        "#FF4500", "#00CFFF", "#FF69B4", "#FF0000"
-      ],
+      backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],
       borderWidth:2
     }]
   };
@@ -350,10 +360,7 @@ function calcular(){
   const config={
     type:'doughnut',
     data:data,
-    options:{
-      cutout:"70%",
-      plugins:{legend:{display:true,position:'bottom'}}
-    }
+    options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}
   };
 
   if(chart){chart.destroy();}
@@ -361,11 +368,9 @@ function calcular(){
   chart = new Chart(ctx,config);
 
   lanzarConfeti();
-
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-// Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
@@ -373,14 +378,12 @@ function limpiar(){
   document.getElementById("centerDiamond").style.display="none";
 }
 
-// Botón compartir
 document.getElementById("shareBtn").addEventListener("click", async () => {
   const url = window.location.href;
   const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
   if (navigator.share) {
-    try {
-      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
-    } catch (err) { console.log("Cancelado", err); }
+    try { await navigator.share({ title: "Calculadora Brawl Stars", text, url }); }
+    catch (err) { console.log("Cancelado", err); }
   } else { alert("Tu navegador no soporta compartir nativo."); }
 });
 
@@ -405,11 +408,11 @@ let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
 
-
 setInterval(() => {
   current = (current + 1) % brawlers.length;
   brawlerImg.src = brawlers[current];
 }, 3000);
+
 </script>
 </body>
 </html>
