@@ -60,7 +60,7 @@ form {
   padding: 20px;
   max-width: 600px;
   width:90%;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -132,7 +132,7 @@ button {
   background: rgba(0,0,0,0.7);
   border: 2px solid #00CFFF;
   border-radius: 12px;
-  color: #00CFFF; /* Azul neon */
+  color: #00CFFF;
   text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
   animation: blink 1.5s infinite;
 }
@@ -140,6 +140,25 @@ button {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
 }
+
+/* Likes y Dislikes */
+.likeDislikeContainer {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 15px 0;
+}
+.likeDislikeContainer div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.likeDislikeContainer button {
+  font-size: 28px;
+  padding: 6px 12px;
+}
+.like { color: #e1306c; }
+.dislike { color: #555; }
 
 canvas{
   margin-top:15px;
@@ -177,13 +196,27 @@ canvas{
     <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
   </form>
+
+  <!-- Contador global de visitas -->
+  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
+
+  <!-- Botones de Like / Dislike -->
+  <div class="likeDislikeContainer">
+    <div>
+      <button class="like" onclick="sumarLike()">❤️</button>
+      <div>Likes: <span id="likes">0</span></div>
+    </div>
+    <div>
+      <button class="dislike" onclick="sumarDislike()">👎</button>
+      <div>No me gusta: <span id="dislikes">0</span></div>
+    </div>
+  </div>
+
   <div class="buttons">
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
   </div>
   <button id="shareBtn">📤 Compartir</button>
-
-  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
   <div id="resultado">Valor total: 0 €</div>
 
   <div style="position:relative; display:inline-block;">
@@ -195,11 +228,37 @@ canvas{
 </div>
 
 <script>
-// Contador de visitas
-let visitas = localStorage.getItem("visitas") || 0;
-visitas++;
-localStorage.setItem("visitas", visitas);
-document.getElementById("visitas").innerText = visitas;
+// Contador global de visitas
+async function contarVisita() {
+  const res = await fetch("https://api.countapi.xyz/hit/brawl-calculadora.vercel.app/visitas");
+  const data = await res.json();
+  document.getElementById("visitas").innerText = data.value;
+}
+
+// Contadores Likes / Dislikes
+async function cargarContadores() {
+  const likesRes = await fetch("https://api.countapi.xyz/get/brawl-calculadora.vercel.app/likes");
+  const likesData = await likesRes.json();
+  document.getElementById("likes").innerText = likesData.value || 0;
+
+  const dislikesRes = await fetch("https://api.countapi.xyz/get/brawl-calculadora.vercel.app/dislikes");
+  const dislikesData = await dislikesRes.json();
+  document.getElementById("dislikes").innerText = dislikesData.value || 0;
+}
+async function sumarLike() {
+  const res = await fetch("https://api.countapi.xyz/hit/brawl-calculadora.vercel.app/likes");
+  const data = await res.json();
+  document.getElementById("likes").innerText = data.value;
+}
+async function sumarDislike() {
+  const res = await fetch("https://api.countapi.xyz/hit/brawl-calculadora.vercel.app/dislikes");
+  const data = await res.json();
+  document.getElementById("dislikes").innerText = data.value;
+}
+
+// Inicializar contadores
+contarVisita();
+cargarContadores();
 
 // Confeti
 function lanzarConfeti() {
@@ -279,14 +338,8 @@ function calcular(){
     datasets:[{
       data:Object.values(valores),
       backgroundColor:[
-        "#00FFFF", // neon cyan
-        "#00FF00", // neon green
-        "#FF00FF", // neon magenta
-        "#FFFF00", // neon yellow
-        "#FF4500", // neon orange
-        "#00CFFF", // neon blue
-        "#FF69B4", // neon pink
-        "#FF0000"  // neon red
+        "#00FFFF", "#00FF00", "#FF00FF", "#FFFF00",
+        "#FF4500", "#00CFFF", "#FF69B4", "#FF0000"
       ],
       borderWidth:2
     }]
