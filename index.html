@@ -196,7 +196,6 @@ canvas{
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <!-- Contador y likes debajo de compartir -->
   <div class="visitas">
     👀 Visitas: <span id="visitas">0</span>
   </div>
@@ -221,44 +220,65 @@ canvas{
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ----------------------- Contadores Vercel KV ----------------------- */
+const SUPABASE_URL = "https://yvciudpdvylmplpbfobo.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2Y2l1ZHBkdnlsbXBscGJmb2JvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODE5MTksImV4cCI6MjA3MTQ1NzkxOX0.kzMHyDj2A1Df5P0qJVdXdol8gkmnxmELYmad9gQX_WI";
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ----------------------- Contadores Supabase ----------------------- */
 async function contarVisita() {
-  try {
-    const res = await fetch("/api/visitas", { method: "POST" });
-    const data = await res.json();
-    document.getElementById("visitas").innerText = data.value;
-  } catch(e){ console.log("Error visitas", e); }
+  const { data, error } = await supabase
+    .from("counters")
+    .select("value")
+    .eq("id", "visitas")
+    .single();
+
+  if (error) { console.error(error); return; }
+
+  const nuevoValor = (data?.value || 0) + 1;
+  await supabase.from("counters").update({ value: nuevoValor }).eq("id", "visitas");
+  document.getElementById("visitas").innerText = nuevoValor;
 }
 
 async function cargarContadores() {
-  try {
-    let res = await fetch("/api/likes");
-    let data = await res.json();
-    document.getElementById("likes").innerText = data.value || 0;
+  const { data, error } = await supabase.from("counters").select("id, value");
+  if (error) { console.error(error); return; }
 
-    res = await fetch("/api/dislikes");
-    data = await res.json();
-    document.getElementById("dislikes").innerText = data.value || 0;
-  } catch(e){ console.log("Error likes/dislikes", e); }
+  data.forEach(row => {
+    if (row.id === "likes") document.getElementById("likes").innerText = row.value;
+    if (row.id === "dislikes") document.getElementById("dislikes").innerText = row.value;
+  });
 }
 
 async function sumarLike(e) {
   e.preventDefault();
-  try {
-    const res = await fetch("/api/likes", { method: "POST" });
-    const data = await res.json();
-    document.getElementById("likes").innerText = data.value;
-  } catch(e){ console.log(e); }
+  const { data, error } = await supabase
+    .from("counters")
+    .select("value")
+    .eq("id", "likes")
+    .single();
+
+  if (error) { console.error(error); return; }
+
+  const nuevoValor = (data?.value || 0) + 1;
+  await supabase.from("counters").update({ value: nuevoValor }).eq("id", "likes");
+  document.getElementById("likes").innerText = nuevoValor;
 }
 
 async function sumarDislike(e) {
   e.preventDefault();
-  try {
-    const res = await fetch("/api/dislikes", { method: "POST" });
-    const data = await res.json();
-    document.getElementById("dislikes").innerText = data.value;
-  } catch(e){ console.log(e); }
+  const { data, error } = await supabase
+    .from("counters")
+    .select("value")
+    .eq("id", "dislikes")
+    .single();
+
+  if (error) { console.error(error); return; }
+
+  const nuevoValor = (data?.value || 0) + 1;
+  await supabase.from("counters").update({ value: nuevoValor }).eq("id", "dislikes");
+  document.getElementById("dislikes").innerText = nuevoValor;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -267,7 +287,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ----------------------- Resto de tu código original ----------------------- */
-// Confeti, sonido, vibración, animación número, gráfico, brawlers, etc.
 let chart;
 function lanzarConfeti() {
   const duration = 4000;
