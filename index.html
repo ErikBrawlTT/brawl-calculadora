@@ -7,9 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-<script src="https://unpkg.com/@supabase/supabase-js"></script>
 <style>
-/* === Tus estilos originales === */
 body {
   margin: 0;
   font-family: 'Bangers', cursive;
@@ -48,7 +46,9 @@ h1 {
   background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
   -webkit-background-clip: text;
 }
-h1 .diamond { animation: glow 3s infinite alternate; }
+h1 .diamond {
+  animation: glow 3s infinite alternate;
+}
 @keyframes glow {
   0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
   50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
@@ -65,9 +65,24 @@ form {
   flex-direction: column;
   align-items: center;
 }
-label { display:flex; justify-content:space-between; margin:8px 0; width:100%; }
-input { width:100px; text-align:center; border:none; border-radius:8px; }
-.buttons { display:flex; justify-content:center; gap:25px; margin-top:15px; }
+label {
+  display:flex;
+  justify-content:space-between;
+  margin:8px 0;
+  width:100%;
+}
+input {
+  width:100px;
+  text-align:center;
+  border:none;
+  border-radius:8px;
+}
+.buttons {
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  margin-top:15px;
+}
 button {
   padding:10px 20px;
   border:none;
@@ -89,6 +104,8 @@ button {
   50%{transform:scale(1.1)}
   100%{transform:scale(1)}
 }
+
+/* Recuadro valor total */
 #resultado {
   margin-top: 20px;
   font-size: 2rem;
@@ -100,6 +117,8 @@ button {
   color: #00FF00;
   text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
 }
+
+/* Estilo digital odómetro visitas */
 .visitas {
   margin-top: 20px;
   font-family:'Bangers';
@@ -113,12 +132,22 @@ button {
   background: rgba(0,0,0,0.7);
   border: 2px solid #00CFFF;
   border-radius: 12px;
-  color: #00CFFF;
+  color: #00CFFF; /* Azul neon */
   text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
   animation: blink 1.5s infinite;
 }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-canvas{ margin-top:15px; max-width:400px; position:relative; }
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+canvas{
+  margin-top:15px;
+  max-width:400px;
+  position:relative;
+}
+
+/* Brawler central */
 #centerDiamond {
   position: absolute;
   top: 43%;
@@ -149,10 +178,10 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
   </form>
   <div class="buttons">
-    <button id="calcBtn" type="button">Calcular</button>
-    <button id="clearBtn" type="button">Limpiar</button>
+    <button id="calcBtn">Calcular</button>
+    <button id="clearBtn">Limpiar</button>
   </div>
-  <button id="shareBtn" type="button">📤 Compartir</button>
+  <button id="shareBtn">📤 Compartir</button>
 
   <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
   <div id="resultado">Valor total: 0 €</div>
@@ -166,43 +195,11 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 </div>
 
 <script>
-// === SUPABASE CONFIG ===
-const SUPABASE_URL = "TU_SUPABASE_URL";
-const SUPABASE_KEY = "TU_SUPABASE_KEY";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// === Contador global de visitas ===
-async function cargarVisitas() {
-  const { data, error } = await supabase
-    .from("counters")
-    .select("visitas")
-    .eq("id", 1)
-    .single();
-
-  if (error) {
-    console.error("Error cargando visitas:", error);
-    return;
-  }
-  document.getElementById("visitas").innerText = data.visitas;
-}
-
-async function sumarVisita() {
-  const { data, error } = await supabase
-    .rpc("increment_visitas", { row_id: 1 }); // usamos función RPC
-
-  if (error) {
-    console.error("Error sumando visita:", error);
-  } else {
-    document.getElementById("visitas").innerText = data;
-  }
-}
-
-// === Al cargar la página ===
-window.addEventListener("DOMContentLoaded", async () => {
-  await sumarVisita();
-});
-
-// === Resto de funciones (calcular, limpiar, compartir) siguen iguales ===
+// Contador de visitas
+let visitas = localStorage.getItem("visitas") || 0;
+visitas++;
+localStorage.setItem("visitas", visitas);
+document.getElementById("visitas").innerText = visitas;
 
 // Confeti
 function lanzarConfeti() {
@@ -216,11 +213,13 @@ function lanzarConfeti() {
       spread: 360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']
+      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF'] // neon
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
 }
+
+// Sonido y vibración
 function beep(freq){
   const ctx=new (AudioContext||webkitAudioContext)(),
         o=ctx.createOscillator(),
@@ -234,6 +233,8 @@ function beep(freq){
   o.stop(ctx.currentTime+.15);
 }
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
+
+// Animar número
 function animateNumber(finalValue){
   const resultado = document.getElementById("resultado");
   const start=0,duration=2000,startTime=performance.now();
@@ -244,6 +245,8 @@ function animateNumber(finalValue){
   }
   requestAnimationFrame(step);
 }
+
+// Gráfico
 let chart;
 function calcular(){
   beep(600); vibrar(80);
@@ -275,36 +278,62 @@ function calcular(){
     labels:Object.keys(valores),
     datasets:[{
       data:Object.values(valores),
-      backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],
+      backgroundColor:[
+        "#00FFFF", // neon cyan
+        "#00FF00", // neon green
+        "#FF00FF", // neon magenta
+        "#FFFF00", // neon yellow
+        "#FF4500", // neon orange
+        "#00CFFF", // neon blue
+        "#FF69B4", // neon pink
+        "#FF0000"  // neon red
+      ],
       borderWidth:2
     }]
   };
-  const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
+
+  const config={
+    type:'doughnut',
+    data:data,
+    options:{
+      cutout:"70%",
+      plugins:{legend:{display:true,position:'bottom'}}
+    }
+  };
+
   if(chart){chart.destroy();}
   const ctx = document.getElementById('myChart').getContext('2d');
   chart = new Chart(ctx,config);
 
   lanzarConfeti();
+
+  // Scroll automático al gráfico
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
+
+// Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart){chart.destroy();}
   document.getElementById("centerDiamond").style.display="none";
 }
+
+// Botón compartir
 document.getElementById("shareBtn").addEventListener("click", async () => {
   const url = window.location.href;
   const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
   if (navigator.share) {
-    try { await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url }); }
-    catch (err) { console.log("Cancelado", err); }
+    try {
+      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
+    } catch (err) { console.log("Cancelado", err); }
   } else { alert("Tu navegador no soporta compartir nativo."); }
 });
+
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
 
-// Rotación de brawlers
+// Cambiar Brawler central cada 3 segundos
 const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
@@ -317,9 +346,11 @@ const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
 ];
+
 let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
+
 setInterval(() => {
   current = (current + 1) % brawlers.length;
   brawlerImg.src = brawlers[current];
