@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ----------------------- Tu CSS original ----------------------- */
 body {
@@ -116,42 +117,6 @@ button {
   color: #00FF00;
   text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
 }
-.likeDislikeContainer {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin: 15px 0;
-}
-.likeDislikeContainer div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.likeDislikeContainer button {
-  font-size: 28px;
-  padding: 6px 12px;
-}
-.like { color: #e1306c; }
-.dislike { color: #555; }
-canvas{
-  margin-top:15px;
-  max-width:400px;
-  position:relative;
-}
-#centerDiamond {
-  position: absolute;
-  top: 43%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: none;
-}
-#centerDiamond img {
-  width: 210px;
-  height: 210px;
-  border-radius: 50%;
-  object-fit: contain;
-  background: rgba(0,0,0,0.3);
-}
 .visitas {
   margin-top: 15px;
   font-family:'Bangers';
@@ -173,6 +138,42 @@ canvas{
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
 }
+canvas{
+  margin-top:15px;
+  max-width:400px;
+  position:relative;
+}
+#centerDiamond {
+  position: absolute;
+  top: 43%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+#centerDiamond img {
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: rgba(0,0,0,0.3);
+}
+.likeDislikeContainer {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 15px 0;
+}
+.likeDislikeContainer div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.likeDislikeContainer button {
+  font-size: 28px;
+  padding: 6px 12px;
+}
+.like { color: #e1306c; }
+.dislike { color: #555; }
 </style>
 </head>
 <body>
@@ -194,21 +195,19 @@ canvas{
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <!-- Contadores en fila original -->
   <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
   <div class="likeDislikeContainer">
     <div>
-      <button class="like" id="likeBtn">❤️</button>
+      <button class="like">❤️</button>
       <div>Likes: <span id="likes">0</span></div>
     </div>
     <div>
-      <button class="dislike" id="dislikeBtn">👎</button>
+      <button class="dislike">👎</button>
       <div>No me gusta: <span id="dislikes">0</span></div>
     </div>
   </div>
 
   <div id="resultado">Valor total: 0 €</div>
-
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
     <div id="centerDiamond">
@@ -217,59 +216,70 @@ canvas{
   </div>
 </div>
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = "https://yvciudpdvylmplpbfobo.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2Y2l1ZHBkdnlsbXBmb2JvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODE5MTksImV4cCI6MjA3MTQ1NzkxOX0.kzMHyDj2A1Df5P0qJVdXdol8gkmnxmELYmad9gQX_WI";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2Y2l1ZHBkdnlsbXBscGJmb2JvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODE5MTksImV4cCI6MjA3MTQ1NzkxOX0.kzMHyDj2A1Df5P0qJVdXdol8gkmnxmELYmad9gQX_WI"; // reemplaza con tu key
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Contadores
-async function actualizarContador(id){
-  const { data, error } = await supabase.from('counters').select('value').eq('id', id).single();
-  if(error) return console.log(error);
-  const nuevoValor = (data?.value || 0) + 1;
-  await supabase.from('counters').update({value: nuevoValor}).eq('id', id);
-  document.getElementById(id).innerText = nuevoValor;
-  return nuevoValor;
+/* ----------------------- Supabase Contadores ----------------------- */
+async function cargarContadores() {
+  const { data, error } = await supabase
+    .from("counters")
+    .select("*")
+    .eq("id", 1)
+    .single();
+  if(error){console.error(error); return;}
+  document.getElementById("visitas").innerText = data.visitas || 0;
+  document.getElementById("likes").innerText = data.likes || 0;
+  document.getElementById("dislikes").innerText = data.dislikes || 0;
 }
 
-async function cargarContadores(){
-  const { data, error } = await supabase.from('counters').select('*');
-  if(error) return console.log(error);
-  data.forEach(row => {
-    document.getElementById(row.id).innerText = row.value;
-  });
+async function contarVisita() {
+  const { data, error } = await supabase
+    .from("counters")
+    .select("visitas")
+    .eq("id", 1)
+    .single();
+  if(error){console.error(error); return;}
+  const nuevoValor = (data?.visitas||0)+1;
+  await supabase.from("counters").update({visitas:nuevoValor}).eq("id",1);
+  document.getElementById("visitas").innerText = nuevoValor;
 }
 
-// Inicial
-document.addEventListener("DOMContentLoaded", async () => {
-  await cargarContadores();
-  await actualizarContador("visitas");
+async function sumarLike(e){
+  e.preventDefault();
+  const { data, error } = await supabase.from("counters").select("likes").eq("id",1).single();
+  if(error){console.error(error); return;}
+  const nuevoValor=(data?.likes||0)+1;
+  await supabase.from("counters").update({likes:nuevoValor}).eq("id",1);
+  document.getElementById("likes").innerText = nuevoValor;
+}
+
+async function sumarDislike(e){
+  e.preventDefault();
+  const { data, error } = await supabase.from("counters").select("dislikes").eq("id",1).single();
+  if(error){console.error(error); return;}
+  const nuevoValor=(data?.dislikes||0)+1;
+  await supabase.from("counters").update({dislikes:nuevoValor}).eq("id",1);
+  document.getElementById("dislikes").innerText = nuevoValor;
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  cargarContadores();
+  contarVisita();
 });
 
-// Botones likes/dislikes
-document.getElementById("likeBtn").addEventListener("click",()=>actualizarContador("likes"));
-document.getElementById("dislikeBtn").addEventListener("click",()=>actualizarContador("dislikes"));
-</script>
+document.querySelector(".like").addEventListener("click",sumarLike);
+document.querySelector(".dislike").addEventListener("click",sumarDislike);
 
-<script>
-// ----------------------- Código original de calcular -----------------------
+/* ----------------------- Resto de tu código original ----------------------- */
 let chart;
 function lanzarConfeti() {
   const duration = 4000;
   const end = Date.now() + duration;
   (function frame() {
-    confetti({
-      particleCount: 10,
-      startVelocity: 3,
-      gravity: 0.25,
-      spread: 360,
-      ticks: 200,
-      origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']
-    });
-    if (Date.now() < end) requestAnimationFrame(frame);
+    confetti({particleCount:10,startVelocity:3,gravity:.25,spread:360,ticks:200,origin:{x:Math.random(),y:Math.random()*0.4},colors:['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']});
+    if(Date.now()<end)requestAnimationFrame(frame);
   })();
 }
 
@@ -286,8 +296,9 @@ function beep(freq){
   o.stop(ctx.currentTime+.15);
 }
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
+
 function animateNumber(finalValue){
-  const resultado = document.getElementById("resultado");
+  const resultado=document.getElementById("resultado");
   const start=0,duration=2000,startTime=performance.now();
   function step(now){
     const p=Math.min((now-startTime)/duration,1);
@@ -298,15 +309,15 @@ function animateNumber(finalValue){
 }
 
 function calcular(){
-  beep(600); vibrar(80);
-  const bpass = parseInt(document.getElementById("bpass").value)||0;
-  const comunes = parseInt(document.getElementById("comunes").value)||0;
-  const raras = parseInt(document.getElementById("raras").value)||0;
-  const epicas = parseInt(document.getElementById("epicas").value)||0;
-  const miticas = parseInt(document.getElementById("miticas").value)||0;
-  const legendarias = parseInt(document.getElementById("legendarias").value)||0;
-  const hipercarga = parseInt(document.getElementById("hipercarga").value)||0;
-  const maxeados = parseInt(document.getElementById("maxeados").value)||0;
+  beep(600);vibrar(80);
+  const bpass=Number(document.getElementById("bpass").value)||0;
+  const comunes=Number(document.getElementById("comunes").value)||0;
+  const raras=Number(document.getElementById("raras").value)||0;
+  const epicas=Number(document.getElementById("epicas").value)||0;
+  const miticas=Number(document.getElementById("miticas").value)||0;
+  const legendarias=Number(document.getElementById("legendarias").value)||0;
+  const hipercarga=Number(document.getElementById("hipercarga").value)||0;
+  const maxeados=Number(document.getElementById("maxeados").value)||0;
 
   const valores={
     "🎟️ Brawl Pass":bpass*10,
@@ -318,9 +329,9 @@ function calcular(){
     "⚡ Hipercarga":hipercarga*20,
     "🔥 Maxeados":maxeados*50
   };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  animateNumber(total);
 
+  const total=Object.values(valores).reduce((a,b)=>a+b,0);
+  animateNumber(total);
   document.getElementById("centerDiamond").style.display = "block";
 
   const data={
