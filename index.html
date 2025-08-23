@@ -99,6 +99,8 @@ button {
   margin-top:20px;
   animation:pulse 1s infinite;
 }
+#likeBtn{background:linear-gradient(90deg,#FF007F,#FF69B4);}
+#dislikeBtn{background:linear-gradient(90deg,#00FFFF,#0077FF);}
 @keyframes pulse{
   0%{transform:scale(1)}
   50%{transform:scale(1.1)}
@@ -124,18 +126,19 @@ button {
   font-family:'Bangers';
   font-size: 1.4rem;
 }
-#visitas {
+#visitas, #likesCount, #dislikesCount {
   display: inline-block;
   font-family: 'Orbitron', sans-serif;
   font-size: 2rem;
   padding: 8px 18px;
   background: rgba(0,0,0,0.7);
-  border: 2px solid #00CFFF;
   border-radius: 12px;
-  color: #00CFFF; /* Azul neon */
   text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
   animation: blink 1.5s infinite;
 }
+#visitas{ border: 2px solid #00CFFF; color:#00CFFF;}
+#likesCount{ border: 2px solid #FF007F; color:#FF007F;}
+#dislikesCount{ border: 2px solid #00FFFF; color:#00FFFF;}
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
@@ -180,8 +183,13 @@ canvas{
   <div class="buttons">
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
+    <button id="shareBtn">📤 Compartir</button>
   </div>
-  <button id="shareBtn">📤 Compartir</button>
+  
+  <div class="buttons" style="margin-top:15px;">
+    <button id="likeBtn">♥️ <span id="likesCount">0</span></button>
+    <button id="dislikeBtn">👎 <span id="dislikesCount">0</span></button>
+  </div>
 
   <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
   <div id="resultado">Valor total: 0 €</div>
@@ -194,12 +202,63 @@ canvas{
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// Contador de visitas
-let visitas = localStorage.getItem("visitas") || 0;
-visitas++;
-localStorage.setItem("visitas", visitas);
-document.getElementById("visitas").innerText = visitas;
+// Configura tu proyecto Supabase
+const supabaseUrl = "https://wmepcvsnjyljumwnqiwh.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtZXBjdnNuanlsanVtd25xaXdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5ODcwMDYsImV4cCI6MjA3MTU2MzAwNn0.wTUjpQ2Wrb7Dq4HVQR6R0eRpjHQfswzsvALyx25zOPM";
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Contador visitas
+async function cargarVisitas() {
+  let { data } = await supabase.from('estadisticas').select('visitas, likes, dislikes').eq('id',1).single();
+  document.getElementById('visitas').innerText = data.visitas;
+  document.getElementById('likesCount').innerText = data.likes;
+  document.getElementById('dislikesCount').innerText = data.dislikes;
+  // Incrementa visita
+  await supabase.rpc('increment_visita', { row_id: 1 });
+  data = await supabase.from('estadisticas').select('visitas').eq('id',1).single();
+  document.getElementById('visitas').innerText = data.data.visitas || data.visitas;
+}
+cargarVisitas();
+
+// Toggle Like / Dislike
+let liked = false;
+let disliked = false;
+
+document.getElementById('likeBtn').addEventListener('click', async () => {
+  if(!liked){
+    await supabase.rpc('increment_like',{row_id:1});
+    if(disliked){ 
+      await supabase.rpc('decrement_dislike',{row_id:1});
+      disliked=false;
+    }
+    liked=true;
+  } else {
+    await supabase.rpc('decrement_like',{row_id:1});
+    liked=false;
+  }
+  const { data } = await supabase.from('estadisticas').select('likes, dislikes').eq('id',1).single();
+  document.getElementById('likesCount').innerText = data.likes;
+  document.getElementById('dislikesCount').innerText = data.dislikes;
+});
+
+document.getElementById('dislikeBtn').addEventListener('click', async () => {
+  if(!disliked){
+    await supabase.rpc('increment_dislike',{row_id:1});
+    if(liked){
+      await supabase.rpc('decrement_like',{row_id:1});
+      liked=false;
+    }
+    disliked=true;
+  } else {
+    await supabase.rpc('decrement_dislike',{row_id:1});
+    disliked=false;
+  }
+  const { data } = await supabase.from('estadisticas').select('likes, dislikes').eq('id',1).single();
+  document.getElementById('likesCount').innerText = data.likes;
+  document.getElementById('dislikesCount').innerText = data.dislikes;
+});
 
 // Confeti
 function lanzarConfeti() {
@@ -213,7 +272,7 @@ function lanzarConfeti() {
       spread: 360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF'] // neon
+      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
@@ -246,7 +305,7 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
-// Gráfico
+// Gráfico y cálculo
 let chart;
 function calcular(){
   beep(600); vibrar(80);
@@ -279,14 +338,7 @@ function calcular(){
     datasets:[{
       data:Object.values(valores),
       backgroundColor:[
-        "#00FFFF", // neon cyan
-        "#00FF00", // neon green
-        "#FF00FF", // neon magenta
-        "#FFFF00", // neon yellow
-        "#FF4500", // neon orange
-        "#00CFFF", // neon blue
-        "#FF69B4", // neon pink
-        "#FF0000"  // neon red
+        "#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"
       ],
       borderWidth:2
     }]
@@ -306,8 +358,6 @@ function calcular(){
   chart = new Chart(ctx,config);
 
   lanzarConfeti();
-
-  // Scroll automático al gráfico
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
@@ -319,7 +369,7 @@ function limpiar(){
   document.getElementById("centerDiamond").style.display="none";
 }
 
-// Botón compartir
+// Compartir
 document.getElementById("shareBtn").addEventListener("click", async () => {
   const url = window.location.href;
   const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
