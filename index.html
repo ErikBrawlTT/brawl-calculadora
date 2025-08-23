@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* ----------------------- Tu CSS original ----------------------- */
+/* ----------------------- CSS original ----------------------- */
 body {
   margin: 0;
   font-family: 'Bangers', cursive;
@@ -62,7 +62,7 @@ form {
   padding: 20px;
   max-width: 600px;
   width:90%;
-  margin-bottom: 15px;
+  margin-bottom: 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -117,27 +117,40 @@ button {
   color: #00FF00;
   text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
 }
-.visitas {
-  margin-top: 15px;
+.counters {
+  display:flex;
+  justify-content:center;
+  gap:30px;
+  margin-top:20px;
   font-family:'Bangers';
-  font-size: 1.4rem;
 }
-#visitas {
-  display: inline-block;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
-  padding: 8px 18px;
+.counters div {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  font-size:1.4rem;
+}
+.counters span {
+  display:inline-block;
+  font-family:'Orbitron', sans-serif;
+  font-size:2rem;
+  padding:6px 12px;
   background: rgba(0,0,0,0.7);
-  border: 2px solid #00CFFF;
-  border-radius: 12px;
-  color: #00CFFF;
-  text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
-  animation: blink 1.5s infinite;
+  border-radius:12px;
+  color:#00CFFF;
+  border:2px solid #00CFFF;
+  text-shadow:0 0 8px #00CFFF,0 0 15px #00CFFF;
+  min-width:50px;
+  text-align:center;
 }
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+.counters button {
+  font-size:28px;
+  padding:6px 12px;
+  margin-bottom:5px;
+  cursor:pointer;
 }
+.like { color: #e1306c; }
+.dislike { color: #555; }
 canvas{
   margin-top:15px;
   max-width:400px;
@@ -157,23 +170,6 @@ canvas{
   object-fit: contain;
   background: rgba(0,0,0,0.3);
 }
-.likeDislikeContainer {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin: 15px 0;
-}
-.likeDislikeContainer div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.likeDislikeContainer button {
-  font-size: 28px;
-  padding: 6px 12px;
-}
-.like { color: #e1306c; }
-.dislike { color: #555; }
 </style>
 </head>
 <body>
@@ -195,19 +191,22 @@ canvas{
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
-  <div class="likeDislikeContainer">
+  <div class="counters">
     <div>
-      <button class="like">❤️</button>
-      <div>Likes: <span id="likes">0</span></div>
+      👀 Visitas: <span id="visitas">0</span>
     </div>
     <div>
-      <button class="dislike">👎</button>
-      <div>No me gusta: <span id="dislikes">0</span></div>
+      <button class="like" onclick="sumarLike(event)">❤️</button>
+      Likes: <span id="likes">0</span>
+    </div>
+    <div>
+      <button class="dislike" onclick="sumarDislike(event)">👎</button>
+      Dislikes: <span id="dislikes">0</span>
     </div>
   </div>
 
   <div id="resultado">Valor total: 0 €</div>
+
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
     <div id="centerDiamond">
@@ -217,181 +216,100 @@ canvas{
 </div>
 
 <script>
+// ----------------------- Supabase -----------------------
 const SUPABASE_URL = "https://yvciudpdvylmplpbfobo.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2Y2l1ZHBkdnlsbXBscGJmb2JvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODE5MTksImV4cCI6MjA3MTQ1NzkxOX0.kzMHyDj2A1Df5P0qJVdXdol8gkmnxmELYmad9gQX_WI"; // reemplaza con tu key
+const SUPABASE_ANON_KEY "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2Y2l1ZHBkdnlsbXBscGJmb2JvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODE5MTksImV4cCI6MjA3MTQ1NzkxOX0.kzMHyDj2A1Df5P0qJVdXdol8gkmnxmELYmad9gQX_WI";
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* ----------------------- Supabase Contadores ----------------------- */
-async function cargarContadores() {
-  const { data, error } = await supabase
-    .from("counters")
-    .select("*")
-    .eq("id", 1)
-    .single();
-  if(error){console.error(error); return;}
-  document.getElementById("visitas").innerText = data.visitas || 0;
-  document.getElementById("likes").innerText = data.likes || 0;
-  document.getElementById("dislikes").innerText = data.dislikes || 0;
+async function contarVisita() {
+  const { data, error } = await supabase.from("counters").select("*").eq("id", 1).single();
+  if(error) return console.error(error);
+  const nuevo = (data.visitas || 0)+1;
+  await supabase.from("counters").update({visitas:nuevo}).eq("id",1);
+  document.getElementById("visitas").innerText = nuevo;
 }
 
-async function contarVisita() {
-  const { data, error } = await supabase
-    .from("counters")
-    .select("visitas")
-    .eq("id", 1)
-    .single();
-  if(error){console.error(error); return;}
-  const nuevoValor = (data?.visitas||0)+1;
-  await supabase.from("counters").update({visitas:nuevoValor}).eq("id",1);
-  document.getElementById("visitas").innerText = nuevoValor;
+async function cargarContadores() {
+  const { data, error } = await supabase.from("counters").select("*").eq("id",1).single();
+  if(error) return console.error(error);
+  document.getElementById("likes").innerText = data.likes||0;
+  document.getElementById("dislikes").innerText = data.dislikes||0;
 }
 
 async function sumarLike(e){
   e.preventDefault();
-  const { data, error } = await supabase.from("counters").select("likes").eq("id",1).single();
-  if(error){console.error(error); return;}
-  const nuevoValor=(data?.likes||0)+1;
-  await supabase.from("counters").update({likes:nuevoValor}).eq("id",1);
-  document.getElementById("likes").innerText = nuevoValor;
+  const { data } = await supabase.from("counters").select("*").eq("id",1).single();
+  const nuevo = (data.likes||0)+1;
+  await supabase.from("counters").update({likes:nuevo}).eq("id",1);
+  document.getElementById("likes").innerText = nuevo;
 }
-
 async function sumarDislike(e){
   e.preventDefault();
-  const { data, error } = await supabase.from("counters").select("dislikes").eq("id",1).single();
-  if(error){console.error(error); return;}
-  const nuevoValor=(data?.dislikes||0)+1;
-  await supabase.from("counters").update({dislikes:nuevoValor}).eq("id",1);
-  document.getElementById("dislikes").innerText = nuevoValor;
+  const { data } = await supabase.from("counters").select("*").eq("id",1).single();
+  const nuevo = (data.dislikes||0)+1;
+  await supabase.from("counters").update({dislikes:nuevo}).eq("id",1);
+  document.getElementById("dislikes").innerText = nuevo;
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
-  cargarContadores();
   contarVisita();
+  cargarContadores();
 });
 
-document.querySelector(".like").addEventListener("click",sumarLike);
-document.querySelector(".dislike").addEventListener("click",sumarDislike);
-
-/* ----------------------- Resto de tu código original ----------------------- */
+// ----------------------- Animaciones y cálculo -----------------------
 let chart;
-function lanzarConfeti() {
-  const duration = 4000;
-  const end = Date.now() + duration;
-  (function frame() {
-    confetti({particleCount:10,startVelocity:3,gravity:.25,spread:360,ticks:200,origin:{x:Math.random(),y:Math.random()*0.4},colors:['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']});
-    if(Date.now()<end)requestAnimationFrame(frame);
-  })();
-}
-
-function beep(freq){
-  const ctx=new (AudioContext||webkitAudioContext)(),
-        o=ctx.createOscillator(),
-        g=ctx.createGain();
-  o.type="square";
-  o.frequency.value=freq;
-  o.connect(g);
-  g.connect(ctx.destination);
-  g.gain.setValueAtTime(.15,ctx.currentTime);
-  o.start();
-  o.stop(ctx.currentTime+.15);
-}
-function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
-
-function animateNumber(finalValue){
-  const resultado=document.getElementById("resultado");
-  const start=0,duration=2000,startTime=performance.now();
-  function step(now){
-    const p=Math.min((now-startTime)/duration,1);
-    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";
-    if(p<1)requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
+function lanzarConfeti(){ const duration=4000; const end=Date.now()+duration; (function frame(){ confetti({particleCount:10,startVelocity:3,gravity:0.25,spread:360,ticks:200,origin:{x:Math.random(),y:Math.random()*0.4},colors:['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']}); if(Date.now()<end) requestAnimationFrame(frame); })(); }
+function beep(freq){ const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain(); o.type="square"; o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15); }
+function vibrar(ms=80){if(navigator.vibrate) navigator.vibrate(ms);}
+function animateNumber(finalValue){const resultado=document.getElementById("resultado");const start=0,duration=2000,startTime=performance.now();function step(now){const p=Math.min((now-startTime)/duration,1);resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €"; if(p<1) requestAnimationFrame(step);} requestAnimationFrame(step);}
 
 function calcular(){
-  beep(600);vibrar(80);
-  const bpass=Number(document.getElementById("bpass").value)||0;
-  const comunes=Number(document.getElementById("comunes").value)||0;
-  const raras=Number(document.getElementById("raras").value)||0;
-  const epicas=Number(document.getElementById("epicas").value)||0;
-  const miticas=Number(document.getElementById("miticas").value)||0;
-  const legendarias=Number(document.getElementById("legendarias").value)||0;
-  const hipercarga=Number(document.getElementById("hipercarga").value)||0;
-  const maxeados=Number(document.getElementById("maxeados").value)||0;
+  beep(600); vibrar(80);
+  const bpass = +document.getElementById("bpass").value||0;
+  const comunes = +document.getElementById("comunes").value||0;
+  const raras = +document.getElementById("raras").value||0;
+  const epicas = +document.getElementById("epicas").value||0;
+  const miticas = +document.getElementById("miticas").value||0;
+  const legendarias = +document.getElementById("legendarias").value||0;
+  const hipercarga = +document.getElementById("hipercarga").value||0;
+  const maxeados = +document.getElementById("maxeados").value||0;
 
-  const valores={
-    "🎟️ Brawl Pass":bpass*10,
-    "🩵 Comunes":comunes*2,
-    "💚 Raras":raras*5,
-    "💜 Épicas":epicas*10,
-    "❤️ Míticas":miticas*12,
-    "🌟 Legendarias":legendarias*15,
-    "⚡ Hipercarga":hipercarga*20,
-    "🔥 Maxeados":maxeados*50
-  };
-
+  const valores={"🎟️ Brawl Pass":bpass*10,"🩵 Comunes":comunes*2,"💚 Raras":raras*5,"💜 Épicas":epicas*10,"❤️ Míticas":miticas*12,"🌟 Legendarias":legendarias*15,"⚡ Hipercarga":hipercarga*20,"🔥 Maxeados":maxeados*50};
   const total=Object.values(valores).reduce((a,b)=>a+b,0);
   animateNumber(total);
-  document.getElementById("centerDiamond").style.display = "block";
+  document.getElementById("centerDiamond").style.display="block";
 
-  const data={
-    labels:Object.keys(valores),
-    datasets:[{
-      data:Object.values(valores),
-      backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],
-      borderWidth:2
-    }]
-  };
-  const config={
-    type:'doughnut',
-    data:data,
-    options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}
-  };
-  if(chart){chart.destroy();}
-  const ctx = document.getElementById('myChart').getContext('2d');
-  chart = new Chart(ctx,config);
+  const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
+  const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
+  if(chart) chart.destroy();
+  const ctx=document.getElementById("myChart").getContext("2d");
+  chart=new Chart(ctx,config);
   lanzarConfeti();
-  document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
+  document.getElementById("myChart").scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
-  if(chart){chart.destroy();}
+  if(chart) chart.destroy();
   document.getElementById("centerDiamond").style.display="none";
 }
 
-document.getElementById("shareBtn").addEventListener("click", async () => {
-  const url = window.location.href;
-  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
+document.getElementById("calcBtn").addEventListener("click",calcular);
+document.getElementById("clearBtn").addEventListener("click",limpiar);
+document.getElementById("shareBtn").addEventListener("click",async ()=>{
+  const url=window.location.href;
+  const text="Mira cuánto valen mis Brawlers en Brawl Stars!";
   if(navigator.share){
-    try{await navigator.share({title:"Calculadora Brawl Stars", text, url});}
-    catch(err){console.log("Cancelado", err);}
-  }else{alert("Tu navegador no soporta compartir nativo.");}
+    try{await navigator.share({title:"Calculadora Brawl Stars",text,url});} catch(err){console.log("Cancelado",err);}
+  } else alert("Tu navegador no soporta compartir nativo.");
 });
 
-document.getElementById("calcBtn").addEventListener("click", calcular);
-document.getElementById("clearBtn").addEventListener("click", limpiar);
-
-const brawlers=[
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/penny.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/darryl.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
-];
+const brawlers=["https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png","https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png","https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png","https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png","https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png","https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/penny.png","https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/darryl.png","https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png","https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png","https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"];
 let current=0;
 const brawlerImg=document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display="block";
-setInterval(()=>{
-  current=(current+1)%brawlers.length;
-  brawlerImg.src=brawlers[current];
-},3000);
+setInterval(()=>{current=(current+1)%brawlers.length;brawlerImg.src=brawlers[current];},3000);
 </script>
 </body>
 </html>
