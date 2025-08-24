@@ -119,26 +119,48 @@ button {
   text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
 }
 
-/* Contadores alineados */
-.metrics {
+/* Contadores horizontal con recuadro neon */
+.metrics-horizontal {
   display: flex;
-  gap: 15px;
   justify-content: center;
+  gap: 40px;
   margin-top: 20px;
-  font-family: 'Bangers', cursive;
-  font-size: 1.5rem;
+  font-family: 'Orbitron', sans-serif;
 }
-.metrics span,
-.metrics button {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   font-size: 2rem;
 }
-.metrics button:disabled {
-  cursor: default;
-  opacity: 0.6;
+.counter {
+  display: inline-block;
+  min-width: 50px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 2rem;
+  text-shadow: 0 0 10px #fff, 0 0 20px #fff;
+}
+.counter.blue {
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #00CFFF;
+  color: #00CFFF;
+  text-shadow: 0 0 10px #00CFFF, 0 0 20px #00CFFF;
+}
+.counter.green {
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #00FF00;
+  color: #00FF00;
+  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+}
+.counter.red {
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #FF0000;
+  color: #FF0000;
+  text-shadow: 0 0 10px #FF0000, 0 0 20px #FF0000;
 }
 
 canvas{
@@ -183,21 +205,21 @@ canvas{
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <!-- Contadores estilo fila horizontal con recuadro debajo -->
-<div class="metrics-horizontal">
-  <div class="metric">
-    <span class="icon">👀</span>
-    <span id="visitas-counter" class="counter blue">0</span>
+  <!-- Contadores horizontal -->
+  <div class="metrics-horizontal">
+    <div class="metric">
+      <span class="icon">👀</span>
+      <span id="visitas-counter" class="counter blue">0</span>
+    </div>
+    <div class="metric">
+      <span class="icon like">👍</span>
+      <span id="likes-counter" class="counter green">0</span>
+    </div>
+    <div class="metric">
+      <span class="icon dislike">👎</span>
+      <span id="dislikes-counter" class="counter red">0</span>
+    </div>
   </div>
-  <div class="metric">
-    <span class="icon">👍</span>
-    <span id="likes-counter" class="counter green">0</span>
-  </div>
-  <div class="metric">
-    <span class="icon">👎</span>
-    <span id="dislikes-counter" class="counter red">0</span>
-  </div>
-</div>
 
   <div id="resultado">Valor total: 0 €</div>
 
@@ -217,57 +239,62 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
 )
 
-const pageId = 'pagina1'
-
-// Animar número tipo odómetro
-function animateCounter(element, start, end, duration = 1000){
-  const startTime = performance.now()
+// Animación tipo reloj digital
+function animateNumber(element, finalValue){
+  const start = parseInt(element.innerText) || 0;
+  const duration = 1000;
+  const startTime = performance.now();
   function step(now){
-    const progress = Math.min((now - startTime)/duration, 1)
-    const value = Math.floor(start + (end - start) * progress)
-    element.innerText = element.id === 'visitas' ? `👀 ${value}` :
-                        element.id === 'likeBtn' ? `👍 ${value}` : `👎 ${value}`
-    if(progress < 1) requestAnimationFrame(step)
+    const progress = Math.min((now - startTime)/duration, 1);
+    element.innerText = Math.floor(start + (finalValue-start)*progress);
+    if(progress < 1) requestAnimationFrame(step);
   }
-  requestAnimationFrame(step)
-}
-
-// Obtener métricas iniciales
-async function fetchMetrics(){
-  const { data, error } = await supabase
-    .from('metrics')
-    .select('visitas, likes, dislikes')
-    .eq('page_id', pageId)
-    .single()
-  if(error){ console.error(error); return { visitas:0, likes:0, dislikes:0 } }
-  return data
+  requestAnimationFrame(step);
 }
 
 // Incrementar visitas
-async function incrementarVisitas(){
-  await supabase.rpc('increment_visitas', { pid: pageId })
-  const data = await fetchMetrics()
-  animateCounter(document.getElementById('visitas'), 0, data.visitas)
+async function incrementarVisitas() {
+  try {
+    await supabase.rpc('increment_visitas', { pid: 'pagina1' });
+    const { data, error } = await supabase.from('metrics').select('visitas').eq('page_id','pagina1').single();
+    if(error) throw error;
+    animateNumber(document.getElementById('visitas-counter'), data.visitas || 0);
+  } catch(err){ console.error('Error visitas:', err); }
 }
 
-// Incrementar like/dislike considerando sesión
-async function votar(tipo){
-  const voted = sessionStorage.getItem('voto') || null
-  if(voted === tipo) return // ya votó igual, no hace nada
-
-  // Ajuste de RPC
-  if(voted === 'like') await supabase.rpc('increment_dislikes', { pid: pageId })
-  if(voted === 'dislike') await supabase.rpc('increment_likes', { pid: pageId })
-
-  await supabase.rpc(tipo === 'like' ? 'increment_likes' : 'increment_dislikes', { pid: pageId })
-  sessionStorage.setItem('voto', tipo)
-
-  const data = await fetchMetrics()
-  animateCounter(document.getElementById('likeBtn'), 0, data.likes)
-  animateCounter(document.getElementById('dislikeBtn'), 0, data.dislikes)
+// Likes y Dislikes
+async function incrementarLikes() {
+  if(localStorage.getItem('like')==='1') return;
+  try {
+    await supabase.rpc('increment_likes', { pid:'pagina1' });
+    localStorage.setItem('like','1'); localStorage.removeItem('dislike');
+    const { data, error } = await supabase.from('metrics').select('likes').eq('page_id','pagina1').single();
+    if(error) throw error;
+    animateNumber(document.getElementById('likes-counter'), data.likes||0);
+  } catch(err){ console.error('Error likes:', err); }
 }
 
-// Confeti, sonido y vibración
+async function incrementarDislikes() {
+  if(localStorage.getItem('dislike')==='1') return;
+  try {
+    await supabase.rpc('increment_dislikes', { pid:'pagina1' });
+    localStorage.setItem('dislike','1'); localStorage.removeItem('like');
+    const { data, error } = await supabase.from('metrics').select('dislikes').eq('page_id','pagina1').single();
+    if(error) throw error;
+    animateNumber(document.getElementById('dislikes-counter'), data.dislikes||0);
+  } catch(err){ console.error('Error dislikes:', err); }
+}
+
+// Eventos de clic para botones de like y dislike
+document.querySelector('.icon.like').addEventListener('click', incrementarLikes);
+document.querySelector('.icon.dislike').addEventListener('click', incrementarDislikes);
+
+// Inicializar visitas y contadores al cargar
+incrementarVisitas();
+
+// ======== RESTO DE TU SCRIPT ORIGINAL ========
+
+// Confeti
 function lanzarConfeti() {
   const duration = 4000;
   const end = Date.now() + duration;
@@ -284,8 +311,33 @@ function lanzarConfeti() {
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
 }
-function beep(freq){ const ctx=new (AudioContext||webkitAudioContext)(), o=ctx.createOscillator(), g=ctx.createGain(); o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15); }
+
+// Sonido y vibración
+function beep(freq){
+  const ctx=new (AudioContext||webkitAudioContext)(),
+        o=ctx.createOscillator(),
+        g=ctx.createGain();
+  o.type="square";
+  o.frequency.value=freq;
+  o.connect(g);
+  g.connect(ctx.destination);
+  g.gain.setValueAtTime(.15,ctx.currentTime);
+  o.start();
+  o.stop(ctx.currentTime+.15);
+}
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
+
+// Animar número resultado
+function animateResult(finalValue){
+  const resultado = document.getElementById("resultado");
+  const start=0,duration=2000,startTime=performance.now();
+  function step(now){
+    const p=Math.min((now-startTime)/duration,1);
+    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 
 // Gráfico y cálculo
 let chart;
@@ -311,14 +363,7 @@ function calcular(){
     "🔥 Maxeados":maxeados*50
   };
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  const resultado = document.getElementById("resultado");
-  const start=0,duration=2000,startTime=performance.now();
-  function step(now){
-    const p=Math.min((now-startTime)/duration,1)
-    resultado.innerText="Valor total: "+Math.floor(start+(total-start)*p)+" €";
-    if(p<1)requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
+  animateResult(total);
 
   document.getElementById("centerDiamond").style.display = "block";
 
@@ -333,7 +378,7 @@ function calcular(){
     }]
   };
 
-  const config={ type:'doughnut', data:data, options:{cutout:"70%", plugins:{legend:{display:true,position:'bottom'}}} };
+  const config={ type:'doughnut', data:data, options:{cutout:"70%", plugins:{legend:{display:true,position:'bottom'}}}};
 
   if(chart){chart.destroy();}
   const ctx = document.getElementById('myChart').getContext('2d');
@@ -344,6 +389,7 @@ function calcular(){
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
+// Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
@@ -351,11 +397,12 @@ function limpiar(){
   document.getElementById("centerDiamond").style.display="none";
 }
 
+// Compartir
 document.getElementById("shareBtn").addEventListener("click", async () => {
   const url = window.location.href;
   const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
   if (navigator.share) {
-    try { await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url }); } 
+    try { await navigator.share({ title: "Calculadora Brawl Stars", text, url }); } 
     catch (err) { console.log("Cancelado", err); }
   } else { alert("Tu navegador no soporta compartir nativo."); }
 });
@@ -376,22 +423,15 @@ const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
 ];
+
 let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
+
 setInterval(() => {
   current = (current + 1) % brawlers.length;
   brawlerImg.src = brawlers[current];
 }, 3000);
-
-// Inicializar métricas
-document.addEventListener('DOMContentLoaded', async ()=>{
-  const data = await fetchMetrics()
-  animateCounter(document.getElementById('visitas'), 0, data.visitas)
-  animateCounter(document.getElementById('likeBtn'), 0, data.likes)
-  animateCounter(document.getElementById('dislikeBtn'), 0, data.dislikes)
-  incrementarVisitas()
-})
 </script>
 </body>
 </html>
