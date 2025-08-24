@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
+/* ======== TU ESTILO ORIGINAL ======== */
 body {
   margin: 0;
   font-family: 'Bangers', cursive;
@@ -132,7 +133,7 @@ button {
   background: rgba(0,0,0,0.7);
   border: 2px solid #00CFFF;
   border-radius: 12px;
-  color: #00CFFF; /* Azul neon */
+  color: #00CFFF;
   text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
   animation: blink 1.5s infinite;
 }
@@ -194,12 +195,36 @@ canvas{
   </div>
 </div>
 
-<script>
-// Contador de visitas
-let visitas = localStorage.getItem("visitas") || 0;
-visitas++;
-localStorage.setItem("visitas", visitas);
-document.getElementById("visitas").innerText = visitas;
+<script type="module">
+// ======== CONTADOR DE VISITAS GLOBAL CON SUPABASE ========
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabase = createClient(
+  'https://ttkneykkrkbajymzsgcr.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
+)
+
+async function incrementarVisitas() {
+  try {
+    const { error } = await supabase.rpc('increment_visitas', { pid: 'pagina1' })
+    if (error) throw error
+
+    const { data, error: selectError } = await supabase
+      .from('metrics')
+      .select('visitas')
+      .eq('page_id', 'pagina1')
+      .single()
+    if (selectError) throw selectError
+
+    document.getElementById('visitas').innerText = data.visitas || 0
+  } catch (err) {
+    console.error('Error actualizando visitas:', err)
+  }
+}
+
+incrementarVisitas()
+
+// ======== RESTO DE TU SCRIPT ORIGINAL ========
 
 // Confeti
 function lanzarConfeti() {
@@ -213,7 +238,7 @@ function lanzarConfeti() {
       spread: 360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF'] // neon
+      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
@@ -246,7 +271,7 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
-// Gráfico
+// Gráfico y cálculo
 let chart;
 function calcular(){
   beep(600); vibrar(80);
@@ -279,25 +304,13 @@ function calcular(){
     datasets:[{
       data:Object.values(valores),
       backgroundColor:[
-        "#00FFFF", // neon cyan
-        "#00FF00", // neon green
-        "#FF00FF", // neon magenta
-        "#FFFF00", // neon yellow
-        "#FF4500", // neon orange
-        "#00CFFF", // neon blue
-        "#FF69B4", // neon pink
-        "#FF0000"  // neon red
+        "#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"
       ],
       borderWidth:2
     }]
   };
 
-  const config={
-    type:'doughnut',
-    data:data,
-    options:{
-      cutout:"70%",
-      plugins:{legend:{display:true,position:'bottom'}}
+  const config={ type:'doughnut', data:data, options:{cutout:"70%", plugins:{legend:{display:true,position:'bottom'}}
     }
   };
 
