@@ -2,97 +2,39 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Prueba Contadores Supabase</title>
+  <title>Prueba Visitas Supabase</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      text-align: center;
-      padding: 30px;
-    }
-    .contador {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      font-size: 24px;
-    }
-    .contador span {
-      cursor: pointer;
-      user-select: none;
-    }
+    body { font-family: Arial; text-align:center; margin-top:50px; }
+    span { font-size: 2rem; }
   </style>
 </head>
 <body>
-  <h1>Prueba Contadores Supabase</h1>
+  <h1>Contador de visitas 👀</h1>
+  <p>Visitas: <span id="visitasCount">0</span></p>
 
-  <div class="contador">
-    <span id="visitas">👀 <span id="visitasCount">0</span></span>
-    <span id="like">♥️ <span id="likesCount">0</span></span>
-    <span id="dislike">👎 <span id="dislikesCount">0</span></span>
-  </div>
+  <script>
+    // CONFIGURA TU SUPABASE
+    const SUPABASE_URL = "https://ttkneykkrkbajymzsgcr.supabase.co";
+    const SUPABASE_Key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
-  // ================== SUPABASE ==================
-  const SUPABASE_URL = "https://wmepcvsnjyljumwnqiwh.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtZXBjdnNuanlsanVtd25xaXdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5ODcwMDYsImV4cCI6MjA3MTU2MzAwNn0.wTUjpQ2Wrb7Dq4HVQR6R0eRpjHQfswzsvALyx25zOPM";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const ROW_ID = 1; // asegúrate de que tu fila con id=1 existe en la tabla estadisticas
+    const ROW_ID = 1; // fila inicial en la tabla estadisticas
 
-  let liked = false;
-  let disliked = false;
-
-  async function cargarEstadisticas() {
-    const { data, error } = await supabase.from("estadisticas").select("*").eq("id", ROW_ID).single();
-    if (!error && data) {
-      document.getElementById("visitasCount").textContent = data.visitas;
-      document.getElementById("likesCount").textContent = data.likes;
-      document.getElementById("dislikesCount").textContent = data.dislikes;
+    async function loadVisitas() {
+      const { data, error } = await supabase.from("estadisticas").select("visitas").eq("id", ROW_ID).single();
+      if(data) document.getElementById("visitasCount").innerText = data.visitas;
     }
-  }
 
-  async function incrementarVisita() {
-    await supabase.rpc("increment_visita", { row_id: ROW_ID });
-    cargarEstadisticas();
-  }
-
-  async function toggleLike() {
-    if (!liked) {
-      await supabase.rpc("increment_like", { row_id: ROW_ID });
-      liked = true;
-      if (disliked) {
-        await supabase.rpc("decrement_dislike", { row_id: ROW_ID });
-        disliked = false;
-      }
-    } else {
-      await supabase.rpc("decrement_like", { row_id: ROW_ID });
-      liked = false;
+    async function incrementarVisita() {
+      await supabase.rpc("increment_visita", { row_id: ROW_ID });
+      await loadVisitas();
     }
-    cargarEstadisticas();
-  }
 
-  async function toggleDislike() {
-    if (!disliked) {
-      await supabase.rpc("increment_dislike", { row_id: ROW_ID });
-      disliked = true;
-      if (liked) {
-        await supabase.rpc("decrement_like", { row_id: ROW_ID });
-        liked = false;
-      }
-    } else {
-      await supabase.rpc("decrement_dislike", { row_id: ROW_ID });
-      disliked = false;
+    // Al cargar la página
+    window.onload = async () => {
+      await incrementarVisita();
     }
-    cargarEstadisticas();
-  }
-
-  document.getElementById("like").addEventListener("click", toggleLike);
-  document.getElementById("dislike").addEventListener("click", toggleDislike);
-
-  // Al cargar la página
-  incrementarVisita();
-  cargarEstadisticas();
-</script>
+  </script>
 </body>
 </html>
