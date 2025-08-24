@@ -1,40 +1,360 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Prueba Visitas Supabase</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <style>
-    body { font-family: Arial; text-align:center; margin-top:50px; }
-    span { font-size: 2rem; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calculadora Brawl Stars</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+body {
+  margin: 0;
+  font-family: 'Bangers', cursive;
+  background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
+  background-size: cover;
+  color: white;
+  text-align: center;
+  position: relative;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 0;
+}
+.container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: transparent;
+  background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
+  -webkit-background-clip: text;
+}
+h1 .diamond {
+  animation: glow 3s infinite alternate;
+}
+@keyframes glow {
+  0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+  50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
+  100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+}
+form {
+  background: rgba(0,0,0,0.5);
+  border-radius: 60px;
+  padding: 20px;
+  max-width: 600px;
+  width:90%;
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+label {
+  display:flex;
+  justify-content:space-between;
+  margin:8px 0;
+  width:100%;
+}
+input {
+  width:100px;
+  text-align:center;
+  border:none;
+  border-radius:8px;
+}
+.buttons {
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  margin-top:15px;
+}
+button {
+  padding:10px 20px;
+  border:none;
+  border-radius:12px;
+  font-family:'Bangers';
+  font-size:1.5rem;
+  color:white;
+  cursor:pointer;
+}
+#calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
+#clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
+#shareBtn{
+  background:linear-gradient(90deg,#00FFAA,#FF00FF);
+  margin-top:20px;
+  animation:pulse 1s infinite;
+}
+@keyframes pulse{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.1)}
+  100%{transform:scale(1)}
+}
+
+/* Recuadro valor total */
+#resultado {
+  margin-top: 20px;
+  font-size: 2rem;
+  font-family: 'Bangers', cursive;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #00FF00;
+  border-radius: 12px;
+  color: #00FF00;
+  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+}
+
+/* Estilo digital odómetro visitas */
+.visitas {
+  margin-top: 20px;
+  font-family:'Bangers';
+  font-size: 1.4rem;
+}
+#visitas {
+  display: inline-block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem;
+  padding: 8px 18px;
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #00CFFF;
+  border-radius: 12px;
+  color: #00CFFF; /* Azul neon */
+  text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
+  animation: blink 1.5s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+canvas{
+  margin-top:15px;
+  max-width:400px;
+  position:relative;
+}
+
+/* Brawler central */
+#centerDiamond {
+  position: absolute;
+  top: 43%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+#centerDiamond img {
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: rgba(0,0,0,0.3);
+}
+</style>
 </head>
 <body>
-  <h1>Contador de visitas 👀</h1>
-  <p>Visitas: <span id="visitasCount">0</span></p>
+<div class="container">
+  <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
+  <form id="calcForm">
+    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
+    <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
+    <label>💚 Raras: <input type="number" id="raras" value="0"></label>
+    <label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
+    <label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
+    <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
+    <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
+    <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
+  </form>
+  <div class="buttons">
+    <button id="calcBtn">Calcular</button>
+    <button id="clearBtn">Limpiar</button>
+  </div>
+  <button id="shareBtn">📤 Compartir</button>
 
-  <script>
-    // CONFIGURA TU SUPABASE
-    const SUPABASE_URL = "https://ttkneykkrkbajymzsgcr.supabase.co";
-    const SUPABASE_Key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <div class="visitas">👀 Visitas: <span id="visitas">0</span></div>
+  <div id="resultado">Valor total: 0 €</div>
 
-    const ROW_ID = 1; // fila inicial en la tabla estadisticas
+  <div style="position:relative; display:inline-block;">
+    <canvas id="myChart" width="400" height="400"></canvas>
+    <div id="centerDiamond">
+      <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
+    </div>
+  </div>
+</div>
 
-    async function loadVisitas() {
-      const { data, error } = await supabase.from("estadisticas").select("visitas").eq("id", ROW_ID).single();
-      if(data) document.getElementById("visitasCount").innerText = data.visitas;
+<script>
+// Contador de visitas
+let visitas = localStorage.getItem("visitas") || 0;
+visitas++;
+localStorage.setItem("visitas", visitas);
+document.getElementById("visitas").innerText = visitas;
+
+// Confeti
+function lanzarConfeti() {
+  const duration = 4000;
+  const end = Date.now() + duration;
+  (function frame() {
+    confetti({
+      particleCount: 10,
+      startVelocity: 3,
+      gravity: 0.25,
+      spread: 360,
+      ticks: 200,
+      origin: { x: Math.random(), y: Math.random() * 0.4 },
+      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF'] // neon
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+}
+
+// Sonido y vibración
+function beep(freq){
+  const ctx=new (AudioContext||webkitAudioContext)(),
+        o=ctx.createOscillator(),
+        g=ctx.createGain();
+  o.type="square";
+  o.frequency.value=freq;
+  o.connect(g);
+  g.connect(ctx.destination);
+  g.gain.setValueAtTime(.15,ctx.currentTime);
+  o.start();
+  o.stop(ctx.currentTime+.15);
+}
+function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
+
+// Animar número
+function animateNumber(finalValue){
+  const resultado = document.getElementById("resultado");
+  const start=0,duration=2000,startTime=performance.now();
+  function step(now){
+    const p=Math.min((now-startTime)/duration,1);
+    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// Gráfico
+let chart;
+function calcular(){
+  beep(600); vibrar(80);
+  const bpass = document.getElementById("bpass").value || 0;
+  const comunes = document.getElementById("comunes").value || 0;
+  const raras = document.getElementById("raras").value || 0;
+  const epicas = document.getElementById("epicas").value || 0;
+  const miticas = document.getElementById("miticas").value || 0;
+  const legendarias = document.getElementById("legendarias").value || 0;
+  const hipercarga = document.getElementById("hipercarga").value || 0;
+  const maxeados = document.getElementById("maxeados").value || 0;
+
+  const valores={
+    "🎟️ Brawl Pass":bpass*10,
+    "🩵 Comunes":comunes*2,
+    "💚 Raras":raras*5,
+    "💜 Épicas":epicas*10,
+    "❤️ Míticas":miticas*12,
+    "🌟 Legendarias":legendarias*15,
+    "⚡ Hipercarga":hipercarga*20,
+    "🔥 Maxeados":maxeados*50
+  };
+  const total = Object.values(valores).reduce((a,b)=>a+b,0);
+  animateNumber(total);
+
+  document.getElementById("centerDiamond").style.display = "block";
+
+  const data={
+    labels:Object.keys(valores),
+    datasets:[{
+      data:Object.values(valores),
+      backgroundColor:[
+        "#00FFFF", // neon cyan
+        "#00FF00", // neon green
+        "#FF00FF", // neon magenta
+        "#FFFF00", // neon yellow
+        "#FF4500", // neon orange
+        "#00CFFF", // neon blue
+        "#FF69B4", // neon pink
+        "#FF0000"  // neon red
+      ],
+      borderWidth:2
+    }]
+  };
+
+  const config={
+    type:'doughnut',
+    data:data,
+    options:{
+      cutout:"70%",
+      plugins:{legend:{display:true,position:'bottom'}}
     }
+  };
 
-    async function incrementarVisita() {
-      await supabase.rpc("increment_visita", { row_id: ROW_ID });
-      await loadVisitas();
-    }
+  if(chart){chart.destroy();}
+  const ctx = document.getElementById('myChart').getContext('2d');
+  chart = new Chart(ctx,config);
 
-    // Al cargar la página
-    window.onload = async () => {
-      await incrementarVisita();
-    }
-  </script>
+  lanzarConfeti();
+
+  // Scroll automático al gráfico
+  document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+// Limpiar
+function limpiar(){
+  document.getElementById("calcForm").reset();
+  document.getElementById("resultado").innerText="Valor total: 0 €";
+  if(chart){chart.destroy();}
+  document.getElementById("centerDiamond").style.display="none";
+}
+
+// Botón compartir
+document.getElementById("shareBtn").addEventListener("click", async () => {
+  const url = window.location.href;
+  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
+    } catch (err) { console.log("Cancelado", err); }
+  } else { alert("Tu navegador no soporta compartir nativo."); }
+});
+
+document.getElementById("calcBtn").addEventListener("click",calcular);
+document.getElementById("clearBtn").addEventListener("click",limpiar);
+
+// Cambiar Brawler central cada 3 segundos
+const brawlers = [
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/penny.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/darryl.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
+];
+
+let current = 0;
+const brawlerImg = document.getElementById("brawlerImg");
+document.getElementById("centerDiamond").style.display = "block";
+
+setInterval(() => {
+  current = (current + 1) % brawlers.length;
+  brawlerImg.src = brawlers[current];
+}, 3000);
+</script>
 </body>
 </html>
