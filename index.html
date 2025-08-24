@@ -8,7 +8,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
-/* ======== TU ESTILO ORIGINAL ======== */
 body {
   margin: 0;
   font-family: 'Bangers', cursive;
@@ -105,8 +104,6 @@ button {
   50%{transform:scale(1.1)}
   100%{transform:scale(1)}
 }
-
-/* Recuadro valor total */
 #resultado {
   margin-top: 20px;
   font-size: 2rem;
@@ -119,55 +116,34 @@ button {
   text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
 }
 
-/* Contadores horizontal con recuadro neon */
-.metrics-horizontal {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-top: 20px;
-  font-family: 'Orbitron', sans-serif;
+/* Contadores estilo neon vertical */
+.metric-container {
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  margin-top:20px;
 }
 .metric {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  font-size: 2rem;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  font-family:'Orbitron', sans-serif;
+  font-size:2rem;
 }
-.counter {
-  display: inline-block;
-  min-width: 50px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  text-align: center;
-  font-weight: bold;
-  font-size: 2rem;
-  text-shadow: 0 0 10px #fff, 0 0 20px #fff;
+.metric span.counter {
+  display:inline-block;
+  width:60px;
+  text-align:center;
+  border-radius:12px;
+  padding:8px 0;
+  font-weight:bold;
+  color:white;
+  text-shadow:0 0 8px currentColor,0 0 15px currentColor;
 }
-.counter.blue {
-  background: rgba(0,0,0,0.7);
-  border: 2px solid #00CFFF;
-  color: #00CFFF;
-  text-shadow: 0 0 10px #00CFFF, 0 0 20px #00CFFF;
-}
-.counter.green {
-  background: rgba(0,0,0,0.7);
-  border: 2px solid #00FF00;
-  color: #00FF00;
-  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-}
-.counter.red {
-  background: rgba(0,0,0,0.7);
-  border: 2px solid #FF0000;
-  color: #FF0000;
-  text-shadow: 0 0 10px #FF0000, 0 0 20px #FF0000;
-}
-
-canvas{
-  margin-top:15px;
-  max-width:400px;
-  position:relative;
-}
+#visitas-counter { background: #00CFFF; }
+#likes-counter { background: #00FF00; }
+#dislikes-counter { background: #FF0000; }
 
 /* Brawler central */
 #centerDiamond {
@@ -183,6 +159,12 @@ canvas{
   border-radius: 50%;
   object-fit: contain;
   background: rgba(0,0,0,0.3);
+}
+
+canvas{
+  margin-top:15px;
+  max-width:400px;
+  position:relative;
 }
 </style>
 </head>
@@ -205,24 +187,22 @@ canvas{
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <!-- Contadores horizontal -->
-  <div class="metrics-horizontal">
+  <div class="metric-container">
     <div class="metric">
       <span class="icon">👀</span>
-      <span id="visitas-counter" class="counter blue">0</span>
+      <span class="counter" id="visitas-counter">0</span>
     </div>
     <div class="metric">
-      <span class="icon like">👍</span>
-      <span id="likes-counter" class="counter green">0</span>
+      <span class="icon">👍</span>
+      <span class="counter" id="likes-counter">0</span>
     </div>
     <div class="metric">
-      <span class="icon dislike">👎</span>
-      <span id="dislikes-counter" class="counter red">0</span>
+      <span class="icon">👎</span>
+      <span class="counter" id="dislikes-counter">0</span>
     </div>
   </div>
 
   <div id="resultado">Valor total: 0 €</div>
-
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
     <div id="centerDiamond">
@@ -239,60 +219,65 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
 )
 
-// Animación tipo reloj digital
-function animateNumber(element, finalValue){
-  const start = parseInt(element.innerText) || 0;
-  const duration = 1000;
-  const startTime = performance.now();
+let hasLiked = false;
+let hasDisliked = false;
+
+async function actualizarMetricas() {
+  const { data, error } = await supabase
+    .from('metrics')
+    .select('visitas, likes, dislikes')
+    .eq('page_id','pagina1')
+    .single();
+  if(error){ console.error(error); return; }
+  animateCounter('visitas-counter', data.visitas);
+  animateCounter('likes-counter', data.likes);
+  animateCounter('dislikes-counter', data.dislikes);
+}
+
+function animateCounter(id, value){
+  const el = document.getElementById(id);
+  let start = parseInt(el.innerText) || 0;
+  let end = value;
+  let duration = 500;
+  let startTime = performance.now();
   function step(now){
-    const progress = Math.min((now - startTime)/duration, 1);
-    element.innerText = Math.floor(start + (finalValue-start)*progress);
-    if(progress < 1) requestAnimationFrame(step);
+    const progress = Math.min((now-startTime)/duration,1);
+    el.innerText = Math.floor(start + (end-start)*progress);
+    if(progress<1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 }
 
-// Incrementar visitas
-async function incrementarVisitas() {
-  try {
-    await supabase.rpc('increment_visitas', { pid: 'pagina1' });
-    const { data, error } = await supabase.from('metrics').select('visitas').eq('page_id','pagina1').single();
-    if(error) throw error;
-    animateNumber(document.getElementById('visitas-counter'), data.visitas || 0);
-  } catch(err){ console.error('Error visitas:', err); }
-}
+// Incrementar visitas al cargar
+(async ()=> {
+  await supabase.rpc('increment_visitas',{pid:'pagina1'});
+  actualizarMetricas();
+})();
 
-// Likes y Dislikes
-async function incrementarLikes() {
-  if(localStorage.getItem('like')==='1') return;
-  try {
-    await supabase.rpc('increment_likes', { pid:'pagina1' });
-    localStorage.setItem('like','1'); localStorage.removeItem('dislike');
-    const { data, error } = await supabase.from('metrics').select('likes').eq('page_id','pagina1').single();
-    if(error) throw error;
-    animateNumber(document.getElementById('likes-counter'), data.likes||0);
-  } catch(err){ console.error('Error likes:', err); }
-}
+// Likes / Dislikes
+document.getElementById('likes-counter').parentElement.addEventListener('click', async ()=>{
+  if(hasLiked && !hasDisliked) return;
+  if(hasDisliked){
+    await supabase.rpc('decrement_dislikes',{pid:'pagina1'});
+    hasDisliked=false;
+  }
+  await supabase.rpc('increment_likes',{pid:'pagina1'});
+  hasLiked=true;
+  actualizarMetricas();
+});
 
-async function incrementarDislikes() {
-  if(localStorage.getItem('dislike')==='1') return;
-  try {
-    await supabase.rpc('increment_dislikes', { pid:'pagina1' });
-    localStorage.setItem('dislike','1'); localStorage.removeItem('like');
-    const { data, error } = await supabase.from('metrics').select('dislikes').eq('page_id','pagina1').single();
-    if(error) throw error;
-    animateNumber(document.getElementById('dislikes-counter'), data.dislikes||0);
-  } catch(err){ console.error('Error dislikes:', err); }
-}
+document.getElementById('dislikes-counter').parentElement.addEventListener('click', async ()=>{
+  if(hasDisliked && !hasLiked) return;
+  if(hasLiked){
+    await supabase.rpc('decrement_likes',{pid:'pagina1'});
+    hasLiked=false;
+  }
+  await supabase.rpc('increment_dislikes',{pid:'pagina1'});
+  hasDisliked=true;
+  actualizarMetricas();
+});
 
-// Eventos de clic para botones de like y dislike
-document.querySelector('.icon.like').addEventListener('click', incrementarLikes);
-document.querySelector('.icon.dislike').addEventListener('click', incrementarDislikes);
-
-// Inicializar visitas y contadores al cargar
-incrementarVisitas();
-
-// ======== RESTO DE TU SCRIPT ORIGINAL ========
+// ====== RESTO DEL SCRIPT ORIGINAL ======
 
 // Confeti
 function lanzarConfeti() {
@@ -327,8 +312,8 @@ function beep(freq){
 }
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
 
-// Animar número resultado
-function animateResult(finalValue){
+// Animar número
+function animateNumber(finalValue){
   const resultado = document.getElementById("resultado");
   const start=0,duration=2000,startTime=performance.now();
   function step(now){
@@ -363,8 +348,7 @@ function calcular(){
     "🔥 Maxeados":maxeados*50
   };
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  animateResult(total);
-
+  animateNumber(total);
   document.getElementById("centerDiamond").style.display = "block";
 
   const data={
@@ -377,19 +361,14 @@ function calcular(){
       borderWidth:2
     }]
   };
-
   const config={ type:'doughnut', data:data, options:{cutout:"70%", plugins:{legend:{display:true,position:'bottom'}}}};
-
   if(chart){chart.destroy();}
   const ctx = document.getElementById('myChart').getContext('2d');
   chart = new Chart(ctx,config);
-
   lanzarConfeti();
-
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-// Limpiar
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
@@ -397,18 +376,18 @@ function limpiar(){
   document.getElementById("centerDiamond").style.display="none";
 }
 
-// Compartir
+document.getElementById("calcBtn").addEventListener("click",calcular);
+document.getElementById("clearBtn").addEventListener("click",limpiar);
+
 document.getElementById("shareBtn").addEventListener("click", async () => {
   const url = window.location.href;
   const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
   if (navigator.share) {
-    try { await navigator.share({ title: "Calculadora Brawl Stars", text, url }); } 
-    catch (err) { console.log("Cancelado", err); }
+    try {
+      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
+    } catch (err) { console.log("Cancelado", err); }
   } else { alert("Tu navegador no soporta compartir nativo."); }
 });
-
-document.getElementById("calcBtn").addEventListener("click",calcular);
-document.getElementById("clearBtn").addEventListener("click",limpiar);
 
 // Cambiar Brawler central cada 3 segundos
 const brawlers = [
@@ -423,7 +402,7 @@ const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
 ];
-
+  
 let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
