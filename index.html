@@ -183,11 +183,21 @@ canvas{
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <div class="metrics">
-    <span id="visitas">👀 0</span>
-    <button id="likeBtn">👍 0</button>
-    <button id="dislikeBtn">👎 0</button>
+  <!-- Contadores alineados -->
+<div class="metric-container">
+  <div class="metric">
+    <span class="icon">👀</span>
+    <span id="visitas-counter">0</span>
   </div>
+  <div class="metric">
+    <span class="icon like">👍</span>
+    <span id="likes-counter">0</span>
+  </div>
+  <div class="metric">
+    <span class="icon dislike">👎</span>
+    <span id="dislikes-counter">0</span>
+  </div>
+</div>
 
   <div id="resultado">Valor total: 0 €</div>
 
