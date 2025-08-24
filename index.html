@@ -8,7 +8,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
-/* ======== ESTILO ORIGINAL ======== */
 body {
   margin: 0;
   font-family: 'Bangers', cursive;
@@ -47,7 +46,9 @@ h1 {
   background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
   -webkit-background-clip: text;
 }
-h1 .diamond { animation: glow 3s infinite alternate; }
+h1 .diamond {
+  animation: glow 3s infinite alternate;
+}
 @keyframes glow {
   0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
   50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
@@ -133,33 +134,49 @@ canvas{
   object-fit: contain;
   background: rgba(0,0,0,0.3);
 }
-/* ======= CONTADORES NEON ======= */
+
+/* ===== Contadores neon alineados horizontal ===== */
 .metric-container {
-  display:flex;
-  justify-content:center;
-  gap:15px;
-  margin-top:20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
 }
-.metric-box {
-  width:60px;
-  height:60px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  font-family:'Orbitron';
-  font-size:1.8rem;
-  border: 2px solid;
-  border-radius:12px;
-  background: rgba(0,0,0,0.5);
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Orbitron', sans-serif;
 }
-.metric-box.blue { border-color:#00CFFF; color:#00CFFF; animation: neon-blue 2s infinite alternate; }
-.metric-box.green { border-color:#00FF00; color:#00FF00; animation: neon-green 2s infinite alternate; }
-.metric-box.red { border-color:#FF0000; color:#FF0000; animation: neon-red 2s infinite alternate; }
-@keyframes neon-blue { from {box-shadow:0 0 5px #00CFFF;} to {box-shadow:0 0 20px #00CFFF;} }
-@keyframes neon-green { from {box-shadow:0 0 5px #00FF00;} to {box-shadow:0 0 20px #00FF00;} }
-@keyframes neon-red { from {box-shadow:0 0 5px #FF0000;} to {box-shadow:0 0 20px #FF0000;} }
-.flash { box-shadow: 0 0 25px white !important; transition:box-shadow 0.5s ease; cursor:pointer; }
+.metric span.icon {
+  font-size: 2rem;
+}
+.metric span.counter {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 8px 18px;
+  min-width: 50px;
+  text-align: center;
+  border-radius: 12px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+}
+.metric span.counter.visitas {
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #00CFFF;
+  color: #00CFFF;
+}
+.metric span.counter.like {
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #00FF00;
+  color: #00FF00;
+}
+.metric span.counter.dislike {
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #FF0000;
+  color: #FF0000;
+}
 </style>
 </head>
 <body>
@@ -181,10 +198,20 @@ canvas{
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
+  <!-- Contadores 👀 👍 👎 -->
   <div class="metric-container">
-    <div class="metric-box blue" id="visitas-box">👀<div id="visitas-counter">0</div></div>
-    <div class="metric-box green" id="likes-box">👍<div id="likes-counter">0</div></div>
-    <div class="metric-box red" id="dislikes-box">👎<div id="dislikes-counter">0</div></div>
+    <div class="metric">
+      <span class="icon">👀</span>
+      <span id="visitas-counter" class="counter visitas">0</span>
+    </div>
+    <div class="metric">
+      <span class="icon">👍</span>
+      <span id="likes-counter" class="counter like">0</span>
+    </div>
+    <div class="metric">
+      <span class="icon">👎</span>
+      <span id="dislikes-counter" class="counter dislike">0</span>
+    </div>
   </div>
 
   <div id="resultado">Valor total: 0 €</div>
@@ -205,175 +232,60 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
 )
 
-async function actualizarMetricas(type) {
+// ======== Funciones métricas Supabase ========
+async function actualizarMetric(tipo) {
   try {
-    await supabase.rpc('increment_metric', { pid: 'pagina1', metric_type: type })
+    await supabase.rpc('increment_metric', { page: 'pagina1', metric: tipo })
     const { data, error } = await supabase
       .from('metrics')
       .select('visitas, likes, dislikes')
       .eq('page_id','pagina1')
       .single()
-    if (error) throw error
+    if(error) throw error
     document.getElementById('visitas-counter').innerText = data.visitas
     document.getElementById('likes-counter').innerText = data.likes
     document.getElementById('dislikes-counter').innerText = data.dislikes
   } catch(e){console.error(e)}
 }
 
-// Inicializamos contador
-actualizarMetricas('visitas')
+// Incrementar visitas automáticamente
+actualizarMetric('visitas')
 
-// Función glow y flash
-function flashBox(boxId){ const box=document.getElementById(boxId); box.classList.add('flash'); setTimeout(()=>box.classList.remove('flash'),1000) }
-
-// Botones de like/dislike (solo 1 click por usuario/session)
-let voted = null;
-document.getElementById('likes-box').addEventListener('click',()=>{
-  if(voted==='like'){ return }
-  voted='like'
-  flashBox('likes-box')
-  actualizarMetricas('likes')
+// Botones like/dislike solo 1 vez por sesión
+let voted = sessionStorage.getItem('voted') || null
+document.getElementById('likes-counter').addEventListener('click', () => {
+  if(voted!=='like'){ actualizarMetric('likes'); voted='like'; sessionStorage.setItem('voted','like') }
 })
-document.getElementById('dislikes-box').addEventListener('click',()=>{
-  if(voted==='dislike'){ return }
-  voted='dislike'
-  flashBox('dislikes-box')
-  actualizarMetricas('dislikes')
+document.getElementById('dislikes-counter').addEventListener('click', () => {
+  if(voted!=='dislike'){ actualizarMetric('dislikes'); voted='dislike'; sessionStorage.setItem('voted','dislike') }
 })
 
-// ======== RESTO SCRIPT ORIGINAL ========
+// ===== Resto tu script original (confeti, calcular, limpiar, compartir, brawlers) =====
 
 // Confeti
-function lanzarConfeti() {
-  const duration = 4000;
-  const end = Date.now() + duration;
-  (function frame() {
-    confetti({
-      particleCount: 10,
-      startVelocity: 3,
-      gravity: 0.25,
-      spread: 360,
-      ticks: 200,
-      origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']
-    });
-    if (Date.now() < end) requestAnimationFrame(frame);
-  })();
-}
-
-// Sonido y vibración
-function beep(freq){
-  const ctx=new (AudioContext||webkitAudioContext)(),
-        o=ctx.createOscillator(),
-        g=ctx.createGain();
-  o.type="square";
-  o.frequency.value=freq;
-  o.connect(g);
-  g.connect(ctx.destination);
-  g.gain.setValueAtTime(.15,ctx.currentTime);
-  o.start();
-  o.stop(ctx.currentTime+.15);
-}
+function lanzarConfeti() { const duration=4000,end=Date.now()+duration;(function frame(){confetti({particleCount:10,startVelocity:3,gravity:0.25,spread:360,ticks:200,origin:{x:Math.random(),y:Math.random()*0.4},colors:['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']});if(Date.now()<end)requestAnimationFrame(frame);})(); }
+function beep(freq){const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=freq;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);o.start();o.stop(ctx.currentTime+.15);}
 function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
-
-// Animar número
-function animateNumber(finalValue){
-  const resultado = document.getElementById("resultado");
-  const start=0,duration=2000,startTime=performance.now();
-  function step(now){
-    const p=Math.min((now-startTime)/duration,1);
-    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";
-    if(p<1)requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-// Gráfico y cálculo
+function animateNumber(finalValue){const resultado=document.getElementById("resultado"),start=0,duration=2000,startTime=performance.now();function step(now){const p=Math.min((now-startTime)/duration,1);resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";if(p<1)requestAnimationFrame(step);}requestAnimationFrame(step);}
 let chart;
-function calcular(){
-  beep(600); vibrar(80);
-  const bpass = document.getElementById("bpass").value || 0;
-  const comunes = document.getElementById("comunes").value || 0;
-  const raras = document.getElementById("raras").value || 0;
-  const epicas = document.getElementById("epicas").value || 0;
-  const miticas = document.getElementById("miticas").value || 0;
-  const legendarias = document.getElementById("legendarias").value || 0;
-  const hipercarga = document.getElementById("hipercarga").value || 0;
-  const maxeados = document.getElementById("maxeados").value || 0;
-
-  const valores={
-    "🎟️ Brawl Pass":bpass*10,
-    "🩵 Comunes":comunes*2,
-    "💚 Raras":raras*5,
-    "💜 Épicas":epicas*10,
-    "❤️ Míticas":miticas*12,
-    "🌟 Legendarias":legendarias*15,
-    "⚡ Hipercarga":hipercarga*20,
-    "🔥 Maxeados":maxeados*50
-  };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  animateNumber(total);
-
-  document.getElementById("centerDiamond").style.display = "block";
-
-  const data={
-    labels:Object.keys(valores),
-    datasets:[{ data:Object.values(valores),
-      backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],
-      borderWidth:2 }]
-  };
-  const config={ type:'doughnut', data:data, options:{cutout:"70%", plugins:{legend:{display:true,position:'bottom'}}}};
-  if(chart){chart.destroy();}
-  const ctx = document.getElementById('myChart').getContext('2d');
-  chart = new Chart(ctx,config);
-
-  lanzarConfeti();
-  document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
-}
-
-// Limpiar
-function limpiar(){
-  document.getElementById("calcForm").reset();
-  document.getElementById("resultado").innerText="Valor total: 0 €";
-  if(chart){chart.destroy();}
-  document.getElementById("centerDiamond").style.display="none";
-}
-
-// Compartir
-document.getElementById("shareBtn").addEventListener("click", async () => {
-  const url = window.location.href;
-  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-  if (navigator.share) {
-    try { await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url }); } 
-    catch (err) { console.log("Cancelado", err); }
-  } else { alert("Tu navegador no soporta compartir nativo."); }
-});
-
+function calcular(){beep(600);vibrar(80);const bpass=document.getElementById("bpass").value||0;const comunes=document.getElementById("comunes").value||0;const raras=document.getElementById("raras").value||0;const epicas=document.getElementById("epicas").value||0;const miticas=document.getElementById("miticas").value||0;const legendarias=document.getElementById("legendarias").value||0;const hipercarga=document.getElementById("hipercarga").value||0;const maxeados=document.getElementById("maxeados").value||0;const valores={"🎟️ Brawl Pass":bpass*10,"🩵 Comunes":comunes*2,"💚 Raras":raras*5,"💜 Épicas":epicas*10,"❤️ Míticas":miticas*12,"🌟 Legendarias":legendarias*15,"⚡ Hipercarga":hipercarga*20,"🔥 Maxeados":maxeados*50};const total=Object.values(valores).reduce((a,b)=>a+b,0);animateNumber(total);document.getElementById("centerDiamond").style.display="block";const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};if(chart){chart.destroy();}const ctx=document.getElementById('myChart').getContext('2d');chart=new Chart(ctx,config);lanzarConfeti();document.getElementById('myChart').scrollIntoView({behavior:'smooth',block:'center'});}
+function limpiar(){document.getElementById("calcForm").reset();document.getElementById("resultado").innerText="Valor total: 0 €";if(chart){chart.destroy();}document.getElementById("centerDiamond").style.display="none";}
+document.getElementById("shareBtn").addEventListener("click",async()=>{const url=window.location.href,const text="Mira cuánto valen mis Brawlers en Brawl Stars!";if(navigator.share){try{await navigator.share({title:"Calculadora Brawl Stars",text:text,url:url});}catch(err){console.log("Cancelado",err);}}else{alert("Tu navegador no soporta compartir nativo.");}});
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
 
-// Cambiar Brawler central cada 3 segundos
-const brawlers = [
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/penny.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/darryl.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
-  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
-];
-
-let current = 0;
-const brawlerImg = document.getElementById("brawlerImg");
-document.getElementById("centerDiamond").style.display = "block";
-
-setInterval(() => {
-  current = (current + 1) % brawlers.length;
-  brawlerImg.src = brawlers[current];
-}, 3000);
+const brawlers=[
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/penny.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/darryl.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"];
+let current=0;const brawlerImg=document.getElementById("brawlerImg");document.getElementById("centerDiamond").style.display="block";setInterval(()=>{current=(current+1)%brawlers.length;brawlerImg.src=brawlers[current];},3000);
 
 </script>
 </body>
