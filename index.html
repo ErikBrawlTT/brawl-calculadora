@@ -239,16 +239,24 @@ function animateCounter(id, value){
 }
 
 /* Cargar métricas actuales */
-async function cargarMetricas(){
-  const { data, error } = await supabase
-    .from('metrics')
-    .select('visitas,likes,dislikes')
-    .eq('page_id', PAGE_ID)
-    .single();
+  async function votar(tipo){
+  const prev = localStorage.getItem('vote'); // 'like' | 'dislike' | null
+  try{
+    if(prev === tipo) return; // ya votó igual
 
-  if (error) {
-    console.error('Error al cargar métricas:', error);
-    return;
+    // Incrementa solo el tipo actual
+    if(tipo === 'like') await supabase.rpc('increment_likes', { pid: PAGE_ID });
+    if(tipo === 'dislike') await supabase.rpc('increment_dislikes', { pid: PAGE_ID });
+
+    // Guarda la elección del usuario
+    localStorage.setItem('vote', tipo);
+
+    // Actualiza contadores visualmente
+    await cargarMetricas();
+  }catch(e){
+    console.error('Error al votar:', e);
+  }
+}
   }
   animateCounter('visitas-counter', data.visitas);
   animateCounter('likes-counter', data.likes);
