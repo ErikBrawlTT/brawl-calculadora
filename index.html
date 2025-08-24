@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
+/* ======== TU ESTILO ORIGINAL ======== */
 body {
   margin: 0;
   font-family: 'Bangers', cursive;
@@ -46,7 +47,9 @@ h1 {
   background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
   -webkit-background-clip: text;
 }
-h1 .diamond { animation: glow 3s infinite alternate; }
+h1 .diamond {
+  animation: glow 3s infinite alternate;
+}
 @keyframes glow {
   0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
   50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
@@ -69,8 +72,18 @@ label {
   margin:8px 0;
   width:100%;
 }
-input { width:100px; text-align:center; border:none; border-radius:8px; }
-.buttons { display:flex; justify-content:center; gap:25px; margin-top:15px; }
+input {
+  width:100px;
+  text-align:center;
+  border:none;
+  border-radius:8px;
+}
+.buttons {
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  margin-top:15px;
+}
 button {
   padding:10px 20px;
   border:none;
@@ -92,6 +105,8 @@ button {
   50%{transform:scale(1.1)}
   100%{transform:scale(1)}
 }
+
+/* Recuadro valor total */
 #resultado {
   margin-top: 20px;
   font-size: 2rem;
@@ -103,38 +118,50 @@ button {
   color: #00FF00;
   text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
 }
-.visitas {
+
+/* Contadores alineados */
+.metrics {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
   margin-top: 20px;
-  font-family:'Bangers';
-  font-size: 1.4rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1.5rem;
 }
-#visitas, #likesCounter, #dislikesCounter {
-  display: inline-block;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
-  padding: 8px 18px;
-  background: rgba(0,0,0,0.7);
-  border: 2px solid #00CFFF;
-  border-radius: 12px;
-  color: #00CFFF;
-  text-shadow: 0 0 8px #00CFFF, 0 0 15px #00CFFF;
-  animation: blink 1.5s infinite;
-}
-#likeBtn, #dislikeBtn {
-  font-size: 2rem;
-  padding: 5px 10px;
-  margin-left: 5px;
-  border-radius: 50%;
+.metrics span,
+.metrics button {
+  background: none;
   border: none;
+  color: white;
   cursor: pointer;
+  font-size: 2rem;
 }
-#likeBtn { background:#00FF00; }
-#dislikeBtn { background:#FF0000; }
-#likeBtn:disabled, #dislikeBtn:disabled { opacity:0.5; cursor:not-allowed; }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-canvas{ margin-top:15px; max-width:400px; position:relative; }
-#centerDiamond { position: absolute; top: 43%; left: 50%; transform: translate(-50%, -50%); display: none; }
-#centerDiamond img { width: 210px; height: 210px; border-radius: 50%; object-fit: contain; background: rgba(0,0,0,0.3); }
+.metrics button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+canvas{
+  margin-top:15px;
+  max-width:400px;
+  position:relative;
+}
+
+/* Brawler central */
+#centerDiamond {
+  position: absolute;
+  top: 43%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+#centerDiamond img {
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: rgba(0,0,0,0.3);
+}
 </style>
 </head>
 <body>
@@ -156,11 +183,12 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <div class="visitas">
-    👀 <span id="visitas">0</span>
-    👍 <span id="likesCounter">0</span> <button id="likeBtn">👍</button>
-    👎 <span id="dislikesCounter">0</span> <button id="dislikeBtn">👎</button>
+  <div class="metrics">
+    <span id="visitas">👀 0</span>
+    <button id="likeBtn">👍 0</button>
+    <button id="dislikeBtn">👎 0</button>
   </div>
+
   <div id="resultado">Valor total: 0 €</div>
 
   <div style="position:relative; display:inline-block;">
@@ -177,65 +205,59 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabase = createClient(
   'https://ttkneykkrkbajymzsgcr.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
-);
+)
 
-const pageId = 'pagina1';
+const pageId = 'pagina1'
 
-async function actualizarContadores() {
+// Animar número tipo odómetro
+function animateCounter(element, start, end, duration = 1000){
+  const startTime = performance.now()
+  function step(now){
+    const progress = Math.min((now - startTime)/duration, 1)
+    const value = Math.floor(start + (end - start) * progress)
+    element.innerText = element.id === 'visitas' ? `👀 ${value}` :
+                        element.id === 'likeBtn' ? `👍 ${value}` : `👎 ${value}`
+    if(progress < 1) requestAnimationFrame(step)
+  }
+  requestAnimationFrame(step)
+}
+
+// Obtener métricas iniciales
+async function fetchMetrics(){
   const { data, error } = await supabase
     .from('metrics')
     .select('visitas, likes, dislikes')
     .eq('page_id', pageId)
-    .single();
-  if(!error && data){
-    document.getElementById('visitas').innerText = data.visitas;
-    document.getElementById('likesCounter').innerText = data.likes;
-    document.getElementById('dislikesCounter').innerText = data.dislikes;
-  }
+    .single()
+  if(error){ console.error(error); return { visitas:0, likes:0, dislikes:0 } }
+  return data
 }
 
-async function incrementarVisitas() {
-  await supabase.rpc('increment_visitas', { pid: pageId });
-  actualizarContadores();
+// Incrementar visitas
+async function incrementarVisitas(){
+  await supabase.rpc('increment_visitas', { pid: pageId })
+  const data = await fetchMetrics()
+  animateCounter(document.getElementById('visitas'), 0, data.visitas)
 }
 
-async function incrementarLikes() {
-  await supabase.rpc('increment_likes', { pid: pageId });
-  actualizarContadores();
+// Incrementar like/dislike considerando sesión
+async function votar(tipo){
+  const voted = sessionStorage.getItem('voto') || null
+  if(voted === tipo) return // ya votó igual, no hace nada
+
+  // Ajuste de RPC
+  if(voted === 'like') await supabase.rpc('increment_dislikes', { pid: pageId })
+  if(voted === 'dislike') await supabase.rpc('increment_likes', { pid: pageId })
+
+  await supabase.rpc(tipo === 'like' ? 'increment_likes' : 'increment_dislikes', { pid: pageId })
+  sessionStorage.setItem('voto', tipo)
+
+  const data = await fetchMetrics()
+  animateCounter(document.getElementById('likeBtn'), 0, data.likes)
+  animateCounter(document.getElementById('dislikeBtn'), 0, data.dislikes)
 }
 
-async function incrementarDislikes() {
-  await supabase.rpc('increment_dislikes', { pid: pageId });
-  actualizarContadores();
-}
-
-incrementarVisitas();
-
-// Botones Like/Dislike solo 1 vez por sesión
-const likeBtn = document.getElementById('likeBtn');
-const dislikeBtn = document.getElementById('dislikeBtn');
-
-if(sessionStorage.getItem('liked')) likeBtn.disabled = true;
-if(sessionStorage.getItem('disliked')) dislikeBtn.disabled = true;
-
-likeBtn.addEventListener('click', async () => {
-  if(!sessionStorage.getItem('liked')) {
-    await incrementarLikes();
-    sessionStorage.setItem('liked','true');
-    likeBtn.disabled = true;
-  }
-});
-dislikeBtn.addEventListener('click', async () => {
-  if(!sessionStorage.getItem('disliked')) {
-    await incrementarDislikes();
-    sessionStorage.setItem('disliked','true');
-    dislikeBtn.disabled = true;
-  }
-});
-
-// ====== TU SCRIPT ORIGINAL ======
-
-// Confeti
+// Confeti, sonido y vibración
 function lanzarConfeti() {
   const duration = 4000;
   const end = Date.now() + duration;
@@ -252,21 +274,10 @@ function lanzarConfeti() {
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
 }
+function beep(freq){ const ctx=new (AudioContext||webkitAudioContext)(), o=ctx.createOscillator(), g=ctx.createGain(); o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15); }
+function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
 
-function beep(freq){ const ctx=new (AudioContext||webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain(); o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15); }
-function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms); }
-
-function animateNumber(finalValue){
-  const resultado = document.getElementById("resultado");
-  const start=0,duration=2000,startTime=performance.now();
-  function step(now){
-    const p=Math.min((now-startTime)/duration,1);
-    resultado.innerText="Valor total: "+Math.floor(start+(finalValue-start)*p)+" €";
-    if(p<1)requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
+// Gráfico y cálculo
 let chart;
 function calcular(){
   beep(600); vibrar(80);
@@ -278,6 +289,7 @@ function calcular(){
   const legendarias = document.getElementById("legendarias").value || 0;
   const hipercarga = document.getElementById("hipercarga").value || 0;
   const maxeados = document.getElementById("maxeados").value || 0;
+
   const valores={
     "🎟️ Brawl Pass":bpass*10,
     "🩵 Comunes":comunes*2,
@@ -289,7 +301,14 @@ function calcular(){
     "🔥 Maxeados":maxeados*50
   };
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  animateNumber(total);
+  const resultado = document.getElementById("resultado");
+  const start=0,duration=2000,startTime=performance.now();
+  function step(now){
+    const p=Math.min((now-startTime)/duration,1)
+    resultado.innerText="Valor total: "+Math.floor(start+(total-start)*p)+" €";
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 
   document.getElementById("centerDiamond").style.display = "block";
 
@@ -305,11 +324,13 @@ function calcular(){
   };
 
   const config={ type:'doughnut', data:data, options:{cutout:"70%", plugins:{legend:{display:true,position:'bottom'}}} };
+
   if(chart){chart.destroy();}
   const ctx = document.getElementById('myChart').getContext('2d');
   chart = new Chart(ctx,config);
 
   lanzarConfeti();
+
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
@@ -332,6 +353,7 @@ document.getElementById("shareBtn").addEventListener("click", async () => {
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
 
+// Cambiar Brawler central cada 3 segundos
 const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
@@ -347,7 +369,19 @@ const brawlers = [
 let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
-setInterval(() => { current = (current + 1) % brawlers.length; brawlerImg.src = brawlers[current]; }, 3000);
+setInterval(() => {
+  current = (current + 1) % brawlers.length;
+  brawlerImg.src = brawlers[current];
+}, 3000);
+
+// Inicializar métricas
+document.addEventListener('DOMContentLoaded', async ()=>{
+  const data = await fetchMetrics()
+  animateCounter(document.getElementById('visitas'), 0, data.visitas)
+  animateCounter(document.getElementById('likeBtn'), 0, data.likes)
+  animateCounter(document.getElementById('dislikeBtn'), 0, data.dislikes)
+  incrementarVisitas()
+})
 </script>
 </body>
 </html>
