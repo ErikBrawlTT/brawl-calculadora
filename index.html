@@ -8,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
-/* ======== TU ESTILO ORIGINAL ======== */
+/* ======== ESTILO ORIGINAL + AJUSTES ======== */
 body {
   margin: 0;
   font-family: 'Bangers', cursive;
@@ -38,7 +38,7 @@ body::after {
 }
 h1 {
   font-size: 3rem;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,21 +47,33 @@ h1 {
   background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
   -webkit-background-clip: text;
 }
-h1 .diamond {
-  animation: glow 3s infinite alternate;
-}
+h1 .diamond { animation: glow 3s infinite alternate; }
 @keyframes glow {
   0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
   50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
   100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
 }
+
+/* Resultado ARRIBA, centrado y fuera del form */
+#resultado {
+  margin: 8px 0 14px 0;
+  font-size: 2rem;
+  font-family: 'Bangers', cursive;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #00FF00;
+  border-radius: 12px;
+  color: #00FF00;
+  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+}
+
 form {
   background: rgba(0,0,0,0.5);
   border-radius: 60px;
   padding: 20px;
   max-width: 600px;
   width:90%;
-  margin-bottom: 25px;
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -78,11 +90,12 @@ input {
   border:none;
   border-radius:8px;
 }
+
 .buttons {
   display:flex;
   justify-content:center;
   gap:25px;
-  margin-top:15px;
+  margin-top:10px;
 }
 button {
   padding:10px 20px;
@@ -92,39 +105,25 @@ button {
   font-size:1.5rem;
   color:white;
   cursor:pointer;
+  transition: transform .12s ease, filter .12s ease;
 }
 #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
 #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
 #shareBtn{
   background:linear-gradient(90deg,#00FFAA,#FF00FF);
-  margin-top:20px;
-  animation:pulse 1s infinite;
+  margin-top:12px;
+  animation:pulse 1.2s infinite;
+  color:#fff; /* letras blancas */
 }
-@keyframes pulse{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.1)}
-  100%{transform:scale(1)}
-}
+button:active{ transform:scale(0.96); filter:brightness(1.3); }
+@keyframes pulse{ 0%{transform:scale(1)} 50%{transform:scale(1.06)} 100%{transform:scale(1)} }
 
-/* Recuadro valor total (sin tocar) */
-#resultado {
-  margin-top: 20px;
-  font-size: 2rem;
-  font-family: 'Bangers', cursive;
-  padding: 10px 20px;
-  background: rgba(0,0,0,0.7);
-  border: 2px solid #00FF00;
-  border-radius: 12px;
-  color: #00FF00;
-  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-}
-
-/* ===== NUEVOS CONTADORES NEON 👀 👍 👎 (icono arriba, caja abajo) ===== */
+/* ===== CONTADORES NEON 👀 👍 👎 ===== */
 .metric-container {
   display: flex;
   justify-content: center;
   gap: 22px;
-  margin-top: 18px;
+  margin-top: 16px;
 }
 .metric {
   display: flex;
@@ -134,19 +133,19 @@ button {
   font-family:'Orbitron', sans-serif;
 }
 .metric .icon {
-  font-size: 2rem;
+  font-size: 1.8rem;
   line-height: 1;
 }
 .metric .box {
   background: rgba(0,0,0,0.7);
   padding: 8px 18px;
   border-radius: 12px;
-  min-width: 70px;
+  min-width: 78px;
   text-align: center;
   font-weight: 700;
-  font-size: 1.6rem;
-  transition: transform .08s ease;
+  font-size: 2rem;
   user-select: none;
+  transition: transform .08s ease, box-shadow .15s ease;
 }
 .metric .box:active { transform: scale(0.98); }
 
@@ -154,20 +153,20 @@ button {
 .metric.visitas .box {
   border: 2px solid #00CFFF;
   color: #00CFFF;
-  box-shadow: 0 0 10px #00CFFF, 0 0 20px #00CFFF;
+  box-shadow: 0 0 8px #00CFFF, 0 0 16px #00CFFF;
 }
 /* 👍 verde neon */
 .metric.likes .box {
   border: 2px solid #39ff14;
   color: #39ff14;
-  box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+  box-shadow: 0 0 8px #39ff14, 0 0 16px #39ff14;
   cursor: pointer;
 }
 /* 👎 rojo neon */
 .metric.dislikes .box {
   border: 2px solid #FF073A;
   color: #FF073A;
-  box-shadow: 0 0 10px #FF073A, 0 0 20px #FF073A;
+  box-shadow: 0 0 8px #FF073A, 0 0 16px #FF073A;
   cursor: pointer;
 }
 
@@ -197,23 +196,28 @@ canvas{
 <body>
 <div class="container">
   <h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
+
+  <!-- Barra de resultado ARRIBA, fuera del form y encima de los botones -->
+  <div id="resultado">Valor total: 0 €</div>
+
   <form id="calcForm">
-    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
-    <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
-    <label>💚 Raras: <input type="number" id="raras" value="0"></label>
-    <label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
-    <label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
-    <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
-    <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
-    <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
+    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0" min="0"></label>
+    <label>🩵 Comunes: <input type="number" id="comunes" value="0" min="0"></label>
+    <label>💚 Raras: <input type="number" id="raras" value="0" min="0"></label>
+    <label>💜 Épicas: <input type="number" id="epicas" value="0" min="0"></label>
+    <label>❤️ Míticas: <input type="number" id="miticas" value="0" min="0"></label>
+    <label>🌟 Legendarias: <input type="number" id="legendarias" value="0" min="0"></label>
+    <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0" min="0"></label>
+    <label>🔥 Maxeados: <input type="number" id="maxeados" value="0" min="0"></label>
   </form>
+
   <div class="buttons">
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
   </div>
   <button id="shareBtn">📤 Compartir</button>
 
-  <!-- NUEVO: Contadores en horizontal con icono arriba y caja abajo -->
+  <!-- Contadores neon -->
   <div class="metric-container">
     <div class="metric visitas">
       <span class="icon">👀</span>
@@ -229,8 +233,6 @@ canvas{
     </div>
   </div>
 
-  <div id="resultado">Valor total: 0 €</div>
-
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
     <div id="centerDiamond">
@@ -239,23 +241,41 @@ canvas{
   </div>
 </div>
 
-<!-- Todo tu JS original, pero como módulo para poder importar Supabase -->
+<!-- JS en módulo para usar Supabase ESM -->
 <script type="module">
 /* ===== Supabase ===== */
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
 const supabase = createClient(
   'https://ttkneykkrkbajymzsgcr.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
 );
 const PAGE_ID = 'pagina1';
 
-/* ===== Contadores: animación tipo “odómetro digital” ===== */
+/* ===== Utilidades de sonido y vibración (distintos tonos) ===== */
+function beep(freq=600, ms=150, gain=0.15){
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  const ctx = new Ctx();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = "square";
+  o.frequency.value = freq;
+  o.connect(g);
+  g.connect(ctx.destination);
+  g.gain.setValueAtTime(gain, ctx.currentTime);
+  o.start();
+  o.stop(ctx.currentTime + ms/1000);
+}
+function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
+
+/* ===== Animación digital de los contadores ===== */
 function animateCounter(id, value){
   const el = document.getElementById(id);
-  let start = parseInt(el.innerText) || 0;
-  const end = Number(value) || 0;
-  const duration = 600;
+  let start = parseInt(el.innerText || '0',10);
+  const end = Number(value)||0;
+  const duration = 700;
   const t0 = performance.now();
+
   function step(t){
     const p = Math.min((t - t0) / duration, 1);
     const v = Math.floor(start + (end - start) * p);
@@ -265,33 +285,35 @@ function animateCounter(id, value){
   requestAnimationFrame(step);
 }
 
-/* ===== Cargar métricas actuales ===== */
+/* ===== Cargar métricas ===== */
 async function cargarMetricas(){
   const { data, error } = await supabase
     .from('metrics')
     .select('visitas,likes,dislikes')
     .eq('page_id', PAGE_ID)
     .single();
-  if (error) { console.error(error); return; }
-  animateCounter('visitas-counter', data?.visitas ?? 0);
-  animateCounter('likes-counter', data?.likes ?? 0);
-  animateCounter('dislikes-counter', data?.dislikes ?? 0);
+  if (error) { console.error('Error al cargar métricas:', error); return; }
+  animateCounter('visitas-counter', data.visitas);
+  animateCounter('likes-counter', data.likes);
+  animateCounter('dislikes-counter', data.dislikes);
 }
 
 /* ===== Incrementar visita al entrar ===== */
 async function incrementarVisita(){
-  try{
+  try {
     const { error } = await supabase.rpc('increment_visitas', { pid: PAGE_ID });
     if (error) throw error;
     await cargarMetricas();
-  }catch(e){ console.error('Error incrementando visita:', e); }
+  } catch(e) {
+    console.error('Error incrementando visita:', e);
+  }
 }
 
-/* ===== Votos: 1 por sesión con rectificación ===== */
+/* ===== Voto con rectificación (1 vez por sesión) ===== */
 async function votar(tipo){
   const prev = localStorage.getItem('vote'); // 'like' | 'dislike' | null
   try{
-    if (prev === tipo) return;
+    if (prev === tipo) return; // nada que cambiar
     if (prev === 'like' && tipo === 'dislike'){
       await supabase.rpc('decrement_likes', { pid: PAGE_ID });
       await supabase.rpc('increment_dislikes', { pid: PAGE_ID });
@@ -305,16 +327,22 @@ async function votar(tipo){
     }
     localStorage.setItem('vote', tipo);
     await cargarMetricas();
-  }catch(e){ console.error('Error al votar:', e); }
+  }catch(e){
+    console.error('Error al votar:', e);
+  }
 }
 
 /* Click en cajas 👍 👎 */
-document.getElementById('likes-counter').parentElement.addEventListener('click', ()=>votar('like'));
-document.getElementById('dislikes-counter').parentElement.addEventListener('click', ()=>votar('dislike'));
+document.getElementById('likes-counter').parentElement.addEventListener('click', ()=>{
+  beep(720,140,0.12); vibrar(60);
+  votar('like');
+});
+document.getElementById('dislikes-counter').parentElement.addEventListener('click', ()=>{
+  beep(320,140,0.12); vibrar(60);
+  votar('dislike');
+});
 
-/* ======= TU SCRIPT ORIGINAL (sin tocar) ======= */
-
-// Confeti
+/* ====== TU LÓGICA ORIGINAL: confeti, cálculo, gráfico ====== */
 function lanzarConfeti() {
   const duration = 4000;
   const end = Date.now() + duration;
@@ -326,28 +354,12 @@ function lanzarConfeti() {
       spread: 360,
       ticks: 200,
       origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF'] // neon
+      colors: ['#ff00ff','#00ffff','#00ff00','#ffff00','#ff0000','#00CFFF']
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
 }
 
-// Sonido y vibración
-function beep(freq){
-  const ctx=new (AudioContext||webkitAudioContext)(),
-        o=ctx.createOscillator(),
-        g=ctx.createGain();
-  o.type="square";
-  o.frequency.value=freq;
-  o.connect(g);
-  g.connect(ctx.destination);
-  g.gain.setValueAtTime(.15,ctx.currentTime);
-  o.start();
-  o.stop(ctx.currentTime+.15);
-}
-function vibrar(ms=80){if(navigator.vibrate)navigator.vibrate(ms);}
-
-// Animar número
 function animateNumber(finalValue){
   const resultado = document.getElementById("resultado");
   const start=0,duration=2000,startTime=performance.now();
@@ -359,18 +371,17 @@ function animateNumber(finalValue){
   requestAnimationFrame(step);
 }
 
-// Gráfico
 let chart;
 function calcular(){
-  beep(600); vibrar(80);
-  const bpass = document.getElementById("bpass").value || 0;
-  const comunes = document.getElementById("comunes").value || 0;
-  const raras = document.getElementById("raras").value || 0;
-  const epicas = document.getElementById("epicas").value || 0;
-  const miticas = document.getElementById("miticas").value || 0;
-  const legendarias = document.getElementById("legendarias").value || 0;
-  const hipercarga = document.getElementById("hipercarga").value || 0;
-  const maxeados = document.getElementById("maxeados").value || 0;
+  beep(600,150,0.15); vibrar(80);
+  const bpass = +document.getElementById("bpass").value || 0;
+  const comunes = +document.getElementById("comunes").value || 0;
+  const raras = +document.getElementById("raras").value || 0;
+  const epicas = +document.getElementById("epicas").value || 0;
+  const miticas = +document.getElementById("miticas").value || 0;
+  const legendarias = +document.getElementById("legendarias").value || 0;
+  const hipercarga = +document.getElementById("hipercarga").value || 0;
+  const maxeados = +document.getElementById("maxeados").value || 0;
 
   const valores={
     "🎟️ Brawl Pass":bpass*10,
@@ -398,7 +409,6 @@ function calcular(){
       borderWidth:2
     }]
   };
-
   const config={
     type:'doughnut',
     data:data,
@@ -410,36 +420,36 @@ function calcular(){
   chart = new Chart(ctx,config);
 
   lanzarConfeti();
-
-  // Scroll automático al gráfico
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-// Limpiar
+/* Limpiar */
 function limpiar(){
-  beep(400); vibrar(50); /* tono distinto a Calcular */
+  beep(420,140,0.12); vibrar(50);
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart){chart.destroy();}
   document.getElementById("centerDiamond").style.display="none";
 }
 
-// Botón compartir
+/* Compartir */
 document.getElementById("shareBtn").addEventListener("click", async () => {
-  beep(800); vibrar(60); /* tono distinto */
+  beep(800,120,0.12); vibrar(40);
   const url = window.location.href;
   const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
   if (navigator.share) {
-    try {
-      await navigator.share({ title: "Calculadora Brawl Stars", text: text, url: url });
-    } catch (err) { console.log("Cancelado", err); }
-  } else { alert("Tu navegador no soporta compartir nativo."); }
+    try { await navigator.share({ title: "Calculadora Brawl Stars", text, url }); }
+    catch (err) { console.log("Cancelado", err); }
+  } else {
+    alert("Tu navegador no soporta compartir nativo.\nCopia este enlace:\n" + url);
+  }
 });
 
+/* Eventos botones */
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
 
-// Cambiar Brawler central cada 3 segundos
+/* Brawler rotando en el centro cada 3s */
 const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
@@ -452,21 +462,17 @@ const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
 ];
-
 let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
-
 setInterval(() => {
   current = (current + 1) % brawlers.length;
   brawlerImg.src = brawlers[current];
 }, 3000);
 
-/* ===== Arranque: sube visita + carga contadores ===== */
-(async()=>{
-  await incrementarVisita();
-  await cargarMetricas();
-})();
+/* Arranque: suma visita y pinta contadores */
+await incrementarVisita();
+await cargarMetricas();
 </script>
 </body>
 </html>
