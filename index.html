@@ -101,11 +101,22 @@ button.flash {
   box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
   transition: box-shadow 0.2s ease;
 }
-#calcBtn {background: linear-gradient(90deg, #FFD700, #000000);} /* amarillo → negro */
-#clearBtn {background: linear-gradient(90deg, #FFD700, #000000);} /* amarillo → negro */
-#shareBtn {background:linear-gradient(90deg,#00FFAA,#FF00FF); margin-top:20px; color:white;} /* se mantiene igual */
+#calcBtn {
+  background: linear-gradient(90deg, #FFD700, #000000); /* amarillo → negro */
+  color: white;
 }
-#shareBtn.pulse { animation: pulseBorder 1s infinite; }
+
+#clearBtn {
+  background: linear-gradient(90deg, #FFD700, #000000); /* amarillo → negro */
+  color: white;
+}
+
+#shareBtn {
+  background: linear-gradient(90deg,#00FFAA,#FF00FF); 
+  margin-top:20px; 
+  color:white;
+  animation: pulseBorder 1s infinite; /* solo este palpitando */
+}
 
 .metric-container {
   display: flex;
