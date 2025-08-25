@@ -251,11 +251,11 @@ async function incrementarVisita(){
 
 /* ===== Botón compartir palpitando ===== */
 const shareBtn = document.getElementById('shareBtn');
-setInterval(()=>{
-  shareBtn.style.transform = 'scale(1.1)';
-  setTimeout(()=>shareBtn.style.transform='scale(1)',500);
-},1000);
 
+setInterval(()=>{
+  shareBtn.style.transform = 'scale(1.05)';
+  setTimeout(()=>shareBtn.style.transform='scale(1)',800);
+},2000);
 shareBtn.addEventListener("click", async ()=>{
   beep(500); vibrar(); 
   shareBtn.classList.add('flash');
