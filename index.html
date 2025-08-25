@@ -17,14 +17,26 @@ h1 .diamond { animation: glow 3s infinite alternate; }
 form { background:rgba(0,0,0,0.5); border-radius:60px; padding:20px; max-width:600px; width:90%; margin-bottom:15px; display:flex; flex-direction:column; align-items:center; }
 label { display:flex; justify-content:space-between; margin:8px 0; width:100%; }
 input { width:100px; text-align:center; border:none; border-radius:8px; }
-.buttons { display:flex; justify-content:center; gap:25px; margin-top:15px; }
+.buttons { display:flex; justify-content:center; gap:25px; margin-top:15px; flex-wrap:wrap; }
 button { padding:10px 20px; border:none; border-radius:12px; font-family:'Bangers'; font-size:1.5rem; color:white; cursor:pointer; transition: transform .08s ease; }
 button:active { transform: scale(0.97); }
 #calcBtn { background:linear-gradient(90deg,#ff0080,#7928ca); }
 #clearBtn { background:linear-gradient(90deg,#00CFFF,#0077FF); }
-#shareBtn { background:linear-gradient(90deg,#00FFAA,#FF00FF); margin-top:20px; color:white; }
-button.flash { box-shadow:0 0 20px #fff,0 0 30px #fff,0 0 40px #fff; transition: box-shadow 0.2s ease; }
-.metric-container { display:flex; justify-content:center; gap:22px; margin-top:18px; }
+#shareBtn {
+  background: linear-gradient(90deg,#00FFAA,#FF00FF);
+  margin-top:20px;
+  color:white;
+  border:none;
+  border-radius:12px;
+  font-family:'Bangers';
+  font-size:1.5rem;
+  padding:10px 20px;
+  cursor:pointer;
+  animation: pulse 1.2s infinite alternate;
+  transition: transform 0.2s ease;
+}
+@keyframes pulse { 0%{transform:scale(1);} 50%{transform:scale(1.1);} 100%{transform:scale(1);} }
+.metric-container { display:flex; justify-content:center; gap:22px; margin-top:18px; flex-wrap:wrap; }
 .metric { display:flex; flex-direction:column; align-items:center; gap:6px; font-family:'Orbitron',sans-serif; font-size:2rem; }
 .metric .box { background:rgba(0,0,0,0.7); padding:8px 18px; border-radius:12px; min-width:70px; text-align:center; font-weight:700; user-select:none; transition:all 0.2s ease; cursor:pointer; }
 .metric.visitas .box { border:2px solid #00CFFF; color:#00CFFF; box-shadow:0 0 10px #00CFFF,0 0 20px #00CFFF; }
@@ -55,8 +67,9 @@ canvas { margin-top:15px; max-width:400px; position:relative; }
 <div id="resultado">Valor total: 0 €</div>
 
 <div class="buttons">
-<button id="calcBtn">Calcular</button>
-<button id="clearBtn">Limpiar</button>
+  <button id="calcBtn">Calcular</button>
+  <button id="clearBtn">Limpiar</button>
+  <button id="shareBtn">📤 Compartir</button>
 </div>
 
 <div class="metric-container">
@@ -73,102 +86,63 @@ canvas { margin-top:15px; max-width:400px; position:relative; }
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabase = createClient('https://ttkneykkrkbajymzsgcr.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE');
-const PAGE_ID = 'pagina1';
+const supabase = createClient('https://ttkneykkrkbajymzsgcr.supabase.co','TU_ANON_KEY_AQUI');
+const PAGE_ID='pagina1';
 let chart;
 
 /* Contadores animados */
-function animateCounter(id,value){
-  const el = document.getElementById(id);
-  let start = parseInt(el.innerText)||0;
-  const duration=600,t0=performance.now();
-  function step(t){
-    const p=Math.min((t-t0)/duration,1);
-    el.innerText=Math.floor(start+(value-start)*p);
-    if(p<1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
+function animateCounter(id,value){ const el=document.getElementById(id); let start=parseInt(el.innerText)||0; const duration=600,t0=performance.now(); function step(t){ const p=Math.min((t-t0)/duration,1); el.innerText=Math.floor(start+(value-start)*p); if(p<1)requestAnimationFrame(step);} requestAnimationFrame(step);}
 
 /* Cargar métricas */
-async function cargarMetricas(){
-  const {data,error}=await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id',PAGE_ID).single();
-  if(!error && data){
-    animateCounter('visitas-counter',data.visitas);
-    animateCounter('likes-counter',data.likes);
-    animateCounter('dislikes-counter',data.dislikes);
-  }
-}
+async function cargarMetricas(){ const {data,error}=await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id',PAGE_ID).single(); if(!error && data){ animateCounter('visitas-counter',data.visitas); animateCounter('likes-counter',data.likes); animateCounter('dislikes-counter',data.dislikes); } }
 
 /* Incrementar visitas */
-async function incrementarVisita(){
-  await supabase.rpc('increment_visitas',{pid:PAGE_ID});
-  await cargarMetricas();
-}
+async function incrementarVisita(){ await supabase.rpc('increment_visitas',{pid:PAGE_ID}); await cargarMetricas();}
 
 /* Animación valor total */
-function incrementarValorAnimado(el,target){
-  let start=0,duration=800,t0=performance.now();
-  function step(t){
-    const p=Math.min((t-t0)/duration,1);
-    el.innerText='Valor total: '+Math.floor(start+(target-start)*p)+' €';
-    if(p<1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
+function incrementarValorAnimado(el,target){ let start=0,duration=800,t0=performance.now(); function step(t){ const p=Math.min((t-t0)/duration,1); el.innerText='Valor total: '+Math.floor(start+(target-start)*p)+' €'; if(p<1)requestAnimationFrame(step);} requestAnimationFrame(step);}
 
 /* Confeti */
-function lanzarConfeti(){
-  confetti({particleCount:150,spread:90,origin:{y:0.6}});
-}
+function lanzarConfeti(){ confetti({particleCount:150,spread:90,origin:{y:0.6}});}
 
 /* Mostrar resultado */
-function actualizarResultado(total){
-  const res=document.getElementById('resultado');
-  res.classList.remove('show'); res.classList.add('fade');
-  void res.offsetWidth;
-  res.classList.remove('fade'); res.classList.add('show');
-  incrementarValorAnimado(res,total);
-  lanzarConfeti();
-}
+function actualizarResultado(total){ const res=document.getElementById('resultado'); res.classList.remove('show'); res.classList.add('fade'); void res.offsetWidth; res.classList.remove('fade'); res.classList.add('show'); incrementarValorAnimado(res,total); lanzarConfeti();}
 
 /* Calcular */
-function calcular(){
+function calcular(){ 
   const ids=['bpass','comunes','raras','epicas','miticas','legendarias','hipercarga','maxeados'];
   const vals=ids.map(id=>Math.max(Number(document.getElementById(id).value)||0,0));
-  const valores={
-    "🎟️ Brawl Pass":vals[0]*10,
-    "🩵 Comunes":vals[1]*2,
-    "💚 Raras":vals[2]*5,
-    "💜 Épicas":vals[3]*10,
-    "❤️ Míticas":vals[4]*12,
-    "🌟 Legendarias":vals[5]*15,
-    "⚡ Hipercarga":vals[6]*20,
-    "🔥 Maxeados":vals[7]*50
-  };
+  const valores={"🎟️ Brawl Pass":vals[0]*10,"🩵 Comunes":vals[1]*2,"💚 Raras":vals[2]*5,"💜 Épicas":vals[3]*10,"❤️ Míticas":vals[4]*12,"🌟 Legendarias":vals[5]*15,"⚡ Hipercarga":vals[6]*20,"🔥 Maxeados":vals[7]*50};
   const total=Object.values(valores).reduce((a,b)=>a+b,0);
   actualizarResultado(total);
-
   const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
   const config={type:'doughnut',data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
-  if(chart) chart.destroy();
+  if(chart){chart.destroy();}
   chart=new Chart(document.getElementById('myChart').getContext('2d'),config);
-
   document.getElementById('centerDiamond').style.display="block";
   document.getElementById('myChart').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 /* Limpiar */
-function limpiar(){
-  document.getElementById('calcForm').reset();
-  document.getElementById('resultado').innerText="Valor total: 0 €";
-  if(chart){chart.destroy();chart=null;}
-  document.getElementById('centerDiamond').style.display="none";
-  document.getElementById('calcForm').scrollIntoView({behavior:'smooth',block:'start'});
-}
+function limpiar(){ document.getElementById('calcForm').reset(); document.getElementById('resultado').innerText="Valor total: 0 €"; if(chart){chart.destroy(); chart=null;} document.getElementById('centerDiamond').style.display="none"; document.getElementById('calcForm').scrollIntoView({behavior:'smooth',block:'start'}); }
 
-/* Brawler central */
-const brawlers=[
+/* Compartir */
+document.getElementById("shareBtn").addEventListener("click", async () => {
+  const url = window.location.href;
+  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "Calculadora Brawl Stars", text, url });
+    } catch (err) {
+      console.log(err);
+    }
+  } else {
+    alert("Tu navegador no soporta compartir nativo.");
+  }
+});
+
+/* Rotación Brawler central */
+const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
@@ -182,19 +156,15 @@ const brawlers=[
 ];
 let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
-setInterval(()=>{
-  current = (current+1) % brawlers.length;
+setInterval(() => {
+  current = (current + 1) % brawlers.length;
   brawlerImg.src = brawlers[current];
-},3000);
+}, 3000);
 
-/* Eventos botones */
-document.getElementById("calcBtn").addEventListener("click", calcular);
-document.getElementById("clearBtn").addEventListener("click", limpiar);
-
-/* Inicialización */
-document.addEventListener('DOMContentLoaded', async () => {
+/* Inicialización métricas */
+(async () => {
   await incrementarVisita();
-});
+})();
 </script>
 </body>
 </html>
