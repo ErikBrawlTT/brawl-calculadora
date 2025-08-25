@@ -250,22 +250,32 @@ async function incrementarVisita(){
 }
 
 /* ===== Botón compartir palpitando ===== */
-const shareBtn = document.getElementById('shareBtn');
+const #shareBtn {
+  background: linear-gradient(90deg,#00FFAA,#FF00FF);
+  margin-top: 20px;
+  color: white;
+  border: 2px solid #00FFAA; /* borde neón inicial */
+  box-shadow: 0 0 10px #00FFAA, 0 0 20px #00FFAA; /* efecto neón */
+  border-radius: 12px;
+  font-family:'Bangers';
+  font-size:1.5rem;
+  cursor: pointer;
+  animation: pulse 2s infinite ease-in-out, neonGlow 2s infinite alternate;
+}
 
-setInterval(()=>{
-  shareBtn.style.transform = 'scale(1.05)';
-  setTimeout(()=>shareBtn.style.transform='scale(1)',800);
-},2000);
-shareBtn.addEventListener("click", async ()=>{
-  beep(500); vibrar(); 
-  shareBtn.classList.add('flash');
-  setTimeout(()=>shareBtn.classList.remove('flash'),200);
-  const url = window.location.href;
-  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-  if(navigator.share){ 
-    try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
-    catch(err){console.log(err);}
-  } else { alert("Tu navegador no soporta compartir nativo."); }
+/* Animación de respiración */
+@keyframes pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Animación neón */
+@keyframes neonGlow {
+  0%   { box-shadow: 0 0 10px #00FFAA, 0 0 20px #00FFAA; }
+  50%  { box-shadow: 0 0 20px #00FFAA, 0 0 30px #00FFAA, 0 0 40px #00FFAA; }
+  100% { box-shadow: 0 0 10px #00FFAA, 0 0 20px #00FFAA; }
+}
 });
 
 /* ===== Funciones beep y vibrar ===== */
