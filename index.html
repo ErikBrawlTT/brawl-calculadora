@@ -99,10 +99,8 @@ button:active {
 #calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
 #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
 #shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF); margin-top:20px; color:white;}
-button.flash {
-  box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
-  transition: box-shadow 0.2s ease;
-}
+button.flash {box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff; transition: box-shadow 0.2s ease;}
+
 .metric-container {
   display: flex;
   justify-content: center;
@@ -131,6 +129,7 @@ button.flash {
 .metric.visitas .box { border: 2px solid #00CFFF; color: #00CFFF; box-shadow:0 0 10px #00CFFF,0 0 20px #00CFFF;}
 .metric.likes .box { border: 2px solid #39ff14; color: #39ff14; box-shadow:0 0 10px #39ff14,0 0 20px #39ff14;}
 .metric.dislikes .box { border: 2px solid #FF073A; color: #FF073A; box-shadow:0 0 10px #FF073A,0 0 20px #FF073A;}
+
 canvas{
   margin-top:15px;
   max-width:400px;
@@ -241,26 +240,37 @@ async function cargarMetricas(){
   }
 }
 
-/* ===== Incrementar visitas al cargar ===== */
+/* ===== Incrementar visitas ===== */
 async function incrementarVisita(){
   await supabase.rpc('increment_visitas',{pid: PAGE_ID});
   await cargarMetricas();
 }
 
-/* ===== Votos independientes (solo 1 vez por persona) ===== */
+/* ===== Votos independientes 1 vez por usuario ===== */
 async function votar(tipo){
-  const prev = localStorage.getItem('vote_'+tipo);
-  if(prev==='true') return; // ya votó
+  const prev = localStorage.getItem('vote'); // 'like' | 'dislike' | null
   try{
-    if(tipo==='like') await supabase.rpc('increment_likes',{pid: PAGE_ID});
-    if(tipo==='dislike') await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
+    if(prev === tipo) return; // ya votó igual
+    if(!prev){
+      if(tipo === 'like') await supabase.rpc('increment_likes',{pid: PAGE_ID});
+      else if(tipo === 'dislike') await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
+    } else {
+      // rectificación 1 vez
+      if(prev === 'like' && tipo === 'dislike'){
+        await supabase.rpc('decrement_likes',{pid: PAGE_ID});
+        await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
+      } else if(prev === 'dislike' && tipo === 'like'){
+        await supabase.rpc('decrement_dislikes',{pid: PAGE_ID});
+        await supabase.rpc('increment_likes',{pid: PAGE_ID});
+      }
+    }
+    localStorage.setItem('vote', tipo);
     animateFlash(tipo);
-    localStorage.setItem('vote_'+tipo,'true');
     await cargarMetricas();
   }catch(e){ console.error(e);}
 }
 
-/* ===== Animación parpadeo neon al votar ===== */
+/* ===== Flash efecto neon ===== */
 function animateFlash(tipo){
   const el = tipo==='like'?document.getElementById('likes-counter'):
              tipo==='dislike'?document.getElementById('dislikes-counter'):
@@ -271,12 +281,12 @@ function animateFlash(tipo){
 
 document.getElementById('likes-counter').parentElement.addEventListener('click',()=>votar('like'));
 document.getElementById('dislikes-counter').parentElement.addEventListener('click',()=>votar('dislike'));
-<script type="module">
-/* ===== Sonido y vibración ===== */
+
+/* ===== Botones calcular, limpiar, compartir ===== */
 function beep(freq){
-  const ctx=new (AudioContext||webkitAudioContext)(),
-        o=ctx.createOscillator(),
-        g=ctx.createGain();
+  const ctx = new (AudioContext||webkitAudioContext)(),
+        o = ctx.createOscillator(),
+        g = ctx.createGain();
   o.type="square";
   o.frequency.value=freq;
   o.connect(g);
@@ -285,9 +295,8 @@ function beep(freq){
   o.start();
   o.stop(ctx.currentTime+.15);
 }
-function vibrar(ms=80){if(navigator.vibrate) navigator.vibrate(ms);}
+function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
-/* ===== Calculadora ===== */
 let chart;
 function calcular(){
   beep(600); vibrar();
@@ -317,52 +326,48 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   document.getElementById("resultado").innerText="Valor total: "+total+" €";
 
-  const data={labels:Object.keys(valores),
-              datasets:[{data:Object.values(valores),
-                         backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],
-                         borderWidth:2}]};
-  const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
+  const data = {
+    labels:Object.keys(valores),
+    datasets:[{
+      data:Object.values(valores),
+      backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],
+      borderWidth:2
+    }]
+  };
 
+  const config = { type:'doughnut', data:data, options:{ cutout:"70%", plugins:{legend:{display:true,position:'bottom'}} }};
   if(chart) chart.destroy();
-  chart = new Chart(document.getElementById('myChart').getContext('2d'),config);
+  chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
   document.getElementById('centerDiamond').style.display="block";
-  document.getElementById('myChart').scrollIntoView({behavior:'smooth',block:'center'});
+  document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-/* ===== Limpiar ===== */
 function limpiar(){
   beep(300); vibrar();
   document.getElementById('clearBtn').classList.add('flash');
   setTimeout(()=>document.getElementById('clearBtn').classList.remove('flash'),200);
-
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart) chart.destroy();
   document.getElementById("centerDiamond").style.display="none";
 }
 
-/* ===== Botón compartir ===== */
-document.getElementById("shareBtn").addEventListener("click", async ()=>{
-  beep(500); vibrar();
-  document.getElementById('shareBtn').classList.add('flash');
-  setTimeout(()=>document.getElementById('shareBtn').classList.remove('flash'),200);
-
-  const url = window.location.href;
-  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-  if(navigator.share){
-    try{
-      await navigator.share({title:"Calculadora Brawl Stars",text,url});
-    }catch(err){console.log(err);}
-  }else{alert("Tu navegador no soporta compartir nativo.");}
-});
-
-/* ===== Eventos botones ===== */
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
+document.getElementById("shareBtn").addEventListener("click", async ()=>{
+  beep(500); vibrar(); document.getElementById('shareBtn').classList.add('flash');
+  setTimeout(()=>document.getElementById('shareBtn').classList.remove('flash'),200);
+  const url = window.location.href;
+  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
+  if(navigator.share){ 
+    try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
+    catch(err){console.log(err);}
+  } else { alert("Tu navegador no soporta compartir nativo."); }
+});
 
-/* ===== Brawler central animación ===== */
-const brawlers=[
+/* ===== Animación Brawler central ===== */
+const brawlers = [
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
@@ -373,17 +378,19 @@ const brawlers=[
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"];
-let current=0;
-const brawlerImg=document.getElementById("brawlerImg");
-document.getElementById("centerDiamond").style.display="block";
+let current = 0;
+const brawlerImg = document.getElementById("brawlerImg");
+document.getElementById("centerDiamond").style.display = "block";
 setInterval(()=>{
-  current=(current+1)%brawlers.length;
-  brawlerImg.src=brawlers[current];
-},3000);
+  current = (current + 1) % brawlers.length;
+  brawlerImg.src = brawlers[current];
+}, 3000);
 
-/* ===== Arranque ===== */
-await incrementarVisita();
-await cargarMetricas();
+/* ===== Inicialización ===== */
+(async ()=>{
+  await incrementarVisita();
+  await cargarMetricas();
+})();
 </script>
 </body>
 </html>
