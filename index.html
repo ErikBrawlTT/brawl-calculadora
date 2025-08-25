@@ -420,7 +420,8 @@ const brawlers = [
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"];
-let current = 0;const brawlerImg = document.getElementById("brawlerImg");
+let current = 0;
+const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
 setInterval(()=>{
   current = (current + 1) % brawlers.length;
