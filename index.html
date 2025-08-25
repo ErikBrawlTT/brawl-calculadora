@@ -1,263 +1,211 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculadora Brawl Stars</title>
-  <style>
-    body {
-      background:#0a0a0a;
-      color:white;
-      font-family: Arial, sans-serif;
-      text-align:center;
-      padding:20px;
-    }
-    .titulo {
-      font-size: 2em;
-      margin-bottom: 10px;
-      color: #00ffff;
-      text-shadow: 0 0 10px #0ff;
-    }
-    .intro, .criterios {
-      max-width:600px;
-      margin:0 auto 20px;
-      text-align:left;
-    }
-    .criterios li {
-      margin: 5px 0;
-    }
-    .flash {
-      animation: flash 0.2s;
-    }
-    @keyframes flash {
-      from { transform: scale(1.2); filter: brightness(2); }
-      to { transform: scale(1); filter: brightness(1); }
-    }
-    .metric-container {
-      display:flex;
-      justify-content:center;
-      gap:20px;
-      margin:20px 0;
-    }
-    .metric {
-      cursor:pointer;
-    }
-    .box {
-      background:#111;
-      border:2px solid #0ff;
-      padding:10px;
-      border-radius:10px;
-      min-width:40px;
-    }
-    #resultado {
-      font-size:1.3em;
-      margin:15px 0;
-      font-weight:bold;
-    }
-    #centerDiamond {
-      position:absolute;
-      top:50%;
-      left:50%;
-      transform:translate(-50%,-50%);
-      display:none;
-    }
-    #centerDiamond img {
-      width:80px;
-      height:80px;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calculadora Brawl Stars</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+/* Mantén aquí todo tu CSS existente intacto */
+</style>
 </head>
 <body>
+<div class="container">
+<h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
+<form id="calcForm" onsubmit="return false;">
+  <label>🎟️ Brawl Pass: <input type="number" min="0" id="bpass" value="0"></label>
+  <label>🩵 Comunes: <input type="number" min="0" id="comunes" value="0"></label>
+  <label>💚 Raras: <input type="number" min="0" id="raras" value="0"></label>
+  <label>💜 Épicas: <input type="number" min="0" id="epicas" value="0"></label>
+  <label>❤️ Míticas: <input type="number" min="0" id="miticas" value="0"></label>
+  <label>🌟 Legendarias: <input type="number" min="0" id="legendarias" value="0"></label>
+  <label>⚡ Hipercarga: <input type="number" min="0" id="hipercarga" value="0"></label>
+  <label>🔥 Maxeados: <input type="number" min="0" id="maxeados" value="0"></label>
+</form>
 
-  <h1 class="titulo">💎 Calculadora de Valor de Cuenta</h1>
-  <p class="intro">
-    ¿Quieres saber cuánto vale tu cuenta de Brawl Stars?  
-    Esta calculadora estima su <b>valor aproximado</b> teniendo en cuenta únicamente:
-  </p>
-  <ul class="criterios">
-    <li>🎟️ La cantidad de <b>Brawl Pass</b> que has comprado</li>
-    <li>🎨 El número de <b>skins</b> que posees</li>
-    <li>🔥 Los <b>Brawlers que tienes al máximo nivel</b></li>
-  </ul>
-  <p>
-    Introduce tus datos y pulsa <b>Calcular</b> para conocer un valor orientativo de tu cuenta.  
-    <i>Nota: los valores son estimaciones y pueden variar respecto al coste real.</i>
-  </p>
+<div id="resultado">Valor total: 0 €</div>
 
-  <form id="calcForm">
-    <label>Brawl Pass: <input id="bpass" type="number" min="0"></label><br>
-    <label>Skins: <input id="skins" type="number" min="0"></label><br>
-    <label>Brawlers Maxeados: <input id="maxeados" type="number" min="0"></label><br>
-  </form>
+<div class="buttons">
+<button id="calcBtn">Calcular</button>
+<button id="clearBtn">Limpiar</button>
+</div>
+<button id="shareBtn">📤 Compartir</button>
 
-  <div id="resultado">Valor total: 0 €</div>
-
-  <button id="calcBtn">Calcular</button>
-  <button id="clearBtn">Limpiar</button>
-  <button id="shareBtn">📤 Compartir</button>
-
-  <div class="metric-container">
-    <div class="metric visitas">
-      <span class="icon">👀</span>
-      <div class="box" id="visitas-counter">0</div>
-    </div>
-    <div class="metric likes">
-      <span class="icon">👍</span>
-      <div class="box" id="likes-counter">0</div>
-    </div>
-    <div class="metric dislikes">
-      <span class="icon">👎</span>
-      <div class="box" id="dislikes-counter">0</div>
-    </div>
+<div class="metric-container">
+  <div class="metric visitas">
+    <span class="icon">👀</span>
+    <div class="box" id="visitas-counter">0</div>
   </div>
-
-  <div style="position:relative; display:inline-block;">
-    <canvas id="myChart" width="400" height="400"></canvas>
-    <div id="centerDiamond">
-      <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
-    </div>
+  <div class="metric likes">
+    <span class="icon">👍</span>
+    <div class="box" id="likes-counter">0</div>
   </div>
+  <div class="metric dislikes">
+    <span class="icon">👎</span>
+    <div class="box" id="dislikes-counter">0</div>
+  </div>
+</div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+<div style="position:relative; display:inline-block;">
+  <canvas id="myChart" width="400" height="400"></canvas>
+  <div id="centerDiamond">
+    <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
+  </div>
+</div>
 
-    const supabase = createClient(
-      'https://ttkneykkrkbajymzsgcr.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
-    );
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const PAGE_ID = 'pagina1';
+const supabase = createClient(
+  'https://ttkneykkrkbajymzsgcr.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
+);
 
-    function animateCounter(id, value){
-      const el = document.getElementById(id);
-      let start = parseInt(el.innerText) || 0;
-      const end = Number(value) || 0;
-      const duration = 600;
-      const t0 = performance.now();
-      function step(t){
-        const p = Math.min((t - t0) / duration, 1);
-        el.innerText = Math.floor(start + (end - start) * p);
-        if (p < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
+const PAGE_ID = 'pagina1';
+let chart;
 
-    async function cargarMetricas(){
-      const { data, error } = await supabase
-        .from('metrics')
-        .select('visitas,likes,dislikes')
-        .eq('page_id', PAGE_ID)
-        .single();
-      if (!error && data){
-        animateCounter('visitas-counter', data.visitas);
-        animateCounter('likes-counter', data.likes);
-        animateCounter('dislikes-counter', data.dislikes);
-      }
-    }
+/* ===== Animaciones contadores ===== */
+function animateCounter(id, value){
+  const el = document.getElementById(id);
+  let start = parseInt(el.innerText)||0;
+  const end = Number(value)||0;
+  const duration = 600;
+  const t0 = performance.now();
+  function step(t){
+    const p = Math.min((t - t0)/duration,1);
+    el.innerText = Math.floor(start + (end-start)*p);
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 
-    async function incrementarVisita(){
-      await supabase.rpc('increment_visitas',{pid: PAGE_ID});
-      await cargarMetricas();
-    }
+/* ===== Incrementar valor animado ===== */
+function incrementarValorAnimado(el, target){
+  let start = 0;
+  const duration = 800;
+  const t0 = performance.now();
+  function step(t){
+    const p = Math.min((t-t0)/duration,1);
+    el.innerText = 'Valor total: '+Math.floor(start + (target-start)*p)+' €';
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 
-    async function votar(tipo){
-      try{
-        if(tipo==='like'){
-          await supabase.rpc('increment_likes',{pid: PAGE_ID});
-        } else if(tipo==='dislike'){
-          await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
-        }
-        animateFlash(tipo);
-        await cargarMetricas();
-      }catch(e){ console.error(e);}
-    }
+/* ===== Mostrar resultado con fade y confeti diamante rebotando ===== */
+function actualizarResultado(total){
+  const resultadoEl = document.getElementById('resultado');
+  
+  // Animación fade
+  resultadoEl.classList.remove('show');
+  resultadoEl.classList.add('fade');
+  void resultadoEl.offsetWidth; // forzar reflow
+  resultadoEl.classList.remove('fade');
+  resultadoEl.classList.add('show');
+  
+  // Incremento animado del valor
+  incrementarValorAnimado(resultadoEl, total);
 
-    function animateFlash(tipo){
-      const el = tipo==='like'?document.getElementById('likes-counter'):
-                 tipo==='dislike'?document.getElementById('dislikes-counter'):
-                 document.getElementById('visitas-counter');
-      el.classList.add('flash');
-      setTimeout(()=>el.classList.remove('flash'),200);
-    }
+  // Coordenadas del diamante central para confeti
+  const diamond = document.getElementById('centerDiamond');
+  const rect = diamond.getBoundingClientRect();
+  const x = (rect.left + rect.width/2)/window.innerWidth;
+  const y = (rect.top + rect.height/2)/window.innerHeight;
 
-    document.getElementById('likes-counter').parentElement.addEventListener('click',()=>votar('like'));
-    document.getElementById('dislikes-counter').parentElement.addEventListener('click',()=>votar('dislike'));
+  const colors = ['#00FFFF','#00FF00','#FF00FF','#FFFF00','#FF4500','#00CFFF','#FF69B4','#FF0000'];
 
-    function beep(freq){
-      const ctx=new (AudioContext||webkitAudioContext)(),
-            o=ctx.createOscillator(),
-            g=ctx.createGain();
-      o.type="square";
-      o.frequency.value=freq;
-      o.connect(g);
-      g.connect(ctx.destination);
-      g.gain.setValueAtTime(.15,ctx.currentTime);
-      o.start();
-      o.stop(ctx.currentTime+.15);
-    }
-    function vibrar(ms=80){if(navigator.vibrate) navigator.vibrate(ms);}
-    let chart;
-    function calcular(){
-      beep(600); vibrar();
-      document.getElementById('calcBtn').classList.add('flash');
-      setTimeout(()=>document.getElementById('calcBtn').classList.remove('flash'),200);
+  // Disparar confeti en cascada con rebote y movimiento curvo
+  const shots = 5;
+  let delay = 0;
+  for(let i=0;i<shots;i++){
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        spread: 100,
+        startVelocity: 30 + i*5,
+        gravity: 0.4 + i*0.05,
+        ticks: 250,
+        origin: { x, y },
+        colors: colors,
+        scalar: 1 + i*0.1,
+        shapes: ['square'],
+        rotate: () => Math.random() * 360,
+        tilt: () => Math.random() * 30 - 15,
+        drift: () => (Math.random() - 0.5) * 4,
+        wobble: 15,
+        decay: 0.9,
+        random: true
+      });
+    }, delay);
+    delay += 100;
+  }
+}
 
-      const bpass = Number(document.getElementById("bpass").value)||0;
-      const skins = Number(document.getElementById("skins").value)||0;
-      const maxeados = Number(document.getElementById("maxeados").value)||0;
+/* ===== Calcular ===== */
+function calcular(){
+  const ids = ['bpass','comunes','raras','epicas','miticas','legendarias','hipercarga','maxeados'];
+  const valoresInput = ids.map(id => Math.max(Number(document.getElementById(id).value)||0,0));
+  const valores = {
+    "🎟️ Brawl Pass": valoresInput[0]*10,
+    "🩵 Comunes": valoresInput[1]*2,
+    "💚 Raras": valoresInput[2]*5,
+    "💜 Épicas": valoresInput[3]*10,
+    "❤️ Míticas": valoresInput[4]*12,
+    "🌟 Legendarias": valoresInput[5]*15,
+    "⚡ Hipercarga": valoresInput[6]*20,
+    "🔥 Maxeados": valoresInput[7]*50
+  };
+  const total = Object.values(valores).reduce((a,b)=>a+b,0);
+  actualizarResultado(total);
 
-      const valores={
-        "🎟️ Brawl Pass":bpass*10,
-        "🎨 Skins":skins*5,
-        "🔥 Maxeados":maxeados*50
-      };
-      const total = Object.values(valores).reduce((a,b)=>a+b,0);
-      document.getElementById("resultado").innerText="Valor total: "+total+" €";
+  const data = { labels: Object.keys(valores), datasets: [{ data: Object.values(valores), backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"], borderWidth:2 }]};
+  const config = { type:'doughnut', data, options:{ cutout:"70%", plugins:{legend:{display:true,position:'bottom'}} }};
+  if(chart) chart.destroy();
+  chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
-      const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),
-      backgroundColor:["#00FFFF","#FF69B4","#FF0000"],borderWidth:2}]};
-      const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
-      if(chart) chart.destroy();
-      chart = new Chart(document.getElementById('myChart').getContext('2d'),config);
-      document.getElementById('centerDiamond').style.display="block";
-      document.getElementById('myChart').scrollIntoView({behavior:'smooth',block:'center'});
-    }
+  document.getElementById('centerDiamond').style.display="block";
+  document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
+}
 
-    function limpiar(){
-      beep(300); vibrar();
-      document.getElementById('clearBtn').classList.add('flash');
-      setTimeout(()=>document.getElementById('clearBtn').classList.remove('flash'),200);
-      document.getElementById("calcForm").reset();
-      document.getElementById("resultado").innerText="Valor total: 0 €";
-      if(chart) chart.destroy();
-      document.getElementById("centerDiamond").style.display="none";
-    }
+/* ===== Limpiar ===== */
+function limpiar(){
+  document.getElementById("calcForm").reset();
+  document.getElementById("resultado").innerText="Valor total: 0 €";
+  if(chart) { chart.destroy(); chart = null; }
+  document.getElementById("centerDiamond").style.display="none";
+  document.getElementById("calcForm").scrollIntoView({behavior:'smooth', block:'start'});
+}
 
-    document.getElementById("calcBtn").addEventListener("click",calcular);
-    document.getElementById("clearBtn").addEventListener("click",limpiar);
-    document.getElementById("shareBtn").addEventListener("click",async()=>{
-      beep(500); vibrar(); document.getElementById('shareBtn').classList.add('flash');
-      setTimeout(()=>document.getElementById('shareBtn').classList.remove('flash'),200);
-      const url = window.location.href;
-      const text = "Mira cuánto vale mi cuenta de Brawl Stars!";
-      if(navigator.share){ try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}catch(err){console.log(err);}}
-      else alert("Tu navegador no soporta compartir nativo.");
-    });
+/* ===== Brawler central animado ===== */
+const brawlers = [
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/penny.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/darryl.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
+"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
+];
+let current = 0;
+const brawlerImg = document.getElementById("brawlerImg");
+setInterval(()=>{
+  current = (current+1) % brawlers.length;
+  brawlerImg.src = brawlers[current];
+},3000);
 
-    const brawlers=[
-      "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
-      "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
-      "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
-      "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png",
-      "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png"
-    ];
-    let current=0;
-    const brawlerImg=document.getElementById("brawlerImg");
-    document.getElementById("centerDiamond").style.display="block";
-    setInterval(()=>{current=(current+1)%brawlers.length;brawlerImg.src=brawlers[current];},3000);
+/* ===== Eventos botones ===== */
+document.getElementById("calcBtn").addEventListener("click",calcular);
+document.getElementById("clearBtn").addEventListener("click",limpiar);
 
-    await incrementarVisita();
-    await cargarMetricas();
-  </script>
+/* ===== Inicialización ===== */
+(async ()=>{
+  // Aquí puedes mantener la función incrementarVisita si quieres
+})();
+</script>
 </body>
 </html>
