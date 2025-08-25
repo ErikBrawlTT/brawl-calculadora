@@ -202,10 +202,10 @@ canvas{
   </div>
 </div>
 
-<script type="module">
+<script>
 let chart;
 
-/* ===== Animaciones valor total ===== */
+/* Animación valor total */
 function incrementarValorAnimado(el, target){
   let start = 0;
   const duration = 800;
@@ -218,7 +218,7 @@ function incrementarValorAnimado(el, target){
   requestAnimationFrame(step);
 }
 
-/* ===== Confeti y fade ===== */
+/* Confeti y fade */
 function actualizarResultado(total){
   const resultadoEl = document.getElementById('resultado');
   resultadoEl.classList.remove('show');
@@ -255,7 +255,7 @@ function actualizarResultado(total){
   }
 }
 
-/* ===== Calcular ===== */
+/* Calcular */
 function calcular(){
   const ids = ['bpass','comunes','raras','epicas','miticas','legendarias','hipercarga','maxeados'];
   const valoresInput = ids.map(id => Math.max(Number(document.getElementById(id).value)||0,0));
@@ -272,6 +272,7 @@ function calcular(){
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
   actualizarResultado(total);
 
+  // Crear gráfico
   const data = { 
     labels: Object.keys(valores), 
     datasets: [{ 
@@ -292,7 +293,7 @@ function calcular(){
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-/* ===== Limpiar ===== */
+/* Limpiar */
 function limpiar(){
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
@@ -301,18 +302,18 @@ function limpiar(){
   document.getElementById("calcForm").scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-/* ===== Brawler central animado ===== */
+/* Brawler central animado */
 const brawlers = [
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png",
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png",
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/penny.png",
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/darryl.png",
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
-"https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/edgar.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/spike.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/penny.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/darryl.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
+  "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
 ];
 let current = 0;
 const brawlerImg = document.getElementById("brawlerImg");
@@ -321,14 +322,9 @@ setInterval(()=>{
   brawlerImg.src = brawlers[current];
 },3000);
 
-/* ===== Eventos botones ===== */
+/* Eventos botones */
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click",limpiar);
-
-/* ===== Inicialización ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  // puedes agregar métricas de visitas aquí si quieres
-});
 </script>
 </body>
 </html>
