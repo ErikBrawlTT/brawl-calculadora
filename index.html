@@ -35,60 +35,60 @@ body::after {
   min-height: 100vh;
   padding: 20px;
 }
+
+/* ===== TITULO CON ESTRELLAS BRILLANTES ===== */
 h1 {
-  font-family: 'Bangers', cursive; /* volvemos a Bangers */
   font-size: 3rem;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  color: #FFD700; /* Amarillo */
-  text-shadow: 
-    -2px -2px 0 #000,  
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000; /* Borde negro */
+  font-family: 'Bangers', cursive;
+  color: #FFD700; /* amarillo */
+  -webkit-text-stroke: 0px black; /* eliminamos borde directo */
 }
-
-h1.diamond {
+h1 .diamond {
   font-family: 'Bangers', cursive;
   font-size: 3rem;
-  color: #32CD32; /* verde gema */
-  -webkit-text-stroke: 0.1px black; /* borde muy fino */
+  color: #32CD32; /* verde brillante */
   text-shadow:
-    0 0 3px #32CD32,
-    0 0 6px #00FF00,
-    0 0 9px #00FF7F,
-    0 0 12px #00FF7F,
-    0 0 15px #00FF00;
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 6px #32CD32,
+    0 0 12px #00FF00,
+    0 0 18px #00FF7F;
   animation: glow 1.5s infinite alternate;
 }
-
 @keyframes glow {
-  0% { text-shadow: 0 0 3px #32CD32, 0 0 6px #00FF00, 0 0 9px #00FF7F, 0 0 12px #00FF7F, 0 0 15px #00FF00; }
-  50% { text-shadow: 0 0 5px #32CD32, 0 0 10px #00FF00, 0 0 15px #00FF7F, 0 0 20px #00FF7F, 0 0 25px #00FF00; }
-  100% { text-shadow: 0 0 3px #32CD32, 0 0 6px #00FF00, 0 0 9px #00FF7F, 0 0 12px #00FF7F, 0 0 15px #00FF00; }
+  0% { text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 4px #32CD32,
+    0 0 8px #00FF00,
+    0 0 12px #00FF7F; }
+  50% { text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 8px #32CD32,
+    0 0 16px #00FF00,
+    0 0 24px #00FF7F; }
+  100% { text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 4px #32CD32,
+    0 0 8px #00FF00,
+    0 0 12px #00FF7F; }
 }
 
-@keyframes sparkle {
-  from {
-    text-shadow: 
-      0 0 5px #32CD32,
-      0 0 10px #00FF00,
-      0 0 15px #00FF7F,
-      0 0 20px #00FF7F;
-    transform: scale(1);
-  }
-  to {
-    text-shadow: 
-      0 0 10px #32CD32,
-      0 0 20px #00FF00,
-      0 0 30px #00FF7F,
-      0 0 40px #00FF7F;
-    transform: scale(1.2);
-  }
-}
 form {
   background: rgba(0,0,0,0.5);
   border-radius: 60px;
@@ -135,8 +135,12 @@ button.flash {
   box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
   transition: box-shadow 0.2s ease;
 }
-#calcBtn {background:linear-gradient(90deg,#FFD700,#FFA500);}
-#clearBtn{background:linear-gradient(90deg,#000000,#333300);}
+
+/* Botones calcular y limpiar nuevos colores */
+#calcBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
+#clearBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
+
+/* Botón compartir mantiene estilo previo con pulso */
 #shareBtn{
   background:linear-gradient(90deg,#00FFAA,#FF00FF); 
   margin-top:20px; 
@@ -208,7 +212,7 @@ canvas{
 </head>
 <body>
 <div class="container">
-<h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
+<h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
 <form id="calcForm">
 <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
 <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
@@ -220,7 +224,7 @@ canvas{
 <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
 </form>
 
-<div id="resultado" data-current="0">Valor total: 0 €</div>
+<div id="resultado">Valor total: 0 €</div>
 
 <div class="buttons">
 <button id="calcBtn">Calcular</button>
@@ -255,7 +259,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   'https://ttkneykkrkbajymzsgcr.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
+  'TU_API_KEY_AQUI'
 );
 
 const PAGE_ID = 'pagina1';
@@ -265,7 +269,7 @@ function animateCounter(id, value){
   const el = document.getElementById(id);
   let start = parseInt(el.innerText) || 0;
   const end = Number(value) || 0;
-  const duration = 600;
+  const duration = 800;
   const t0 = performance.now();
   function step(t){
     const p = Math.min((t - t0) / duration, 1);
@@ -273,25 +277,6 @@ function animateCounter(id, value){
     if (p < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
-}
-
-/* ===== Animar valor total suavemente ===== */
-function animateResultado(total) {
-  const el = document.getElementById("resultado");
-  const start = Number(el.dataset.current) || 0;
-  const end = total;
-  const duration = 800;
-  const startTime = performance.now();
-
-  function step(time) {
-    const progress = Math.min((time - startTime) / duration, 1);
-    const value = Math.floor(start + (end - start) * progress);
-    el.innerText = `Valor total: ${value} €`;
-    if (progress < 1) requestAnimationFrame(step);
-  }
-
-  requestAnimationFrame(step);
-  el.dataset.current = total;
 }
 
 /* ===== Cargar métricas ===== */
@@ -314,7 +299,7 @@ async function incrementarVisita(){
   await cargarMetricas();
 }
 
-/* ===== Votos independientes 1 vez por usuario ===== */
+/* ===== Votos ===== */
 async function votar(tipo){
   const prev = localStorage.getItem('vote');
   try{
@@ -337,7 +322,6 @@ async function votar(tipo){
   }catch(e){ console.error(e);}
 }
 
-/* ===== Flash efecto neon ===== */
 function animateFlash(tipo){
   const el = tipo==='like'?document.getElementById('likes-counter'):
              tipo==='dislike'?document.getElementById('dislikes-counter'):
@@ -391,7 +375,19 @@ function calcular(){
   };
 
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  animateResultado(total);
+
+  // Animar resultado lentamente
+  const resultadoEl = document.getElementById("resultado");
+  let start = parseInt(resultadoEl.innerText.replace(/\D/g,'')) || 0;
+  const end = total;
+  const duration = 800;
+  const t0 = performance.now();
+  function step(t){
+    const p = Math.min((t - t0)/duration,1);
+    resultadoEl.innerText = "Valor total: "+Math.floor(start + (end-start)*p)+" €";
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 
   const data = {
     labels:Object.keys(valores),
@@ -406,7 +402,6 @@ function calcular(){
   if(chart) chart.destroy();
   chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
-  // Confeti
   confetti({
     particleCount: 100,
     spread: 70,
@@ -422,7 +417,7 @@ function limpiar(){
   document.getElementById('clearBtn').classList.add('flash');
   setTimeout(()=>document.getElementById('clearBtn').classList.remove('flash'),200);
   document.getElementById("calcForm").reset();
-  animateResultado(0);
+  document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart) chart.destroy();
   document.getElementById("centerDiamond").style.display="none";
   window.scrollTo({top:0, behavior:'smooth'});
