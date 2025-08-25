@@ -42,21 +42,16 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  color: #FFD700; /* Amarillo */
-  text-shadow: 
-    -2px -2px 0 #000,  
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000; /* Borde negro */
-}
+  color: yellow;
+  -webkit-text-stroke: 2px black;
 }
 h1 .diamond {
   animation: glow 3s infinite alternate;
 }
 @keyframes glow {
-  0% { text-shadow: 0 0 5px rgba(0,255,0,0.5); }
-  50% { text-shadow: 0 0 15px rgba(0,255,0,1); }
-  100% { text-shadow: 0 0 5px rgba(0,255,0,0.5); }
+  0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+  50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
+  100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
 }
 form {
   background: rgba(0,0,0,0.5);
@@ -104,8 +99,8 @@ button.flash {
   box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
   transition: box-shadow 0.2s ease;
 }
-#calcBtn {background:linear-gradient(90deg,#FFD700,#000000);}
-#clearBtn{background:linear-gradient(90deg,#FFD700,#000000);}
+#calcBtn {background:linear-gradient(90deg,#FFD700,#FFA500);}
+#clearBtn{background:linear-gradient(90deg,#000000,#333300);}
 #shareBtn{
   background:linear-gradient(90deg,#00FFAA,#FF00FF); 
   margin-top:20px; 
@@ -177,7 +172,7 @@ canvas{
 </head>
 <body>
 <div class="container">
-<h1><span class="diamond">💎</span> Calculadora Brawl Stars <span class="diamond">💎</span></h1>
+<h1><span class="diamond">🔴</span> Calculadora Brawl Stars <span class="diamond">🔴</span></h1>
 <form id="calcForm">
 <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
 <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
@@ -189,7 +184,7 @@ canvas{
 <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
 </form>
 
-<div id="resultado">Valor total: 0 €</div>
+<div id="resultado" data-current="0">Valor total: 0 €</div>
 
 <div class="buttons">
 <button id="calcBtn">Calcular</button>
@@ -242,6 +237,25 @@ function animateCounter(id, value){
     if (p < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
+}
+
+/* ===== Animar valor total suavemente ===== */
+function animateResultado(total) {
+  const el = document.getElementById("resultado");
+  const start = Number(el.dataset.current) || 0;
+  const end = total;
+  const duration = 800;
+  const startTime = performance.now();
+
+  function step(time) {
+    const progress = Math.min((time - startTime) / duration, 1);
+    const value = Math.floor(start + (end - start) * progress);
+    el.innerText = `Valor total: ${value} €`;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+  el.dataset.current = total;
 }
 
 /* ===== Cargar métricas ===== */
@@ -341,7 +355,7 @@ function calcular(){
   };
 
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
-  document.getElementById("resultado").innerText="Valor total: "+total+" €";
+  animateResultado(total);
 
   const data = {
     labels:Object.keys(valores),
@@ -372,7 +386,7 @@ function limpiar(){
   document.getElementById('clearBtn').classList.add('flash');
   setTimeout(()=>document.getElementById('clearBtn').classList.remove('flash'),200);
   document.getElementById("calcForm").reset();
-  document.getElementById("resultado").innerText="Valor total: 0 €";
+  animateResultado(0);
   if(chart) chart.destroy();
   document.getElementById("centerDiamond").style.display="none";
   window.scrollTo({top:0, behavior:'smooth'});
@@ -391,7 +405,7 @@ document.getElementById("shareBtn").addEventListener("click", async ()=>{
   } else { alert("Tu navegador no soporta compartir nativo."); }
 });
 
-// Botón compartir palpita
+// Botón compartir pulsante
 document.getElementById('shareBtn').classList.add('pulse');
 
 /* ===== Animación Brawler central ===== */
