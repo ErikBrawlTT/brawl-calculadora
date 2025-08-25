@@ -21,8 +21,8 @@ body::after {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.2); /* Fondo más claro */
-  backdrop-filter: blur(2px);
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
   z-index: 0;
 }
 .container {
@@ -48,21 +48,18 @@ h1 {
 }
 h1 .diamond {
   animation: glow 3s infinite alternate;
-  /* Rubí verde */
-  color: #39ff14;
-  text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, 0 0 40px #39ff14;
 }
 @keyframes glow {
-  0% { text-shadow: 0 0 5px #39ff14,0 0 10px #39ff14; }
-  50% { text-shadow: 0 0 20px #39ff14,0 0 40px #39ff14; }
-  100% { text-shadow: 0 0 5px #39ff14,0 0 10px #39ff14; }
+  0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+  50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
+  100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
 }
 form {
   background: rgba(0,0,0,0.5);
   border-radius: 60px;
   padding: 20px;
   max-width: 600px;
-  width:90%;
+  width: 90%;
   margin-bottom: 15px;
   display: flex;
   flex-direction: column;
@@ -99,9 +96,11 @@ button {
 button:active {
   transform: scale(0.97);
 }
-#calcBtn {
-  background: linear-gradient(90deg,#00CFFF,#00FFAA); /* Botón verde-azulado */
+button.flash {
+  box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
+  transition: box-shadow 0.2s ease;
 }
+#calcBtn {background:linear-gradient(90deg,#ff0080,#7928ca);}
 #clearBtn{background:linear-gradient(90deg,#00CFFF,#0077FF);}
 #shareBtn{
   background:linear-gradient(90deg,#00FFAA,#FF00FF); 
@@ -338,25 +337,12 @@ function calcular(){
   };
 
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
-
-  // Animación del total
-  const resultadoEl = document.getElementById("resultado");
-  let start = parseInt(resultadoEl.innerText.replace(/\D/g,'')) || 0;
-  let end = total;
-  const duration = 800;
-  const t0 = performance.now();
-  function step(t){
-    const p = Math.min((t - t0)/duration,1);
-    resultadoEl.innerText = "Valor total: "
-    "Math.floor(start + (end - start) * p) + " €";
-    if(p < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
+  document.getElementById("resultado").innerText="Valor total: "+total+" €";
 
   const data = {
-    labels: Object.keys(valores),
+    labels:Object.keys(valores),
     datasets:[{
-      data: Object.values(valores),
+      data:Object.values(valores),
       backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],
       borderWidth:2
     }]
