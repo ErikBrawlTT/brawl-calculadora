@@ -52,15 +52,34 @@ h1 {
 }
 
 h1.diamond {
-  font-family: 'Bangers', cursive; /* también para los rubíes */
-  color: #32CD32; /* verde claro estilo rubí */
+  font-family: 'Bangers', cursive;
+  color: #32CD32; /* Verde rubí */
   font-size: 2.5rem;
-  }
+  text-shadow: 
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 15px #FFD700,
+    0 0 20px #FFD700; /* Brillo amarillo */
+  animation: sparkle 1.5s infinite alternate;
 }
-@keyframes glow {
-  0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-  50% { text-shadow: 0 0 15px rgba(255,255,255,1); }
-  100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+
+@keyframes sparkle {
+  from {
+    text-shadow: 
+      0 0 5px #fff,
+      0 0 10px #FFD700,
+      0 0 15px #FFD700,
+      0 0 20px #FFD700;
+    transform: scale(1);
+  }
+  to {
+    text-shadow: 
+      0 0 10px #fff,
+      0 0 20px #FFD700,
+      0 0 30px #FFD700,
+      0 0 40px #FFD700;
+    transform: scale(1.2); /* un leve zoom */
+  }
 }
 form {
   background: rgba(0,0,0,0.5);
