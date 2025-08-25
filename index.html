@@ -21,8 +21,8 @@ body::after {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
-  backdrop-filter: blur(5px);
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
   z-index: 0;
 }
 .container {
@@ -43,17 +43,16 @@ h1 {
   justify-content: center;
   gap: 10px;
   color: transparent;
-  background: linear-gradient(90deg, #00FFAA, #00CFFF, #FF00FF);
+  background: linear-gradient(90deg, #00FF00, #00AA00, #00FF00);
   -webkit-background-clip: text;
 }
 h1 .diamond {
   animation: glow 3s infinite alternate;
-  color: #00FFAA;
 }
 @keyframes glow {
-  0% { text-shadow: 0 0 5px #00FFAA80; }
-  50% { text-shadow: 0 0 20px #00FFAA; }
-  100% { text-shadow: 0 0 5px #00FFAA80; }
+  0% { text-shadow: 0 0 5px rgba(0,255,0,0.5); }
+  50% { text-shadow: 0 0 15px rgba(0,255,0,1); }
+  100% { text-shadow: 0 0 5px rgba(0,255,0,0.5); }
 }
 form {
   background: rgba(0,0,0,0.5);
@@ -101,22 +100,19 @@ button.flash {
   box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
   transition: box-shadow 0.2s ease;
 }
-#calcBtn {
-  background: linear-gradient(90deg, #FFD700, #000000); /* amarillo → negro */
-  color: white;
-}
-
-#clearBtn {
-  background: linear-gradient(90deg, #FFD700, #000000); /* amarillo → negro */
-  color: white;
-}
-
-#shareBtn {
-  background: linear-gradient(90deg,#00FFAA,#FF00FF); 
+#calcBtn {background:linear-gradient(90deg,#FFD700,#000000);}
+#clearBtn{background:linear-gradient(90deg,#FFD700,#000000);}
+#shareBtn{
+  background:linear-gradient(90deg,#00FFAA,#FF00FF); 
   margin-top:20px; 
   color:white;
-  animation: pulseBorder 1s infinite; /* solo este palpitando */
 }
+@keyframes pulseBorder {
+  0% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
+  50% { box-shadow: 0 0 25px #FF00FF, 0 0 35px #FF00FF; transform: scale(1.05); }
+  100% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
+}
+#shareBtn.pulse { animation: pulseBorder 1s infinite; }
 
 .metric-container {
   display: flex;
@@ -229,6 +225,7 @@ const supabase = createClient(
 
 const PAGE_ID = 'pagina1';
 
+/* ===== Animación contadores ===== */
 function animateCounter(id, value){
   const el = document.getElementById(id);
   let start = parseInt(el.innerText) || 0;
@@ -243,6 +240,7 @@ function animateCounter(id, value){
   requestAnimationFrame(step);
 }
 
+/* ===== Cargar métricas ===== */
 async function cargarMetricas(){
   const { data, error } = await supabase
     .from('metrics')
@@ -256,11 +254,13 @@ async function cargarMetricas(){
   }
 }
 
+/* ===== Incrementar visitas ===== */
 async function incrementarVisita(){
   await supabase.rpc('increment_visitas',{pid: PAGE_ID});
   await cargarMetricas();
 }
 
+/* ===== Votos independientes 1 vez por usuario ===== */
 async function votar(tipo){
   const prev = localStorage.getItem('vote');
   try{
@@ -283,6 +283,7 @@ async function votar(tipo){
   }catch(e){ console.error(e);}
 }
 
+/* ===== Flash efecto neon ===== */
 function animateFlash(tipo){
   const el = tipo==='like'?document.getElementById('likes-counter'):
              tipo==='dislike'?document.getElementById('dislikes-counter'):
@@ -294,6 +295,7 @@ function animateFlash(tipo){
 document.getElementById('likes-counter').parentElement.addEventListener('click',()=>votar('like'));
 document.getElementById('dislikes-counter').parentElement.addEventListener('click',()=>votar('dislike'));
 
+/* ===== Botones calcular, limpiar, compartir ===== */
 function beep(freq){
   const ctx = new (AudioContext||webkitAudioContext)(),
         o = ctx.createOscillator(),
@@ -350,6 +352,7 @@ function calcular(){
   if(chart) chart.destroy();
   chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
+  // Confeti
   confetti({
     particleCount: 100,
     spread: 70,
@@ -384,8 +387,10 @@ document.getElementById("shareBtn").addEventListener("click", async ()=>{
   } else { alert("Tu navegador no soporta compartir nativo."); }
 });
 
+// Botón compartir palpita
 document.getElementById('shareBtn').classList.add('pulse');
 
+/* ===== Animación Brawler central ===== */
 const brawlers = [
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
@@ -397,11 +402,8 @@ const brawlers = [
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/rico.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"];
-
-let current = 0;
-const brawlerImg = document.getElementById("brawlerImg");
+let current = 0;const brawlerImg = document.getElementById("brawlerImg");
 document.getElementById("centerDiamond").style.display = "block";
-
 setInterval(()=>{
   current = (current + 1) % brawlers.length;
   brawlerImg.src = brawlers[current];
