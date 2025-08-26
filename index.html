@@ -195,30 +195,26 @@ canvas{
 
 /* ===== Botón INFO centrado ===== */
 #infoBtn {
-#infoIcon {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  background: #000;
-  color: #FF00FF;
-  font-family: 'Bangers';
-  font-size: 1.4rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background: #111;
+  border: 2px solid #b026ff;  /* borde neon morado */
+  color: #fff;                  /* palabra INFO en blanco */
+  font-family: 'Bangers', cursive;
+  font-size: 22px;              /* tamaño de INFO */
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 4px;          /* espacio entre letras */
+  line-height: 100px;           /* centrado vertical */
   cursor: pointer;
-  box-shadow: 0 0 8px #FF00FF, 0 0 16px #FF00FF, 0 0 24px #FF00FF;
-  animation: neonPulse 1.5s infinite alternate;
-  z-index: 2;
-}
-@keyframes neonPulse {
-  0% { box-shadow:0 0 8px #FF00FF,0 0 16px #FF00FF,0 0 24px #FF00FF; }
-  50% { box-shadow:0 0 15px #FF00FF,0 0 25px #FF00FF,0 0 35px #FF00FF; }
-  100% { box-shadow:0 0 8px #FF00FF,0 0 16px #FF00FF,0 0 24px #FF00FF; }
+  box-shadow: 0 0 8px #b026ff, 0 0 16px rgba(176, 38, 255, 0.5);
+  text-shadow: 0 0 4px #b026ff, 0 0 8px rgba(176, 38, 255, 0.6);
+  animation: pulse 2.5s infinite;
 }
   
 }}
