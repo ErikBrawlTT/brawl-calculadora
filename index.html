@@ -45,66 +45,42 @@ h1 {
   justify-content: center;
   gap: 10px;
   font-family: 'Bangers', cursive;
-  color: #FFD700; /* amarillo */
-  text-shadow:
-    -2px -2px 0 black,
-     2px -2px 0 black,
-    -2px  2px 0 black,
-     2px  2px 0 black;
+  color: #FFD700;
+  text-shadow: -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 2px 0 black;
 }
 h1 .diamond {
   font-family: 'Bangers', cursive;
   font-size: 3rem;
-  color: #32CD32; /* verde brillante */
-  text-shadow:
-    -1px -1px 0 #000,
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000,
-     0 0 6px #32CD32,
-     0 0 12px #00FF00,
-     0 0 18px #00FF7F;
+  color: #32CD32;
+  text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 6px #32CD32,0 0 12px #00FF00,0 0 18px #00FF7F;
   animation: glow 1.5s infinite alternate;
 }
 @keyframes glow {
-  0% { text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000,
-    0 0 4px #32CD32,
-    0 0 8px #00FF00,
-    0 0 12px #00FF7F; }
-  50% { text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000,
-    0 0 8px #32CD32,
-    0 0 16px #00FF00,
-    0 0 24px #00FF7F; }
-  100% { text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000,
-    0 0 4px #32CD32,
-    0 0 8px #00FF00,
-    0 0 12px #00FF7F; }
+  0% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; }
+  50% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 8px #32CD32,0 0 16px #00FF00,0 0 24px #00FF7F; }
+  100% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; }
 }
 
+/* ===== FORMULARIO ===== */
 form {
-  position: relative;
   background: rgba(0,0,0,0.5);
   border-radius: 60px;
-  padding: 40px 20px;
+  padding: 20px;
   max-width: 600px;
   width: 90%;
   margin-bottom: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  
+  border: 2px solid #FFA500;
+  box-shadow: 0 0 10px #FFA500, 0 0 20px #FFA500, 0 0 30px #FFA500, 0 0 40px #FF8C00;
+  transition: box-shadow 0.3s ease;
 }
+form:hover {
+  box-shadow: 0 0 15px #FFA500, 0 0 25px #FFA500, 0 0 35px #FFA500, 0 0 50px #FF8C00;
+}
+
 label {
   display:flex;
   justify-content:space-between;
@@ -133,19 +109,14 @@ button {
   cursor:pointer;
   transition: transform .08s ease;
 }
-button:active {
-  transform: scale(0.97);
-}
-button.flash {
-  box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
-  transition: box-shadow 0.2s ease;
-}
+button:active { transform: scale(0.97); }
+button.flash { box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff; transition: box-shadow 0.2s ease; }
 
-/* Botones calcular y limpiar nuevos colores */
+/* Botones calcular y limpiar colores */
 #calcBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
 #clearBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
 
-/* Botón compartir mantiene estilo previo con pulso */
+/* Botón compartir con pulso */
 #shareBtn{
   background:linear-gradient(90deg,#00FFAA,#FF00FF); 
   margin-top:20px; 
@@ -164,122 +135,80 @@ button.flash {
   gap: 22px;
   margin-top: 18px;
 }
-.metric {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  font-family:'Orbitron', sans-serif;
-  font-size: 2rem;
-}
-.metric .box {
-  background: rgba(0,0,0,0.7);
-  padding: 8px 18px;
-  border-radius: 12px;
-  min-width: 70px;
-  text-align: center;
-  font-weight: 700;
-  user-select: none;
-  transition: all 0.2s ease;
-  cursor:pointer;
-}
+.metric { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family:'Orbitron', sans-serif; font-size: 2rem; }
+.metric .box { background: rgba(0,0,0,0.7); padding: 8px 18px; border-radius: 12px; min-width: 70px; text-align: center; font-weight: 700; user-select: none; transition: all 0.2s ease; cursor:pointer; }
 .metric.visitas .box { border: 2px solid #00CFFF; color: #00CFFF; box-shadow:0 0 10px #00CFFF,0 0 20px #00CFFF;}
 .metric.likes .box { border: 2px solid #39ff14; color: #39ff14; box-shadow:0 0 10px #39ff14,0 0 20px #39ff14;}
 .metric.dislikes .box { border: 2px solid #FF073A; color: #FF073A; box-shadow:0 0 10px #FF073A,0 0 20px #FF073A;}
 
-canvas{
-  margin-top:15px;
-  max-width:400px;
-  position:relative;
-}
-#centerDiamond {
-  position: absolute;
-  top: 43%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: none;
-}
-#centerDiamond img {
-  width: 210px;
-  height: 210px;
-  border-radius: 50%;
-  object-fit: contain;
-  background: rgba(0,0,0,0.3);
-}
-#resultado { 
-  margin:10px 0; 
-  font-size:2rem;
-  font-family:'Bangers';
-  color:#00FF00;
-  text-shadow:0 0 8px #00FF00,0 0 15px #00FF00;
-}
+canvas{ margin-top:15px; max-width:400px; position:relative; }
+#centerDiamond { position: absolute; top: 43%; left: 50%; transform: translate(-50%, -50%); display: none; }
+#centerDiamond img { width: 210px; height: 210px; border-radius: 50%; object-fit: contain; background: rgba(0,0,0,0.3); }
+
+#resultado { margin:10px 0; font-size:2rem; font-family:'Bangers'; color:#00FF00; text-shadow:0 0 8px #00FF00,0 0 15px #00FF00; }
 
 /* ===== ICONO INFO ===== */
-#infoIcon {
+#infoBtn {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: #000;
+  border: 2px solid #FF00FF;
   color: #FF00FF;
-  font-family: 'Bangers';
-  font-size: 1.4rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 0 8px #FF00FF, 0 0 16px #FF00FF, 0 0 24px #FF00FF;
-  animation: neonPulse 1.5s infinite alternate;
-  z-index: 2;
+  font-weight: bold;
+  font-family:'Bangers';
+  font-size:1.2rem;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-shadow: 0 0 5px #FF00FF,0 0 10px #FF00FF,0 0 15px #FF69B4;
+  animation: pulseInfo 1s infinite;
+  z-index:2;
 }
-@keyframes neonPulse {
-  0% { box-shadow:0 0 8px #FF00FF,0 0 16px #FF00FF,0 0 24px #FF00FF; }
-  50% { box-shadow:0 0 15px #FF00FF,0 0 25px #FF00FF,0 0 35px #FF00FF; }
-  100% { box-shadow:0 0 8px #FF00FF,0 0 16px #FF00FF,0 0 24px #FF00FF; }
+@keyframes pulseInfo{
+  0% { box-shadow:0 0 5px #FF00FF,0 0 10px #FF00FF,0 0 15px #FF69B4; }
+  50% { box-shadow:0 0 15px #FF00FF,0 0 25px #FF00FF,0 0 30px #FF69B4; }
+  100% { box-shadow:0 0 5px #FF00FF,0 0 10px #FF00FF,0 0 15px #FF69B4; }
 }
 
 /* ===== MODAL INFO ===== */
-#modalOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  z-index: 5;
-}
 #infoModal {
-  display: none;
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0,0,0,0.9);
-  padding: 30px;
-  border-radius: 20px;
-  color: #FF00FF;
-  text-align: center;
-  z-index: 6;
-  max-width: 400px;
-  font-family: 'Bangers';
+  top:0; left:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.85);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:10;
 }
-#infoModal button {
-  margin-top: 15px;
-  padding: 8px 15px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(90deg,#FF00FF,#FF69B4);
-  color: white;
-  font-family: 'Bangers';
-  font-size: 1rem;
+#infoModalContent {
+  background:#111;
+  color:#FF00FF;
+  padding:20px;
+  border-radius:20px;
+  max-width:400px;
+  text-align:left;
+  font-family:'Bangers';
+  box-shadow:0 0 10px #FF00FF,0 0 20px #FF00FF;
+}
+#infoModalClose {
+  cursor:pointer;
+  color:#FF00FF;
+  float:right;
+  font-size:1.5rem;
+  font-weight:bold;
 }
 </style>
 </head>
 <body>
 <div class="container">
 <h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
+
 <form id="calcForm">
 <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
 <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
@@ -290,9 +219,8 @@ canvas{
 <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
 <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
 
-<!-- ICONO INFO -->
-<div id="infoIcon">INFO</div>
-
+<!-- Botón INFO -->
+<button type="button" id="infoBtn">INFO</button>
 </form>
 
 <div id="resultado">Valor total: 0 €</div>
@@ -304,18 +232,9 @@ canvas{
 <button id="shareBtn">📤 Compartir</button>
 
 <div class="metric-container">
-<div class="metric visitas">
-<span class="icon">👀</span>
-<div class="box" id="visitas-counter">0</div>
-</div>
-<div class="metric likes">
-<span class="icon">👍</span>
-<div class="box" id="likes-counter">0</div>
-</div>
-<div class="metric dislikes">
-<span class="icon">👎</span>
-<div class="box" id="dislikes-counter">0</div>
-</div>
+<div class="metric visitas"><span class="icon">👀</span><div class="box" id="visitas-counter">0</div></div>
+<div class="metric likes"><span class="icon">👍</span><div class="box" id="likes-counter">0</div></div>
+<div class="metric dislikes"><span class="icon">👎</span><div class="box" id="dislikes-counter">0</div></div>
 </div>
 
 <div style="position:relative; display:inline-block;">
@@ -326,10 +245,15 @@ canvas{
 </div>
 
 <!-- MODAL INFO -->
-<div id="modalOverlay"></div>
 <div id="infoModal">
-  <div>Aquí va tu mensaje de información</div>
-  <button id="closeInfo">Cerrar</button>
+  <div id="infoModalContent">
+    <span id="infoModalClose">&times;</span>
+    <p><strong>Hola BRAWLER,</strong> esta es la calculadora que siempre has soñado probar.</p>
+    <p><strong>Brawl Pass:</strong> Ingresa aquí tu progreso del Brawl Pass.</p>
+    <p><strong>Skins:</strong> Ingresa la cantidad de cada tipo que tengas en la tienda.</p>
+    <p><strong>Brawlers maxeados:</strong> Sumando todos los brawlers maxeados con sus hipercargas sabrás el valor aproximado de tu cuenta.</p>
+    <p>A qué esperas? Haz tu cálculo y deja tu like. Vuelve al juego y dale caña 🏆.</p>
+  </div>
 </div>
 
 <script type="module">
@@ -337,7 +261,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   'https://ttkneykkrkbajymzsgcr.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
+  'TU_API_KEY_AQUI'
 );
 
 const PAGE_ID = 'pagina1';
@@ -352,7 +276,7 @@ function animateCounter(id, value){
   function step(t){
     const p = Math.min((t - t0) / duration, 1);
     el.innerText = Math.floor(start + (end - start) * p);
-    if (p < 1) requestAnimationFrame(step);
+    if(p < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 }
@@ -426,7 +350,7 @@ function beep(freq){
 }
 function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
-/* ===== Calculadora ===== */
+/* ===== Calcular y limpiar ===== */
 let chart;
 function calcular(){
   beep(600); vibrar();
@@ -481,6 +405,7 @@ function calcular(){
   chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
   confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
   document.getElementById('centerDiamond').style.display="block";
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
@@ -493,7 +418,6 @@ function limpiar(){
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart) chart.destroy();
   document.getElementById("centerDiamond").style.display="none";
-  document.querySelectorAll("table").forEach(t => t.innerHTML = "");
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -513,7 +437,7 @@ document.getElementById("shareBtn").addEventListener("click", async ()=>{
 });
 document.getElementById('shareBtn').classList.add('pulse');
 
-/* ===== Animación Brawler central ===== */
+/* ===== Animación Brawler ===== */
 const brawlers = [
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
 "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
@@ -533,18 +457,14 @@ setInterval(()=>{
   brawlerImg.src = brawlers[current];
 }, 3000);
 
-/* ===== Modal INFO ===== */
-const infoIcon = document.getElementById("infoIcon");
-const infoModal = document.getElementById("infoModal");
-const modalOverlay = document.getElementById("modalOverlay");
-document.getElementById("closeInfo").addEventListener("click",()=>{
-  infoModal.style.display="none";
-  modalOverlay.style.display="none";
-});
-infoIcon.addEventListener("click",()=>{
-  infoModal.style.display="block";
-  modalOverlay.style.display="block";
-});
+/* ===== INFO MODAL ===== */
+const infoBtn = document.getElementById('infoBtn');
+const infoModal = document.getElementById('infoModal');
+const infoClose = document.getElementById('infoModalClose');
+
+infoBtn.addEventListener('click', ()=>{ infoModal.style.display='flex'; });
+infoClose.addEventListener('click', ()=>{ infoModal.style.display='none'; });
+window.addEventListener('click', e => { if(e.target===infoModal) infoModal.style.display='none'; });
 
 /* ===== Inicialización ===== */
 (async ()=>{
