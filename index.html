@@ -334,7 +334,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   'https://ttkneykkrkbajymzsgcr.supabase.co',
-  'TU_KEY_DE_SUPABASE_AQUI'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
 );
 
 const PAGE_ID = 'pagina1';
@@ -528,9 +528,29 @@ document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click", limpiar);
 
 /* ===== Botón girar brawler ===== */
-const spinBtn = document.getElementById("spinBtn");
-spinBtn.addEventListener("click", girarBrawler);
+/* Botón girar brawler más pequeño y naranja */
+#spinBtn {
+  margin-top: 15px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  background: #111;
+  border: 2px solid orange;
+  border-radius: 25px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 10px orange;
+  transition: all 0.3s ease;
+}
 
+#spinBtn:hover {
+  background: orange;
+  color: black;
+  box-shadow: 0 0 20px orange, 0 0 40px orange;
+  transform: scale(1.05);
+  }
 /* ===== Ruleta Brawler ===== */
 function girarBrawler(){
   const seed = new Date().toDateString(); // mismo día = mismo brawler
