@@ -199,26 +199,37 @@ canvas{
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: linear-gradient(90deg,#8000FF,#FF00FF);
-  color: white;
+  width: 85px; /* un poco más grande */
+  height: 85px;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  background: #111;
+  border: 2px solid #b026ff;
+  color: #b026ff;
   font-family: 'Bangers', cursive;
-  font-size: 1rem;
-  font-weight: bold;
-  border: 3px solid #FF00FF;
-  box-shadow: 0 0 10px #FF00FF,0 0 20px #FF00FF,0 0 30px #8000FF;
+  font-size: 20px;
+  text-align: center;
+  line-height: 85px;
   cursor: pointer;
-  animation: pulseNeon 1.2s infinite alternate;
-  z-index: 2;
-}
-@keyframes pulseNeon {
-  0% { box-shadow: 0 0 10px #FF00FF,0 0 20px #FF00FF,0 0 30px #8000FF; }
-  50% { box-shadow: 0 0 20px #FF00FF,0 0 30px #FF00FF,0 0 40px #8000FF; }
-  100% { box-shadow: 0 0 10px #FF00FF,0 0 20px #FF00FF,0 0 30px #8000FF; }
+  box-shadow: 0 0 8px #b026ff, 0 0 15px rgba(176, 38, 255, 0.5);
+  text-shadow: 0 0 4px #b026ff, 0 0 8px rgba(176, 38, 255, 0.6);
+  animation: pulse 2.5s infinite;
 }
 
+/* Pulso más suave */
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 8px #b026ff, 0 0 15px rgba(176, 38, 255, 0.5);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 0 12px #b026ff, 0 0 22px rgba(176, 38, 255, 0.7);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 8px #b026ff, 0 0 15px rgba(176, 38, 255, 0.5);
+  }
+                                             }
 /* ===== Modal INFO ===== */
 .modal {
   display: none;
