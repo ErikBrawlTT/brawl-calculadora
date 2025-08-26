@@ -52,7 +52,6 @@ h1 {
     -2px  2px 0 black,
      2px  2px 0 black;
 }
-
 h1 .diamond {
   font-family: 'Bangers', cursive;
   font-size: 3rem;
@@ -95,9 +94,10 @@ h1 .diamond {
 }
 
 form {
+  position: relative;
   background: rgba(0,0,0,0.5);
   border-radius: 60px;
-  padding: 20px;
+  padding: 40px 20px;
   max-width: 600px;
   width: 90%;
   margin-bottom: 15px;
@@ -214,7 +214,7 @@ canvas{
   text-shadow:0 0 8px #00FF00,0 0 15px #00FF00;
 }
 
-/* ===== ICONO DE INFORMACIÓN ===== */
+/* ===== ICONO INFO ===== */
 #infoIcon {
   position: absolute;
   top: 50%;
@@ -222,69 +222,58 @@ canvas{
   transform: translate(-50%, -50%);
   width: 60px;
   height: 60px;
-  background: rgba(0,0,0,0.5);
   border-radius: 50%;
+  background: #000;
+  color: #FF00FF;
+  font-family: 'Bangers';
+  font-size: 1.4rem;
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-family: 'Bangers', cursive;
-  font-size: 2rem;
-  color: #00FFFF;
+  align-items: center;
   cursor: pointer;
-  text-shadow: 
-    0 0 5px #00FFFF,
-    0 0 10px #00FFFF,
-    0 0 20px #00FFFF,
-    0 0 40px #00FFFF;
-  animation: glowInfo 1.5s infinite alternate;
+  box-shadow: 0 0 8px #FF00FF, 0 0 16px #FF00FF, 0 0 24px #FF00FF;
+  animation: neonPulse 1.5s infinite alternate;
+  z-index: 2;
+}
+@keyframes neonPulse {
+  0% { box-shadow:0 0 8px #FF00FF,0 0 16px #FF00FF,0 0 24px #FF00FF; }
+  50% { box-shadow:0 0 15px #FF00FF,0 0 25px #FF00FF,0 0 35px #FF00FF; }
+  100% { box-shadow:0 0 8px #FF00FF,0 0 16px #FF00FF,0 0 24px #FF00FF; }
+}
+
+/* ===== MODAL INFO ===== */
+#modalOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
   z-index: 5;
 }
-
-@keyframes glowInfo {
-  0% { text-shadow: 0 0 5px #00FFFF,0 0 10px #00FFFF,0 0 20px #00FFFF,0 0 40px #00FFFF; }
-  50% { text-shadow: 0 0 10px #00FFFF,0 0 20px #00FFFF,0 0 30px #00FFFF,0 0 50px #00FFFF; }
-  100% { text-shadow: 0 0 5px #00FFFF,0 0 10px #00FFFF,0 0 20px #00FFFF,0 0 40px #00FFFF; }
-}
-
-/* ===== MODAL DE INFORMACIÓN ===== */
 #infoModal {
-  display: none; 
-  position: fixed; 
-  z-index: 10; 
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto; 
-  background-color: rgba(0,0,0,0.7);
-}
-
-#infoContent {
-  background-color: #111;
-  margin: 15% auto; 
-  padding: 20px;
-  border: 2px solid #00FFFF;
-  width: 80%; 
-  max-width: 500px;
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.9);
+  padding: 30px;
   border-radius: 20px;
-  color: #00FFFF;
+  color: #FF00FF;
   text-align: center;
-  font-family: 'Bangers', cursive;
-  font-size: 1.2rem;
-  position: relative;
+  z-index: 6;
+  max-width: 400px;
+  font-family: 'Bangers';
 }
-
-#closeInfo {
-  color: #00FFFF;
-  position: absolute;
-  top: 10px;
-  right: 20px;
-  font-size: 2rem;
-  font-weight: bold;
+#infoModal button {
+  margin-top: 15px;
+  padding: 8px 15px;
+  border-radius: 12px;
+  border: none;
   cursor: pointer;
-}
-#closeInfo:hover {
-  color: #ffffff;
+  background: linear-gradient(90deg,#FF00FF,#FF69B4);
+  color: white;
+  font-family: 'Bangers';
+  font-size: 1rem;
 }
 </style>
 </head>
@@ -300,6 +289,10 @@ canvas{
 <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
 <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
 <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
+
+<!-- ICONO INFO -->
+<div id="infoIcon">INFO</div>
+
 </form>
 
 <div id="resultado">Valor total: 0 €</div>
@@ -325,24 +318,18 @@ canvas{
 </div>
 </div>
 
-<!-- ICONO DE INFORMACION -->
-<div id="infoIcon">i</div>
-
-<!-- MODAL DE INFORMACIÓN -->
-<div id="infoModal">
-  <div id="infoContent">
-    <span id="closeInfo">&times;</span>
-    <div id="infoText">
-      <!-- Mensaje info -->
-    </div>
-  </div>
-</div>
-
 <div style="position:relative; display:inline-block;">
 <canvas id="myChart" width="400" height="400"></canvas>
 <div id="centerDiamond">
 <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
 </div>
+</div>
+
+<!-- MODAL INFO -->
+<div id="modalOverlay"></div>
+<div id="infoModal">
+  <div>Aquí va tu mensaje de información</div>
+  <button id="closeInfo">Cerrar</button>
 </div>
 
 <script type="module">
@@ -424,7 +411,7 @@ function animateFlash(tipo){
 document.getElementById('likes-counter').parentElement.addEventListener('click',()=>votar('like'));
 document.getElementById('dislikes-counter').parentElement.addEventListener('click',()=>votar('dislike'));
 
-/* ===== Botones calcular, limpiar, compartir ===== */
+/* ===== Sonido y vibración ===== */
 function beep(freq){
   const ctx = new (AudioContext||webkitAudioContext)(),
         o = ctx.createOscillator(),
@@ -439,6 +426,7 @@ function beep(freq){
 }
 function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
+/* ===== Calculadora ===== */
 let chart;
 function calcular(){
   beep(600); vibrar();
@@ -467,7 +455,6 @@ function calcular(){
 
   const total = Object.values(valores).reduce((a,b)=>a+b,0);
 
-  // Animar resultado lentamente
   const resultadoEl = document.getElementById("resultado");
   let start = parseInt(resultadoEl.innerText.replace(/\D/g,'')) || 0;
   const end = total;
@@ -493,12 +480,7 @@ function calcular(){
   if(chart) chart.destroy();
   chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
-  confetti({
-    particleCount: 100,
-    spread: 70,
-    origin: { y: 0.6 }
-  });
-
+  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
   document.getElementById('centerDiamond').style.display="block";
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
@@ -511,11 +493,14 @@ function limpiar(){
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart) chart.destroy();
   document.getElementById("centerDiamond").style.display="none";
+  document.querySelectorAll("table").forEach(t => t.innerHTML = "");
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click", limpiar);
+
+/* ===== Compartir ===== */
 document.getElementById("shareBtn").addEventListener("click", async ()=>{
   beep(500); vibrar(); document.getElementById('shareBtn').classList.add('flash');
   setTimeout(()=>document.getElementById('shareBtn').classList.remove('flash'),200);
@@ -526,8 +511,6 @@ document.getElementById("shareBtn").addEventListener("click", async ()=>{
     catch(err){console.log(err);}
   } else { alert("Tu navegador no soporta compartir nativo."); }
 });
-
-// Botón compartir pulsante
 document.getElementById('shareBtn').classList.add('pulse');
 
 /* ===== Animación Brawler central ===== */
@@ -550,13 +533,18 @@ setInterval(()=>{
   brawlerImg.src = brawlers[current];
 }, 3000);
 
-/* ===== ICONO INFORMACION ===== */
-const infoIcon = document.getElementById('infoIcon');
-const infoModal = document.getElementById('infoModal');
-const closeInfo = document.getElementById('closeInfo');
-infoIcon.addEventListener('click', () => infoModal.style.display='block');
-closeInfo.addEventListener('click', () => infoModal.style.display='none');
-window.addEventListener('click', (e) => { if(e.target === infoModal) infoModal.style.display='none'; });
+/* ===== Modal INFO ===== */
+const infoIcon = document.getElementById("infoIcon");
+const infoModal = document.getElementById("infoModal");
+const modalOverlay = document.getElementById("modalOverlay");
+document.getElementById("closeInfo").addEventListener("click",()=>{
+  infoModal.style.display="none";
+  modalOverlay.style.display="none";
+});
+infoIcon.addEventListener("click",()=>{
+  infoModal.style.display="block";
+  modalOverlay.style.display="block";
+});
 
 /* ===== Inicialización ===== */
 (async ()=>{
