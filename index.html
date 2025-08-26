@@ -38,6 +38,7 @@ body::after {
 
 /* ===== TITULO CON ESTRELLAS BRILLANTES ===== */
 h1 {
+h1 {
   font-size: 3rem;
   margin-bottom: 20px;
   display: flex;
@@ -46,8 +47,10 @@ h1 {
   gap: 10px;
   font-family: 'Bangers', cursive;
   color: #FFD700; /* amarillo */
-  -webkit-text-stroke: 0px black; /* eliminamos borde directo */
+  -webkit-text-stroke: 2px black; /* borde negro visible */
+  text-stroke: 2px black; /* compatibilidad */
 }
+
 h1 .diamond {
   font-family: 'Bangers', cursive;
   font-size: 3rem;
