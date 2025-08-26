@@ -199,36 +199,23 @@ canvas{
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 65px;      /* más pequeño */
-  height: 65px;     /* más pequeño */
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   background: #111;
   border: 2px solid #b026ff;
   color: #b026ff;
   font-family: 'Bangers', cursive;
-  font-size: 16px;   /* ajustado al tamaño del círculo */
+  font-size: 24px;    /* aumentar tamaño de INFO */
+  font-weight: bold;
   text-align: center;
-  line-height: 65px; /* centra verticalmente INFO */
+  line-height: 90px;  /* centra verticalmente INFO */
   cursor: pointer;
-  box-shadow: 0 0 6px #b026ff, 0 0 12px rgba(176, 38, 255, 0.5);
-  text-shadow: 0 0 3px #b026ff, 0 0 6px rgba(176, 38, 255, 0.6);
+  box-shadow: 0 0 8px #b026ff, 0 0 16px rgba(176, 38, 255, 0.5);
+  text-shadow: 0 0 4px #b026ff, 0 0 8px rgba(176, 38, 255, 0.6);
   animation: pulse 2.5s infinite;
 }
-
-/* Pulso más suave */
-@keyframes pulse {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-    box-shadow: 0 0 6px #b026ff, 0 0 12px rgba(176, 38, 255, 0.5);
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.05);
-    box-shadow: 0 0 10px #b026ff, 0 0 18px rgba(176, 38, 255, 0.7);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    box-shadow: 0 0 6px #b026ff, 0 0 12px rgba(176, 38, 255, 0.5);
-  }
+  
 }}
 /* ===== Modal INFO ===== */
 .modal {
