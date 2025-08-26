@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
+/* ===== ESTILOS EXACTOS DEL CÓDIGO ORIGINAL ===== */
 body {
   margin: 0;
   font-family: 'Bangers', cursive;
@@ -45,7 +46,7 @@ h1 {
   justify-content: center;
   gap: 10px;
   font-family: 'Bangers', cursive;
-  color: #FFD700; /* amarillo */
+  color: #FFD700;
   text-shadow:
     -2px -2px 0 black,
      2px -2px 0 black,
@@ -56,7 +57,7 @@ h1 {
 h1 .diamond {
   font-family: 'Bangers', cursive;
   font-size: 3rem;
-  color: #32CD32; /* verde brillante */
+  color: #32CD32;
   text-shadow:
     -1px -1px 0 #000,
      1px -1px 0 #000,
@@ -141,16 +142,9 @@ button.flash {
   transition: box-shadow 0.2s ease;
 }
 
-/* Botones calcular y limpiar nuevos colores */
 #calcBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
 #clearBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
-
-/* Botón compartir mantiene estilo previo con pulso */
-#shareBtn{
-  background:linear-gradient(90deg,#00FFAA,#FF00FF); 
-  margin-top:20px; 
-  color:white;
-}
+#shareBtn{ background:linear-gradient(90deg,#00FFAA,#FF00FF); margin-top:20px; color:white;}
 @keyframes pulseBorder {
   0% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
   50% { box-shadow: 0 0 25px #FF00FF, 0 0 35px #FF00FF; transform: scale(1.05); }
@@ -338,7 +332,7 @@ function animateFlash(tipo){
 document.getElementById('likes-counter').parentElement.addEventListener('click',()=>votar('like'));
 document.getElementById('dislikes-counter').parentElement.addEventListener('click',()=>votar('dislike'));
 
-/* ===== Botones calcular, limpiar, compartir ===== */
+/* ===== Sonido y vibración ===== */
 function beep(freq){
   const ctx = new (AudioContext||webkitAudioContext)(),
         o = ctx.createOscillator(),
@@ -421,19 +415,20 @@ function limpiar(){
   beep(300); vibrar();
   document.getElementById('clearBtn').classList.add('flash');
   setTimeout(()=>document.getElementById('clearBtn').classList.remove('flash'),200);
-  document.getElementById("calcForm").reset();
-  document.getElementById("resultado").innerText="Valor total: 0 €";
-  if(chart) chart.destroy();
-  document.getElementById("centerDiamond").style.display="none";
-  // Limpiar cualquier tabla presente
-  document.querySelectorAll("table").forEach(t => t.innerHTML = "");
-  window.scrollTo({top:0, behavior:'smooth'});
+document.getElementById("calcForm").reset();
+document.getElementById("resultado").innerText="Valor total: 0 €";
+if(chart) chart.destroy();
+document.getElementById("centerDiamond").style.display="none";
+// Limpiar cualquier tabla presente
+document.querySelectorAll("table").forEach(t => t.innerHTML = "");
+window.scrollTo({top:0, behavior:'smooth'});
 }
 
 document.getElementById("calcBtn").addEventListener("click",calcular);
 document.getElementById("clearBtn").addEventListener("click", limpiar);
 document.getElementById("shareBtn").addEventListener("click", async ()=>{
-  beep(500); vibrar(); document.getElementById('shareBtn').classList.add('flash');
+  beep(500); vibrar(); 
+  document.getElementById('shareBtn').classList.add('flash');
   setTimeout(()=>document.getElementById('shareBtn').classList.remove('flash'),200);
   const url = window.location.href;
   const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
