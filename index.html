@@ -199,19 +199,19 @@ canvas{
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 65px; /* un poco más grande */
-  height: 65px;
+  width: 65px;      /* más pequeño */
+  height: 65px;     /* más pequeño */
   border-radius: 50%;
   background: #111;
   border: 2px solid #b026ff;
   color: #b026ff;
   font-family: 'Bangers', cursive;
-  font-size: 16px;
+  font-size: 16px;   /* ajustado al tamaño del círculo */
   text-align: center;
-  line-height: 65px;
+  line-height: 65px; /* centra verticalmente INFO */
   cursor: pointer;
-  box-shadow: 0 0 8px #b026ff, 0 0 15px rgba(176, 38, 255, 0.5);
-  text-shadow: 0 0 4px #b026ff, 0 0 8px rgba(176, 38, 255, 0.6);
+  box-shadow: 0 0 6px #b026ff, 0 0 12px rgba(176, 38, 255, 0.5);
+  text-shadow: 0 0 3px #b026ff, 0 0 6px rgba(176, 38, 255, 0.6);
   animation: pulse 2.5s infinite;
 }
 
@@ -219,17 +219,17 @@ canvas{
 @keyframes pulse {
   0% {
     transform: translate(-50%, -50%) scale(1);
-    box-shadow: 0 0 8px #b026ff, 0 0 15px rgba(176, 38, 255, 0.5);
+    box-shadow: 0 0 6px #b026ff, 0 0 12px rgba(176, 38, 255, 0.5);
   }
   50% {
     transform: translate(-50%, -50%) scale(1.05);
-    box-shadow: 0 0 12px #b026ff, 0 0 22px rgba(176, 38, 255, 0.7);
+    box-shadow: 0 0 10px #b026ff, 0 0 18px rgba(176, 38, 255, 0.7);
   }
   100% {
     transform: translate(-50%, -50%) scale(1);
-    box-shadow: 0 0 8px #b026ff, 0 0 15px rgba(176, 38, 255, 0.5);
+    box-shadow: 0 0 6px #b026ff, 0 0 12px rgba(176, 38, 255, 0.5);
   }
-                                             }
+}}
 /* ===== Modal INFO ===== */
 .modal {
   display: none;
