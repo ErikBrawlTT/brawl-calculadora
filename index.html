@@ -161,16 +161,33 @@ button.flash {
 }
 #shareBtn.pulse { animation: pulseBorder 1s infinite; }
 
-/* Botón Girar Brawler (pequeño y naranja) */
-#spinBtn{
-  margin-top:10px;
-  padding:8px 16px;
-  font-size:1.1rem;
-  background: linear-gradient(90deg,#FFA500,#FF8C00);
-  color:#000;
-  box-shadow: 0 0 10px #FFA500, 0 0 20px rgba(255,165,0,.5);
-  border-radius: 12px;
+/* Botón Girar Brawler con efecto neon naranja */
+#girarBrawler {
+  background: linear-gradient(135deg, #ff9800, #ffb84d); /* degradado fino naranja */
+  color: black; /* texto negro */
+  font-weight: bold;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 25px; /* bordes redondeados */
+  cursor: pointer;
+  font-size: 16px;
+  position: relative;
+  transition: transform 0.2s ease-in-out;
+  box-shadow: 0 0 10px #ff9800, 0 0 20px #ff9800, 0 0 40px #ff9800; /* efecto neón */
+  animation: pulseNeon 2s infinite;
 }
+
+/* Hover con efecto de presión */
+#girarBrawler:hover {
+  transform: scale(1.05);
+}
+
+/* Animación de brillo palpitante */
+@keyframes pulseNeon {
+  0% { box-shadow: 0 0 5px #ff9800, 0 0 10px #ff9800, 0 0 20px #ff9800; }
+  50% { box-shadow: 0 0 15px #ff9800, 0 0 30px #ff9800, 0 0 60px #ff9800; }
+  100% { box-shadow: 0 0 5px #ff9800, 0 0 10px #ff9800, 0 0 20px #ff9800; }
+  }
 
 /* Botón INFO flotante centrado en el formulario */
 #infoBtn{
