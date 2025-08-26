@@ -420,11 +420,13 @@ function limpiar(){
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart) chart.destroy();
   document.getElementById("centerDiamond").style.display="none";
+  // Limpiar cualquier tabla presente
+  document.querySelectorAll("table").forEach(t => t.innerHTML = "");
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
 document.getElementById("calcBtn").addEventListener("click",calcular);
-document.getElementById("clearBtn").addEventListener("click",limpiar);
+document.getElementById("clearBtn").addEventListener("click", limpiar);
 document.getElementById("shareBtn").addEventListener("click", async ()=>{
   beep(500); vibrar(); document.getElementById('shareBtn').classList.add('flash');
   setTimeout(()=>document.getElementById('shareBtn').classList.remove('flash'),200);
