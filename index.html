@@ -390,18 +390,25 @@ function getDailyBrawler(){
 let spinningInterval;
 function spinBrawler(){
   clearInterval(spinningInterval);
-  let i = 0;
-  const spinTime = 3000; // 3 segundos
-  const start = Date.now();
+  let startTime = Date.now();
+  const duration = 3000; // Duración total del giro en ms
+  const brawlersLength = brawlers.length;
+  let frame = 0;
+
   spinningInterval = setInterval(()=>{
-    brawlerImg.src = brawlers[i % brawlers.length];
-    i++;
-    if(Date.now()-start > spinTime){
+    const elapsed = Date.now() - startTime;
+    const t = elapsed / duration;
+    // Calcular velocidad usando easing out (desaceleración suave)
+    const ease = 1 - Math.pow(1 - t, 3); 
+    // Avanzar frame según easing
+    frame += 1 + Math.floor(ease * 5); 
+    brawlerImg.src = brawlers[frame % brawlersLength];
+    if(elapsed >= duration){
       clearInterval(spinningInterval);
       brawlerImg.src = getDailyBrawler();
     }
-  }, 100); // cada 100ms
-}
+  }, 100); // actualización cada 100ms
+  }
 
 // --- Botón girar Brawler
 document.getElementById('brawlSpinBtn').addEventListener('click', spinBrawler);
