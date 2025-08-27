@@ -45,7 +45,7 @@ h1 {
   justify-content: center;
   gap: 10px;
   font-family: 'Bangers', cursive;
-  color: #FFD700; /* amarillo */
+  color: #FFD700;
   text-shadow:
     -2px -2px 0 black,
      2px -2px 0 black,
@@ -56,7 +56,7 @@ h1 {
 h1 .diamond {
   font-family: 'Bangers', cursive;
   font-size: 3rem;
-  color: #32CD32; /* verde brillante */
+  color: #32CD32;
   text-shadow:
     -1px -1px 0 #000,
      1px -1px 0 #000,
@@ -94,6 +94,7 @@ h1 .diamond {
     0 0 12px #00FF7F; }
 }
 
+/* ===== FORMULARIO ===== */
 form {
   background: rgba(0,0,0,0.5);
   border-radius: 60px;
@@ -104,8 +105,8 @@ form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative; /* necesario para centrar el botón INFO dentro */
-  border: 2px solid #FFA500; /* neon naranja */
+  position: relative;
+  border: 2px solid #FFA500;
   box-shadow: 0 0 18px rgba(255,165,0,.7), 0 0 36px rgba(255,165,0,.35);
 }
 label {
@@ -144,11 +145,9 @@ button.flash {
   transition: box-shadow 0.2s ease;
 }
 
-/* Botones calcular y limpiar nuevos colores */
+/* ===== BOTONES ===== */
 #calcBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
 #clearBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
-
-/* Botón compartir mantiene estilo previo con pulso */
 #shareBtn{
   background:linear-gradient(90deg,#00FFAA,#FF00FF); 
   margin-top:20px; 
@@ -161,7 +160,7 @@ button.flash {
 }
 #shareBtn.pulse { animation: pulseBorder 1s infinite; }
 
-/* Botón Girar Brawler (pequeño y naranja) */
+/* Botón Girar Brawler */
 #spinBtn{
   margin-top:10px;
   padding:8px 16px;
@@ -172,7 +171,7 @@ button.flash {
   border-radius: 12px;
 }
 
-/* Botón INFO flotante centrado en el formulario */
+/* Botón INFO */
 #infoBtn{
   position:absolute;
   top:50%;
@@ -182,13 +181,13 @@ button.flash {
   height:70px;
   border-radius:50%;
   background: rgba(20,0,30,.25);
-  border: 2px solid #B300FF; /* violeta */
+  border: 2px solid #B300FF;
   display:flex;
   align-items:center;
   justify-content:center;
   letter-spacing: 2px;
-  color: #FFFFFF;           /* texto blanco */
-  font-size: 1.1rem;        /* más grande */
+  color: #FFFFFF;
+  font-size: 1.1rem;
   text-shadow: 0 0 6px #B300FF, 0 0 12px #8000FF;
   box-shadow: 0 0 10px #B300FF, 0 0 20px rgba(179,0,255,.35);
   cursor:pointer;
@@ -201,6 +200,7 @@ button.flash {
   100% { box-shadow: 0 0 8px #B300FF, 0 0 16px rgba(179,0,255,.25); }
 }
 
+/* ===== CONTADORES ===== */
 .metric-container {
   display: flex;
   justify-content: center;
@@ -301,7 +301,7 @@ canvas{
 </style>
 </head>
 <body>
-<div class="container">
+  <div class="container">
   <h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
 
   <form id="calcForm">
@@ -354,13 +354,12 @@ canvas{
     <span id="infoClose">×</span>
     <h3>Información</h3>
     <p>Hola BRAWLER, esta es la calculadora que siempre has soñado probar.</p>
-    <p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que as utilizado.</p>
-    <p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins ( en la tienda del juego en cada modalidad de skins te sale el total en la parte superior ).</p>
+    <p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que has utilizado.</p>
+    <p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins (en la tienda del juego en cada modalidad de skins te sale el total en la parte superior).</p>
     <p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas que tienes, sabrás el valor aproximado de tu cuenta.</p>
     <p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
   </div>
 </div>
-
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
@@ -513,7 +512,6 @@ function calcular(){
   document.getElementById('centerDiamond').style.display="block";
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 
-  // gira ruleta al calcular
   spinRoulette();
 }
 
@@ -546,11 +544,9 @@ document.getElementById('shareBtn').classList.add('pulse');
 const brawlers = [
   "elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bibi","bo","bonnie"
 ];
-// Base URL
 const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
 document.getElementById("centerDiamond").style.display = "block";
-
-/* ===== Ruleta con brawler diario ===== */
+  /* ===== Ruleta con brawler diario ===== */
 function getOrCreateUID(){
   let uid = localStorage.getItem('uid');
   if(!uid){
@@ -559,6 +555,7 @@ function getOrCreateUID(){
   }
   return uid;
 }
+
 function stringHash(s){
   let h = 0;
   for(let i=0;i<s.length;i++){
@@ -566,6 +563,7 @@ function stringHash(s){
   }
   return (h>>>0);
 }
+
 function getDailyIndex(max){
   const uid = getOrCreateUID();
   const today = new Date().toISOString().slice(0,10);
@@ -578,35 +576,51 @@ function getDailyIndex(max){
   return idx;
 }
 
+/* ===== Animación de Brawler tipo sorteo ===== */
 function spinRoulette(){
   const img = document.getElementById("brawlerImg");
   const len = brawlers.length;
   const targetIndex = getDailyIndex(len);
 
-  const steps = len*3; // Mostrar todos con efecto
+  // Secuencia de indices para animación
   const seq = [];
-  for(let i=0;i<steps-1;i++){
+  let rounds = 3; // vueltas completas antes de llegar al diario
+  for(let i=0;i<rounds*len;i++){
     seq.push(i % len);
   }
-  seq.push(targetIndex);
+  seq.push(targetIndex); // último brawler es el del día
 
-  let delay = 50;
-  seq.forEach((idx,n)=>{
-    setTimeout(()=>{ img.src = baseURL + brawlers[idx] + ".png"; }, delay);
-    delay += 15 + Math.floor(n*2); // desacelerar
+  let delay = 50; // tiempo inicial
+  seq.forEach((idx, n) => {
+    setTimeout(() => {
+      img.src = baseURL + brawlers[idx] + ".png";
+      // efecto de borde palpitante para el brawler final
+      if(n === seq.length - 1){
+        img.style.boxShadow = "0 0 20px 6px #fff, 0 0 40px 10px #fff";
+        // animación pulsante blanca
+        img.animate([
+          { boxShadow: "0 0 20px 6px #fff" },
+          { boxShadow: "0 0 40px 12px #fff" },
+          { boxShadow: "0 0 20px 6px #fff" }
+        ], { duration: 800, iterations: Infinity });
+      } else {
+        img.style.boxShadow = "0 0 12px 3px #0ff, 0 0 20px 6px #0ff"; // efecto neón mientras gira
+      }
+    }, delay);
+    delay += 50 + Math.floor(n*5); // incrementa el delay para desacelerar
   });
 
-  setTimeout(()=>{
+  setTimeout(() => {
     confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
   }, delay + 50);
 }
 
+// Evento botón Girar Brawler
 document.getElementById('spinBtn').addEventListener('click', ()=>{
   beep(520); vibrar(80);
   spinRoulette();
 });
-
-/* ===== Info Modal ===== */
+  /* ===== Info Modal ===== */
 const infoBtn = document.getElementById('infoBtn');
 const infoModal = document.getElementById('infoModal');
 const infoClose = document.getElementById('infoClose');
@@ -615,11 +629,17 @@ infoBtn.addEventListener('click', ()=>{ infoModal.style.display='flex'; });
 infoClose.addEventListener('click', ()=>{ infoModal.style.display='none'; });
 infoModal.addEventListener('click', (e)=>{ if(e.target===infoModal) infoModal.style.display='none'; });
 
-/* ===== Inicialización ===== */
+/* ===== Inicialización de la página ===== */
 (async ()=>{
+  // Incrementa visita y carga métricas
   await incrementarVisita();
   await cargarMetricas();
+
+  // Mostrar imagen inicial del Brawler (puede ser default)
+  document.getElementById("centerDiamond").style.display = "block";
+  const targetIndex = getDailyIndex(brawlers.length);
+  document.getElementById("brawlerImg").src = baseURL + brawlers[targetIndex] + ".png";
 })();
-</script>
+  </script>
 </body>
 </html>
