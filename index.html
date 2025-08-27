@@ -35,8 +35,6 @@ body::after {
   min-height: 100vh;
   padding: 20px;
 }
-
-/* TITULO CON ESTRELLAS BRILLANTES */
 h1 {
   font-size: 3rem;
   margin-bottom: 20px;
@@ -45,7 +43,7 @@ h1 {
   justify-content: center;
   gap: 10px;
   font-family: 'Bangers', cursive;
-  color: #FFD700; 
+  color: #FFD700;
   text-shadow:
     -2px -2px 0 black,
      2px -2px 0 black,
@@ -55,7 +53,7 @@ h1 {
 h1 .diamond {
   font-family: 'Bangers', cursive;
   font-size: 3rem;
-  color: #32CD32; 
+  color: #32CD32;
   text-shadow:
     -1px -1px 0 #000,
      1px -1px 0 #000,
@@ -67,37 +65,32 @@ h1 .diamond {
   animation: glow 1.5s infinite alternate;
 }
 @keyframes glow {
-  0% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F;}
-  50% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 8px #32CD32,0 0 16px #00FF00,0 0 24px #00FF7F;}
-  100% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F;}
+  0% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; }
+  50% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 8px #32CD32,0 0 16px #00FF00,0 0 24px #00FF7F; }
+  100% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; }
 }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
 
-form {
-  background: rgba(0,0,0,0.5);
-  border-radius: 60px;
-  padding: 20px;
-  max-width: 600px;
-  width: 90%;
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative; 
-  border: 2px solid #FFA500;
-  box-shadow: 0 0 18px rgba(255,165,0,.7), 0 0 36px rgba(255,165,0,.35);
-}
-label {
-  display:flex;
-  justify-content:space-between;
-  margin:8px 0;
-  width:100%;
-}
-input {
-  width:100px;
-  text-align:center;
-  border:none;
-  border-radius:8px;
-}
+  <form id="calcForm">
+    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
+    <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
+    <label>💚 Raras: <input type="number" id="raras" value="0"></label>
+    <label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
+    <label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
+    <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
+    <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
+    <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
+
+    <button type="button" id="infoBtn">INFO</button>
+  </form>
+
+  <div id="resultado">Valor total: 0 €</div>
+  <style>
+/* ===== Botones ===== */
 .buttons {
   display:flex;
   justify-content:center;
@@ -114,25 +107,30 @@ button {
   cursor:pointer;
   transition: transform .08s ease;
 }
-button:active {
-  transform: scale(0.97);
-}
+button:active { transform: scale(0.97); }
 button.flash {
   box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
   transition: box-shadow 0.2s ease;
 }
 
+/* Botones calcular y limpiar */
 #calcBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
 #clearBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
-#shareBtn{ background:linear-gradient(90deg,#00FFAA,#FF00FF); margin-top:20px; color:white;}
-#shareBtn.pulse { animation: pulseBorder 1s infinite; }
 
+/* Botón compartir */
+#shareBtn{
+  background:linear-gradient(90deg,#00FFAA,#FF00FF); 
+  margin-top:20px; 
+  color:white;
+}
 @keyframes pulseBorder {
   0% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
   50% { box-shadow: 0 0 25px #FF00FF, 0 0 35px #FF00FF; transform: scale(1.05); }
   100% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
 }
+#shareBtn.pulse { animation: pulseBorder 1s infinite; }
 
+/* Botón Girar Brawler */
 #spinBtn{
   margin-top:10px;
   padding:8px 16px;
@@ -142,6 +140,8 @@ button.flash {
   box-shadow: 0 0 10px #FFA500, 0 0 20px rgba(255,165,0,.5);
   border-radius: 12px;
 }
+
+/* Botón INFO flotante */
 #infoBtn{
   position:absolute;
   top:50%;
@@ -170,6 +170,7 @@ button.flash {
   100% { box-shadow: 0 0 8px #B300FF, 0 0 16px rgba(179,0,255,.25); }
 }
 
+/* ===== Métricas ===== */
 .metric-container {
   display: flex;
   justify-content: center;
@@ -199,6 +200,7 @@ button.flash {
 .metric.likes .box { border: 2px solid #39ff14; color: #39ff14; box-shadow:0 0 10px #39ff14,0 0 20px #39ff14;}
 .metric.dislikes .box { border: 2px solid #FF073A; color: #FF073A; box-shadow:0 0 10px #FF073A,0 0 20px #FF073A;}
 
+/* ===== Canvas y Brawler ===== */
 canvas{
   margin-top:15px;
   max-width:400px;
@@ -209,7 +211,7 @@ canvas{
   top: 43%;
   left: 50%;
   transform: translate(-50%, -50%);
-  display: none;
+  display: block; /* siempre visible */
 }
 #centerDiamond img {
   width: 210px;
@@ -218,6 +220,13 @@ canvas{
   object-fit: contain;
   background: rgba(0,0,0,0.3);
 }
+
+/* Glow final de brawler */
+#centerDiamond img.finalGlow {
+  box-shadow: 0 0 60px #ffffff, 0 0 120px #ffffff;
+}
+
+/* Resultado cálculo */
 #resultado { 
   margin:10px 0; 
   font-size:2rem;
@@ -225,79 +234,60 @@ canvas{
   color:#00FF00;
   text-shadow:0 0 8px #00FF00,0 0 15px #00FF00;
 }
-  <body>
-<div class="container">
-  <h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
 
-  <form id="calcForm">
-    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
-    <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
-    <label>💚 Raras: <input type="number" id="raras" value="0"></label>
-    <label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
-    <label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
-    <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
-    <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
-    <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
-
-    <button type="button" id="infoBtn">INFO</button>
-  </form>
-
-  <div id="resultado">Valor total: 0 €</div>
-
-  <div class="buttons">
-    <button id="calcBtn">Calcular</button>
-    <button id="clearBtn">Limpiar</button>
-  </div>
-
-  <button id="shareBtn">📤 Compartir</button>
-  <button id="spinBtn">🔄 Girar Brawler</button>
-
-  <div class="metric-container">
-    <div class="metric visitas">
-      <span class="icon">👀</span>
-      <div class="box" id="visitas-counter">0</div>
-    </div>
-    <div class="metric likes">
-      <span class="icon">👍</span>
-      <div class="box" id="likes-counter">0</div>
-    </div>
-    <div class="metric dislikes">
-      <span class="icon">👎</span>
-      <div class="box" id="dislikes-counter">0</div>
-    </div>
-  </div>
-
-  <div style="position:relative; display:inline-block;">
-    <canvas id="myChart" width="400" height="400"></canvas>
-    <div id="centerDiamond">
-      <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
-    </div>
-  </div>
-</div>
-
-<!-- Modal INFO -->
-<div id="infoModal">
-  <div class="content">
-    <span id="infoClose">×</span>
-    <h3>Información</h3>
-    <p>Hola BRAWLER, esta es la calculadora que siempre has soñado probar.</p>
-    <p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que as utilizado.</p>
-    <p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins en cada modalidad para calcular el valor total.</p>
-    <p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas, sabrás el valor aproximado de tu cuenta.</p>
-    <p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
-  </div>
-</div>
+/* ===== Modal INFO ===== */
+#infoModal{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index: 9999;
+}
+#infoModal .content{
+  background: #0f0b18;
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 18px #FFD700, 0 0 36px rgba(255,215,0,.4);
+  border-radius: 16px;
+  max-width: 560px;
+  width: 90%;
+  padding: 18px 18px 12px;
+  text-align: left;
+  font-family: 'Orbitron', sans-serif;
+  color: #fff;
+}
+#infoModal .content h3{
+  margin: 0 0 8px;
+  color: #FFD700;
+  font-family: 'Bangers';
+  font-size: 1.8rem;
+}
+#infoModal .content p{
+  margin: 6px 0;
+  line-height: 1.35;
+  font-size: 1rem;
+}
+#infoClose{
+  float:right;
+  font-size: 1.5rem;
+  color: #FF4D4D;
+  cursor:pointer;
+  margin-left: 8px;
+}
+#infoClose:hover{ filter: brightness(1.2); }
+  </style>
   <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-// === Supabase ===
 const supabase = createClient(
   'https://ttkneykkrkbajymzsgcr.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
 );
+
 const PAGE_ID = 'pagina1';
 
-// === Animación contadores ===
+/* ===== Animación contadores ===== */
 function animateCounter(id, value){
   const el = document.getElementById(id);
   let start = parseInt(el.innerText) || 0;
@@ -312,7 +302,7 @@ function animateCounter(id, value){
   requestAnimationFrame(step);
 }
 
-// === Cargar métricas ===
+/* ===== Cargar métricas ===== */
 async function cargarMetricas(){
   const { data, error } = await supabase
     .from('metrics')
@@ -326,7 +316,7 @@ async function cargarMetricas(){
   }
 }
 
-// === Incrementar visitas ===
+/* ===== Incrementar visitas ===== */
 async function incrementarVisita(){
   try{
     await supabase.rpc('increment_visitas',{pid: PAGE_ID});
@@ -334,7 +324,7 @@ async function incrementarVisita(){
   }catch(e){ console.error(e); }
 }
 
-// === Votos ===
+/* ===== Votos (like/dislike) ===== */
 async function votar(tipo){
   const prev = localStorage.getItem('vote');
   try{
@@ -367,7 +357,10 @@ function animateFlash(tipo){
 
 document.getElementById('likes-counter').parentElement.addEventListener('click',()=>votar('like'));
 document.getElementById('dislikes-counter').parentElement.addEventListener('click',()=>votar('dislike'));
-  // === Sonido y vibración ===
+    </script>
+    <script type="module">
+
+/* ===== Sonidos y vibración ===== */
 function beep(freq){
   const ctx = new (AudioContext||webkitAudioContext)(),
         o = ctx.createOscillator(),
@@ -382,8 +375,9 @@ function beep(freq){
 }
 function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
-// === Cálculo valor total y gráfico ===
 let chart;
+
+/* ===== Calcular valor total ===== */
 function calcular(){
   beep(600); vibrar();
   document.getElementById('calcBtn').classList.add('flash');
@@ -423,7 +417,7 @@ function calcular(){
   }
   requestAnimationFrame(step);
 
-  // Doughnut chart
+  /* Gráfico Doughnut */
   const data = {
     labels:Object.keys(valores),
     datasets:[{
@@ -437,26 +431,25 @@ function calcular(){
   chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
   confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-  document.getElementById('centerDiamond').style.display="block";
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 
-  // Ruleta activa al calcular
+  // Llamada a ruleta
   spinRoulette();
 }
 
-// === Limpiar formulario ===
+/* ===== Limpiar inputs (solo panel) ===== */
 function limpiar(){
   beep(300); vibrar();
   document.getElementById('clearBtn').classList.add('flash');
   setTimeout(()=>document.getElementById('clearBtn').classList.remove('flash'),200);
+
   document.getElementById("calcForm").reset();
   document.getElementById("resultado").innerText="Valor total: 0 €";
-  if(chart) chart.destroy();
-  document.getElementById("centerDiamond").style.display="none";
-  window.scrollTo({top:0, behavior:'smooth'});
+
+  // NO ocultar ruleta ni destruir gráfico
 }
 
-// === Botón compartir ===
+/* ===== Botón compartir ===== */
 document.getElementById("shareBtn").addEventListener("click", async ()=>{
   beep(500); vibrar(); document.getElementById('shareBtn').classList.add('flash');
   setTimeout(()=>document.getElementById('shareBtn').classList.remove('flash'),200);
@@ -469,17 +462,15 @@ document.getElementById("shareBtn").addEventListener("click", async ()=>{
 });
 document.getElementById('shareBtn').classList.add('pulse');
 
-document.getElementById("calcBtn").addEventListener("click",calcular);
-document.getElementById("clearBtn").addEventListener("click", limpiar);
-
-// === Lista de Brawlers reducida para ruleta profesional ===
-const brawlers = [
-  "elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea",
-  "8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie"
+/* ===== Lista Brawlers (20 visibles) ===== */
+const allBrawlers = [
+  "elprimo","colt","nita","edgar","spike","penny","darryl","rico",
+  "mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie"
 ];
 const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
+const brawlers = allBrawlers.slice(0,20); // usar solo 20 brawlers alternados<script type="module">
 
-// === UID diario ===
+/* ===== Ruleta con brawler diario (20 brawlers) ===== */
 function getOrCreateUID(){
   let uid = localStorage.getItem('uid');
   if(!uid){
@@ -488,7 +479,6 @@ function getOrCreateUID(){
   }
   return uid;
 }
-
 function stringHash(s){
   let h = 0;
   for(let i=0;i<s.length;i++){
@@ -496,7 +486,6 @@ function stringHash(s){
   }
   return (h>>>0);
 }
-
 function getDailyIndex(max){
   const uid = getOrCreateUID();
   const today = new Date().toISOString().slice(0,10);
@@ -507,70 +496,64 @@ function getDailyIndex(max){
   const idx = stringHash(uid + '|' + today) % max;
   localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
   return idx;
-                 
 }
-  // === Ruleta profesional con glow progresivo ===
-async function spinRoulette(){
+
+/* ===== Spin Ruleta profesional ===== */
+function spinRoulette(){
   const img = document.getElementById("brawlerImg");
-  img.classList.remove('finalGlow');
-  img.style.boxShadow = '';
+  const len = brawlers.length;
+  const targetIndex = getDailyIndex(len);
 
-  const targetIndex = getDailyIndex(brawlers.length);
-  const totalStepsFast = 16; // pasos rápidos
-  let delay = 150;
-  const acceleration = 1.15;
+  // Secuencia con freno en últimos 4
+  const steps = 16; // primeros 16 pasos rápidos
+  const finalSteps = 4; // últimos 4 pasos con delay creciente
+  const seq = [];
 
-  // 16 pasos rápidos alternando brawlers
-  for(let i=0;i<totalStepsFast;i++){
-    const idx = i % brawlers.length;
-    img.src = baseURL + brawlers[idx] + ".png";
-    await new Promise(r=>setTimeout(r, delay));
-    delay *= acceleration;
+  // primeros 16 pasos (rápidos)
+  for(let i=0;i<steps;i++){
+    seq.push(Math.floor(Math.random()*len));
   }
-
-  // Últimos 4 pasos con glow progresivo
-  const finalSteps = 4;
-  const glowValues = [10, 20, 35, 50];
+  // últimos 4 pasos (frenado)
   for(let i=0;i<finalSteps;i++){
-    const idx = (totalStepsFast + i) % brawlers.length;
-    img.src = baseURL + brawlers[idx] + ".png";
-    img.style.boxShadow = `0 0 ${glowValues[i]}px #ffffff, 0 0 ${glowValues[i]*2}px #ffffff`;
-    await new Promise(r=>setTimeout(r, delay));
-    delay *= acceleration;
+    seq.push((targetIndex + i - finalSteps + 1 + len) % len);
   }
 
-  // Brawler final del día
-  img.src = baseURL + brawlers[targetIndex] + ".png";
-  img.style.boxShadow = `0 0 60px #ffffff, 0 0 120px #ffffff`;
-
-  // Confetti al final
-  confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+  let delay = 0;
+  seq.forEach((idx,n)=>{
+    let stepDelay = n<steps ? 200 : 400 + (n-steps)*300; // primeros rápidos, últimos más lentos
+    delay += stepDelay;
+    setTimeout(()=>{
+      img.src = baseURL + brawlers[idx] + ".png";
+      img.classList.remove('finalGlow');
+      if(n >= steps+finalSteps-1){
+        img.classList.add('finalGlow'); // glow en brawler final
+        confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+      }
+    }, delay);
+  });
 }
 
-// === Botón Girar Brawler ===
-document.getElementById('spinBtn').addEventListener('click', async ()=>{
+/* ===== Botón Girar Brawler ===== */
+document.getElementById('spinBtn').addEventListener('click', ()=>{
   beep(520); vibrar(80);
-  document.getElementById('centerDiamond').style.display = 'block';
-  await spinRoulette();
+  spinRoulette();
 });
 
-// === Modal INFO ===
+/* ===== Modal INFO funcional ===== */
 const infoBtn = document.getElementById('infoBtn');
 const infoModal = document.getElementById('infoModal');
 const infoClose = document.getElementById('infoClose');
 
-// Abrir modal INFO
 infoBtn.addEventListener('click', ()=>{ infoModal.style.display='flex'; });
-// Cerrar modal INFO con X
 infoClose.addEventListener('click', ()=>{ infoModal.style.display='none'; });
-// Cerrar modal si se hace click fuera del contenido
 infoModal.addEventListener('click', (e)=>{ if(e.target===infoModal) infoModal.style.display='none'; });
 
-// === Inicialización ===
+/* ===== Inicialización ===== */
 (async ()=>{
   await incrementarVisita();
   await cargarMetricas();
+  document.getElementById("centerDiamond").style.display = "block"; // siempre visible
 })();
 </script>
-  </body>
+</body>
 </html>
