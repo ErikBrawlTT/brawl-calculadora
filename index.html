@@ -415,11 +415,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function spinRoulette(){
     const brawlers = allBrawlers; // 30 brawlers
     const finalIndex = getDailyIndex(brawlers.length);
-    const steps = 16; // primeros pasos rápidos
+    const steps = 26; // primeros pasos rápidos
     let delay = 100;
     brawlerImg.classList.remove('finalGlow','glowBlue','glowRed','glowOrange');
 
-    // primeros 16 pasos rápidos
+    // primeros 26 pasos rápidos
     for(let i=0;i<steps;i++){
       setTimeout(()=>{ 
         const idx = Math.floor(Math.random()*brawlers.length);
@@ -458,8 +458,6 @@ document.addEventListener('DOMContentLoaded', () => {
     await cargarMetricas();
     spinRoulette();
   })();
-
-});
-</script>
+  </script>
 </body>
 </html>
