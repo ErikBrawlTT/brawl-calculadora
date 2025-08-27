@@ -104,8 +104,8 @@ form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative; /* necesario para centrar el botón INFO dentro */
-  border: 2px solid #FFA500; /* neon naranja */
+  position: relative;
+  border: 2px solid #FFA500; 
   box-shadow: 0 0 18px rgba(255,165,0,.7), 0 0 36px rgba(255,165,0,.35);
 }
 label {
@@ -143,12 +143,8 @@ button.flash {
   box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
   transition: box-shadow 0.2s ease;
 }
-
-/* Botones calcular y limpiar nuevos colores */
 #calcBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
 #clearBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
-
-/* Botón compartir mantiene estilo previo con pulso */
 #shareBtn{
   background:linear-gradient(90deg,#00FFAA,#FF00FF); 
   margin-top:20px; 
@@ -160,8 +156,6 @@ button.flash {
   100% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
 }
 #shareBtn.pulse { animation: pulseBorder 1s infinite; }
-
-/* Botón Girar Brawler (pequeño y naranja) */
 #spinBtn{
   margin-top:10px;
   padding:8px 16px;
@@ -171,8 +165,6 @@ button.flash {
   box-shadow: 0 0 10px #FFA500, 0 0 20px rgba(255,165,0,.5);
   border-radius: 12px;
 }
-
-/* Botón INFO flotante centrado en el formulario */
 #infoBtn{
   position:absolute;
   top:50%;
@@ -182,13 +174,13 @@ button.flash {
   height:70px;
   border-radius:50%;
   background: rgba(20,0,30,.25);
-  border: 2px solid #B300FF; /* violeta */
+  border: 2px solid #B300FF;
   display:flex;
   align-items:center;
   justify-content:center;
   letter-spacing: 2px;
-  color: #FFFFFF;           /* texto blanco */
-  font-size: 1.1rem;        /* más grande */
+  color: #FFFFFF;
+  font-size: 1.1rem;
   text-shadow: 0 0 6px #B300FF, 0 0 12px #8000FF;
   box-shadow: 0 0 10px #B300FF, 0 0 20px rgba(179,0,255,.35);
   cursor:pointer;
@@ -314,7 +306,6 @@ canvas{
     <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
 
-    <!-- Botón INFO flotante, centrado exacto en el formulario -->
     <button type="button" id="infoBtn">INFO</button>
   </form>
 
@@ -325,8 +316,7 @@ canvas{
     <button id="clearBtn">Limpiar</button>
   </div>
   <button id="shareBtn">📤 Compartir</button>
-  <!-- Botón Girar Brawler (debajo de compartir, pequeño y naranja) -->
-  <button id="spinBtn">🎲 Girar Brawler</button>
+  <button id="spinBtn">🔄 Girar Brawler</button>
 
   <div class="metric-container">
     <div class="metric visitas">
@@ -351,7 +341,6 @@ canvas{
   </div>
 </div>
 
-<!-- MODAL INFO -->
 <div id="infoModal">
   <div class="content">
     <span id="infoClose">×</span>
@@ -360,7 +349,6 @@ canvas{
     <p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que as utilizado.</p>
     <p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins ( en la tienda del juego en cada modalidad de skins te sale el total en la parte superior ).</p>
     <p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas que tienes, sabrás el valor aproximado de tu cuenta.</p>
-    <p>- 🎲 Comprueba el Brawler que te esta esperando hoy y vuelve mañana si no saves cual subir de copas 🏆!</p>
     <p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
   </div>
 </div>
@@ -532,7 +520,6 @@ function limpiar(){
   document.getElementById("resultado").innerText="Valor total: 0 €";
   if(chart) chart.destroy();
   document.getElementById("centerDiamond").style.display="none";
-  document.querySelectorAll("table").forEach(t => t.innerHTML = "");
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -548,12 +535,11 @@ document.getElementById("shareBtn").addEventListener("click", async ()=>{
     catch(err){console.log(err);}
   } else { alert("Tu navegador no soporta compartir nativo."); }
 });
-
-// Botón compartir pulsante
 document.getElementById('shareBtn').classList.add('pulse');
 
-/* ===== Lista de Brawlers (imágenes) ===== */
+/* ===== Lista de Brawlers ===== */
 const brawlers = [
+  // Rellena aquí todos tus brawlers
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/colt.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/nita.png",
@@ -565,10 +551,8 @@ const brawlers = [
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/mortis.png",
   "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/bea.png"
 ];
-// Mostramos el círculo central desde inicio
-document.getElementById("centerDiamond").style.display = "block";
 
-/* ===== Ruleta con resultado diario por usuario ===== */
+/* ===== Ruleta completa con suspenso ===== */
 function getOrCreateUID(){
   let uid = localStorage.getItem('uid');
   if(!uid){
@@ -601,29 +585,32 @@ function spinRoulette(){
   const len = brawlers.length;
   const targetIndex = getDailyIndex(len);
 
-  // Secuencia que acelera y frena, terminando en el elegido del día
-  const steps = 22; // pasos totales (no mostramos los 93, va ágil)
-  const start = Math.floor(Math.random()*len);
-  const seq = [];
-  for(let i=0;i<steps-1;i++){
-    seq.push( (start + i) % len );
+  // Secuencia completa para suspenso
+  let sequence = [];
+  let rounds = 2; // cuantas vueltas completas
+  for(let r=0;r<rounds;r++){
+    for(let i=0;i<len;i++){
+      sequence.push(i);
+    }
   }
-  seq.push(targetIndex); // el último siempre el del día
+  // Añadimos últimos pasos hasta llegar al brawler del día
+  let finalStep = targetIndex;
+  sequence.push(finalStep);
 
-  // Animación con easing (delay creciente)
   let delay = 50;
-  seq.forEach((idx, n)=>{
-    setTimeout(()=>{ img.src = brawlers[idx]; }, delay);
-    delay += 30 + Math.floor(n*4); // va frenando poco a poco
+  sequence.forEach((idx,n)=>{
+    setTimeout(()=>{
+      img.src = brawlers[idx];
+    }, delay);
+    // incrementa delay para simular frenado
+    delay += 20 + Math.floor(n*1.5);
   });
 
-  // Confetti suave al finalizar
   setTimeout(()=>{
     confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
   }, delay + 50);
 }
 
-// Botón “Girar Brawler”
 document.getElementById('spinBtn').addEventListener('click', ()=>{
   beep(520); vibrar(80);
   spinRoulette();
@@ -633,7 +620,6 @@ document.getElementById('spinBtn').addEventListener('click', ()=>{
 const infoBtn = document.getElementById('infoBtn');
 const infoModal = document.getElementById('infoModal');
 const infoClose = document.getElementById('infoClose');
-
 infoBtn.addEventListener('click', ()=>{ infoModal.style.display='flex'; });
 infoClose.addEventListener('click', ()=>{ infoModal.style.display='none'; });
 infoModal.addEventListener('click', (e)=>{ if(e.target===infoModal) infoModal.style.display='none'; });
