@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-  function spinRoulette(){
+function spinRoulette(){
   const stepsFast = 16;
   const stepsSlow = 4;
   const glowColors = ['blue','red','orange','green'];
@@ -342,33 +342,33 @@ document.addEventListener('DOMContentLoaded', () => {
   let delay = 0;
   brawlerImg.classList.remove('glow-blue','glow-red','glow-orange','glow-green');
 
-  // Pasos rápidos
+  // Pasos rápidos: 16 pasos, 2 segundos cada uno
   for(let i=0;i<stepsFast;i++){
     setTimeout(()=>{
       const idx = Math.floor(Math.random()*allBrawlers.length);
       brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
     }, delay);
-    delay += 1000; // 1 segundos cada paso rápido
+    delay += 2000; // 2 segundos cada paso rápido
   }
 
-// últimos 4 pasos más lentos y mostrando brawlers finales
-const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
+  // Últimos 4 pasos más lentos con glow
+  const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
+  const slowDelays = [3000, 3300, 3600, 3900]; // frenado progresivo
 
-for (let i = 0; i < 4; i++) {
-  setTimeout(() => {
-    const idx = (i === 3) ? finalIndex : Math.floor(Math.random() * brawlers.length);
-    brawlerImg.src = baseURL + brawlers[idx] + ".png";
+  for (let i = 0; i < stepsSlow; i++) {
+    setTimeout(() => {
+      const idx = (i === stepsSlow-1) ? finalIndex : Math.floor(Math.random() * allBrawlers.length);
+      brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
 
-    // Limpiar clases de glow anteriores
-    brawlerImg.classList.remove(...glowClasses);
+      // Limpiar clases de glow anteriores
+      brawlerImg.classList.remove(...glowClasses);
 
-    // Aplicar glow correspondiente
-    brawlerImg.classList.add(glowClasses[i]);
-  }, delay);
-  // incrementar delay para frenado progresivo
-  delay += 300 + i * 100; // 300ms, 400ms, 500ms, 600ms
-}
-}
+      // Aplicar glow correspondiente
+      brawlerImg.classList.add(glowClasses[i]);
+    }, delay);
+    delay += slowDelays[i];
+  }
+  }
   
   /* ===== INICIALIZACIÓN ===== */
   (async ()=>{
