@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const idx = Math.floor(Math.random()*allBrawlers.length);
       brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
     }, delay);
-    delay += 2000; // 2 segundos cada paso rápido
+    delay += 1000; // 1 segundos cada paso rápido
   }
 
 // últimos 4 pasos más lentos y mostrando brawlers finales
@@ -367,6 +367,7 @@ for (let i = 0; i < 4; i++) {
   }, delay);
   // incrementar delay para frenado progresivo
   delay += 300 + i * 100; // 300ms, 400ms, 500ms, 600ms
+}
 }
   
   /* ===== INICIALIZACIÓN ===== */
