@@ -63,19 +63,19 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
   /* ===== Glows de los últimos 4 pasos de la ruleta ===== */
   .glow-blue   { 
     box-shadow: 0 0 20px #00f, 0 0 40px #00f, 0 0 60px #00f; 
-    animation: glow-blue 1.5s infinite alternate;
+    animation: glow-blue 2s infinite alternate;
   }
   .glow-red    { 
     box-shadow: 0 0 20px #f00, 0 0 40px #f00, 0 0 60px #f00; 
-    animation: glow-red 1.5s infinite alternate;
+    animation: glow-red 2s infinite alternate;
   }
   .glow-orange { 
     box-shadow: 0 0 20px #f90, 0 0 40px #f90, 0 0 60px #f90; 
-    animation: glow-orange 1.5s infinite alternate;
+    animation: glow-orange 2s infinite alternate;
   }
   .glow-green  { 
     box-shadow: 0 0 20px #0f0, 0 0 40px #0f0, 0 0 60px #0f0; 
-    animation: glow-green 1.5s infinite alternate;
+    animation: glow-green 2s infinite alternate;
   }
 
   /* Animaciones de glow para suavizar el parpadeo */
@@ -352,21 +352,18 @@ function spinRoulette(){
   }
 
   // Últimos 4 pasos más lentos con glow
-  const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
-  const slowDelays = [3000, 3300, 3600, 3900]; // frenado progresivo
-
-  for (let i = 0; i < 4; i++) {
+const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
+for (let i = 0; i < 4; i++) {
   setTimeout(() => {
     const idx = (i === 3) ? finalIndex : Math.floor(Math.random() * allBrawlers.length);
     brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
 
-    // Limpiar clases de glow anteriores
     brawlerImg.classList.remove(...glowClasses);
-
-    // Aplicar glow correspondiente
     brawlerImg.classList.add(glowClasses[i]);
   }, delay);
-  delay += 300 + i * 100;
+
+  // Aumentamos progresivamente la duración para efecto 3-2-1
+  delay += 600 + i * 400; // Paso 1: 600ms, Paso 2: 1000ms, Paso 3: 1400ms, Paso 4: 1800ms
   }
   }
   
