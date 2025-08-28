@@ -322,48 +322,51 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== RUEDA BRAWLER PROFESIONAL ===== */
-  function getDailyIndex(max){
-    const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
-    localStorage.setItem('uid', uid);
-    const today = new Date().toISOString().slice(0,10);
-    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-    if(saved.date===today && Number.isInteger(saved.index)) return saved.index;
-    const idx = Math.floor(Math.random()*max);
-    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
-    return idx;
+function getDailyIndex(max){
+  const today = new Date();
+  const dateStr = today.getFullYear() + "-" + (today.getMonth()+1).toString().padStart(2,'0') + "-" + today.getDate().toString().padStart(2,'0');
+
+  const saved = JSON.parse(localStorage.getItem('dailyBrawler') || '{}');
+
+  if(saved.date === dateStr && Number.isInteger(saved.index)){
+    return saved.index;
   }
 
+  const idx = Math.floor(Math.random() * max);
+  localStorage.setItem('dailyBrawler', JSON.stringify({ date: dateStr, index: idx }));
+  return idx;
+}
+
 function spinRoulette(){
-  const stepsFast = 16;
-  const stepsSlow = 4;
-  const glowColors = ['blue','red','orange','green'];
+  const stepsFast = 16;  // primeros 16 pasos rápidos
+  const stepsSlow = 4;   // últimos 4 pasos lentos
+  const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
   const finalIndex = getDailyIndex(allBrawlers.length);
-
   let delay = 0;
-  brawlerImg.classList.remove('glow-blue','glow-red','glow-orange','glow-green');
 
-  // Pasos rápidos: 16 pasos, 2 segundos cada uno
-  for(let i=0;i<stepsFast;i++){
+  brawlerImg.classList.remove(...glowClasses);
+
+  // Pasos rápidos
+  for(let i=0; i<stepsFast; i++){
     setTimeout(()=>{
       const idx = Math.floor(Math.random()*allBrawlers.length);
       brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
     }, delay);
-    delay += 2000; // 2 segundos cada paso rápido
+    delay += 500; // pasos rápidos cada 0.5s
   }
 
-  // Últimos 4 pasos más lentos con glow
-const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
-for (let i = 0; i < 4; i++) {
-  setTimeout(() => {
-    const idx = (i === 3) ? finalIndex : Math.floor(Math.random() * allBrawlers.length);
-    brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+  // Últimos pasos con glow progresivo
+  for(let i=0; i<stepsSlow; i++){
+    setTimeout(()=>{
+      const idx = (i === stepsSlow-1) ? finalIndex : Math.floor(Math.random()*allBrawlers.length);
+      brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
 
-    brawlerImg.classList.remove(...glowClasses);
-    brawlerImg.classList.add(glowClasses[i]);
-  }, delay);
+      brawlerImg.classList.remove(...glowClasses);
+      brawlerImg.classList.add(glowClasses[i]);
+    }, delay);
 
-  // Aumentamos progresivamente la duración para efecto 3-2-1
-  delay += 600 + i * 400; // Paso 1: 600ms, Paso 2: 1000ms, Paso 3: 1400ms, Paso 4: 1800ms
+    // Frenado progresivo: 0.7s, 1s, 1.3s, 1.6s
+    delay += 700 + i*300;
   }
   }
   
