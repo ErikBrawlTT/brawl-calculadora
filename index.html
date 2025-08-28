@@ -37,7 +37,7 @@ body::after {
   padding: 20px;
 }
 
-/* TITULO */
+/* ===== TITULO CON ESTRELLAS BRILLANTES ===== */
 h1 {
   font-size: 3rem;
   margin-bottom: 20px;
@@ -45,22 +45,56 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  font-family: 'Bangers', cursive;
   color: #FFD700;
-  text-shadow: -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 2px 0 black;
+  text-shadow:
+    -2px -2px 0 black,
+     2px -2px 0 black,
+    -2px  2px 0 black,
+     2px  2px 0 black;
 }
 h1 .diamond {
+  font-family: 'Bangers', cursive;
   font-size: 3rem;
   color: #32CD32;
-  text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 6px #32CD32,0 0 12px #00FF00,0 0 18px #00FF7F;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000,
+     0 0 6px #32CD32,
+     0 0 12px #00FF00,
+     0 0 18px #00FF7F;
   animation: glow 1.5s infinite alternate;
 }
 @keyframes glow {
-  0% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; }
-  50% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 8px #32CD32,0 0 16px #00FF00,0 0 24px #00FF7F; }
-  100% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; }
+  0% { text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 4px #32CD32,
+    0 0 8px #00FF00,
+    0 0 12px #00FF7F; }
+  50% { text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 8px #32CD32,
+    0 0 16px #00FF00,
+    0 0 24px #00FF7F; }
+  100% { text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 4px #32CD32,
+    0 0 8px #00FF00,
+    0 0 12px #00FF7F; }
 }
 
-/* FORM */
+/* ===== FORMULARIO ===== */
 form {
   background: rgba(0,0,0,0.5);
   border-radius: 60px;
@@ -81,10 +115,19 @@ label {
   margin:8px 0;
   width:100%;
 }
-input { width:100px; text-align:center; border:none; border-radius:8px; }
-.buttons { display:flex; justify-content:center; gap:25px; margin-top:15px; }
-
-/* BOTONES */
+input {
+  width:100px;
+  text-align:center;
+  border:none;
+  border-radius:8px;
+}
+.buttons {
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  margin-top:15px;
+}
+  /* ===== BOTONES ===== */
 button {
   padding:10px 20px;
   border:none;
@@ -95,18 +138,178 @@ button {
   cursor:pointer;
   transition: transform .08s ease;
 }
-button:active { transform: scale(0.97); }
-button.flash { box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff; transition: box-shadow 0.2s ease; }
+button:active {
+  transform: scale(0.97);
+}
+button.flash {
+  box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
+  transition: box-shadow 0.2s ease;
+}
+
+/* Botones calcular y limpiar nuevos colores */
 #calcBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
 #clearBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
-#shareBtn{background:linear-gradient(90deg,#00FFAA,#FF00FF); margin-top:20px; color:white;}
-@keyframes pulseBorder {0%{box-shadow:0 0 10px #FF00FF,0 0 20px #FF00FF;transform:scale(1);}50%{box-shadow:0 0 25px #FF00FF,0 0 35px #FF00FF;transform:scale(1.05);}100%{box-shadow:0 0 10px #FF00FF,0 0 20px #FF00FF;transform:scale(1);}}
-#shareBtn.pulse{animation:pulseBorder 1s infinite;}
-#spinBtn{ margin-top:10px; padding:8px 16px; font-size:1.1rem; background: linear-gradient(90deg,#FFA500,#FF8C00); color:#000; box-shadow:0 0 10px #FFA500,0 0 20px rgba(255,165,0,.5); border-radius:12px; }
-  </style>
+
+/* Botón compartir mantiene pulso */
+#shareBtn{
+  background:linear-gradient(90deg,#00FFAA,#FF00FF); 
+  margin-top:20px; 
+  color:white;
+}
+@keyframes pulseBorder {
+  0% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
+  50% { box-shadow: 0 0 25px #FF00FF, 0 0 35px #FF00FF; transform: scale(1.05); }
+  100% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
+}
+#shareBtn.pulse { animation: pulseBorder 1s infinite; }
+
+/* Botón Girar Brawler */
+#spinBtn{
+  margin-top:10px;
+  padding:8px 16px;
+  font-size:1.1rem;
+  background: linear-gradient(90deg,#FFA500,#FF8C00);
+  color:#000;
+  box-shadow: 0 0 10px #FFA500, 0 0 20px rgba(255,165,0,.5);
+  border-radius: 12px;
+}
+
+/* Botón INFO flotante */
+#infoBtn{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform: translate(-50%, -50%);
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background: rgba(20,0,30,.25);
+  border: 2px solid #B300FF;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  letter-spacing: 2px;
+  color: #FFFFFF;
+  font-size: 1.1rem;
+  text-shadow: 0 0 6px #B300FF, 0 0 12px #8000FF;
+  box-shadow: 0 0 10px #B300FF, 0 0 20px rgba(179,0,255,.35);
+  cursor:pointer;
+  z-index:2;
+  animation: infoPulse 1.6s ease-in-out infinite;
+}
+@keyframes infoPulse{
+  0%   { box-shadow: 0 0 8px #B300FF, 0 0 16px rgba(179,0,255,.25); }
+  50%  { box-shadow: 0 0 14px #B300FF, 0 0 28px rgba(179,0,255,.45); }
+  100% { box-shadow: 0 0 8px #B300FF, 0 0 16px rgba(179,0,255,.25); }
+}
+
+/* Métricas */
+.metric-container {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 18px;
+}
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-family:'Orbitron', sans-serif;
+  font-size: 2rem;
+}
+.metric .box {
+  background: rgba(0,0,0,0.7);
+  padding: 8px 18px;
+  border-radius: 12px;
+  min-width: 70px;
+  text-align: center;
+  font-weight: 700;
+  user-select: none;
+  transition: all 0.2s ease;
+  cursor:pointer;
+}
+.metric.visitas .box { border: 2px solid #00CFFF; color: #00CFFF; box-shadow:0 0 10px #00CFFF,0 0 20px #00CFFF;}
+.metric.likes .box { border: 2px solid #39ff14; color: #39ff14; box-shadow:0 0 10px #39ff14,0 0 20px #39ff14;}
+.metric.dislikes .box { border: 2px solid #FF073A; color: #FF073A; box-shadow:0 0 10px #FF073A,0 0 20px #FF073A;}
+
+/* Canvas y brawler centrado */
+canvas{
+  margin-top:15px;
+  max-width:400px;
+  position:relative;
+}
+#centerDiamond {
+  position: absolute;
+  top: 43%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+}
+#centerDiamond img {
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: rgba(0,0,0,0.3);
+  transition: all 0.4s ease;
+}
+#centerDiamond img.finalGlow {
+  box-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 60px #fff;
+}
+#resultado { 
+  margin:10px 0; 
+  font-size:2rem;
+  font-family:'Bangers';
+  color:#00FF00;
+  text-shadow:0 0 8px #00FF00,0 0 15px #00FF00;
+}
+
+/* Modal INFO */
+#infoModal{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index: 9999;
+}
+#infoModal .content{
+  background: #0f0b18;
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 18px #FFD700, 0 0 36px rgba(255,215,0,.4);
+  border-radius: 16px;
+  max-width: 560px;
+  width: 90%;
+  padding: 18px 18px 12px;
+  text-align: left;
+  font-family: 'Orbitron', sans-serif;
+  color: #fff;
+}
+#infoModal .content h3{
+  margin: 0 0 8px;
+  color: #FFD700;
+  font-family: 'Bangers';
+  font-size: 1.8rem;
+}
+#infoModal .content p{
+  margin: 6px 0;
+  line-height: 1.35;
+  font-size: 1rem;
+}
+#infoClose{
+  float:right;
+  font-size: 1.5rem;
+  color: #FF4D4D;
+  cursor:pointer;
+  margin-left: 8px;
+}
+#infoClose:hover{ filter: brightness(1.2); }
+</style>
 </head>
 <body>
-<div class="container">
+  <div class="container">
   <h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
 
   <form id="calcForm">
@@ -315,6 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     spinRoulette(); // girar ruleta al calcular
   }
+
   /* ===== LIMPIAR ===== */
   function limpiar(){
     beep(300); vibrar();
@@ -329,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
     const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-    if(navigator.share){
+    if(navigator.share){ 
       try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
       catch(err){console.log(err);}
     } else { alert("Tu navegador no soporta compartir nativo."); }
@@ -348,36 +552,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function spinRoulette(){
-    const brawlers = allBrawlers;
+    const brawlers = allBrawlers; // 30 brawlers
     const finalIndex = getDailyIndex(brawlers.length);
-    const steps = 26; // pasos rápidos iniciales
+    const steps = 26; // primeros pasos rápidos
     let delay = 100;
     brawlerImg.classList.remove('finalGlow');
 
-    // pasos rápidos aleatorios
     for(let i=0;i<steps;i++){
-      setTimeout(()=>{
+      setTimeout(()=>{ 
         const idx = Math.floor(Math.random()*brawlers.length);
-        brawlerImg.src = baseURL + brawlers[idx] + ".png";
+        brawlerImg.src = baseURL + brawlers[idx] + ".png"; 
       }, delay);
-      delay += 120; // más rápido para efecto fluido
+      delay += 150;
     }
 
-    // últimos 4 pasos con glow de colores
-    const glowColors = ["#00BFFF","#FF0000","#FF8C00","#32CD32"]; // azul, rojo, naranja, verde
+    // últimos 4 pasos más lentos y mostrando brawlers finales
     for(let i=0;i<4;i++){
       setTimeout(()=>{
-        let idx;
-        if(i===3){ // brawler final del día
-          idx = finalIndex;
-          brawlerImg.classList.add('finalGlow');
-        } else {
-          idx = Math.floor(Math.random()*brawlers.length);
-        }
-        brawlerImg.src = baseURL + brawlers[idx] + ".png";
-        brawlerImg.style.boxShadow = `0 0 20px ${glowColors[i]}, 0 0 40px ${glowColors[i]}, 0 0 60px ${glowColors[i]}`;
+        const idx = (i===3)?finalIndex:Math.floor(Math.random()*brawlers.length);
+        brawlerImg.src = baseURL + brawlers[idx] + ".png"; 
+        if(i===3) brawlerImg.classList.add('finalGlow');
       }, delay);
-      delay += 400; // pasos más lentos para efecto de anticipación
+      delay += 400;
     }
   }
 
