@@ -291,31 +291,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function spinRoulette(){
-  const brawlers = allBrawlers;
-  const finalIndex = getDailyIndex(brawlers.length);
-  const stepsFast = 16; // pasos rápidos iniciales
-  let delay = 100;
-  brawlerImg.classList.remove('finalGlow');
+    const brawlers = allBrawlers;
+    const finalIndex = getDailyIndex(brawlers.length);
 
-  // PASOS RÁPIDOS
-  for(let i=0;i<stepsFast;i++){
-    setTimeout(()=>{
-      const idx = Math.floor(Math.random()*brawlers.length);
-      brawlerImg.src = baseURL + brawlers[idx] + ".png";
-    }, delay);
-    delay += 250; // velocidad de los pasos rápidos
-  }
+    const totalSteps = 20;        // Mostrar 20 brawlers
+    const slowSteps = 4;          // Últimos 4 pasos más lentos
+    let delay = 150;              // Retardo inicial
 
-  // ÚLTIMOS 4 PASOS LENTOS
-  for(let i=0;i<4;i++){
-    setTimeout(()=>{
-      const idx = (i===3)?finalIndex:Math.floor(Math.random()*brawlers.length);
-      brawlerImg.src = baseURL + brawlers[idx] + ".png";
-      if(i===3) brawlerImg.classList.add('finalGlow');
-    }, delay);
-    delay += 400; // pasos lentos
+    brawlerImg.classList.remove('finalGlow');
+
+    // ===== PASOS RÁPIDOS =====
+    for(let i=0;i<totalSteps-slowSteps;i++){
+        setTimeout(()=>{
+            const idx = Math.floor(Math.random()*brawlers.length);
+            brawlerImg.src = baseURL + brawlers[idx] + ".png";
+        }, delay);
+        delay += 200;  // ajustable para velocidad de paso
+    }
+
+    // ===== ÚLTIMOS 4 PASOS LENTOS =====
+    for(let i=0;i<slowSteps;i++){
+        setTimeout(()=>{
+            const idx = (i===slowSteps-1) ? finalIndex : Math.floor(Math.random()*brawlers.length);
+            brawlerImg.src = baseURL + brawlers[idx] + ".png";
+            if(i===slowSteps-1) brawlerImg.classList.add('finalGlow');
+        }, delay);
+        delay += 400;  // pasos finales más lentos
+    }
   }
-}
 
   /* ===== INICIALIZACIÓN ===== */
   (async ()=>{
