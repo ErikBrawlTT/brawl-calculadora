@@ -57,6 +57,15 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 .segmentGlowRed { box-shadow:0 0 15px 4px #FF073A; }
 .segmentGlowOrange { box-shadow:0 0 15px 4px #FFA500; }
 .segmentGlowGreen { box-shadow:0 0 15px 4px #00FF00; }
+<style>
+  /* --- tu CSS existente --- */
+
+  /* Glows de los últimos 4 pasos de la ruleta */
+  .glow-blue   { box-shadow: 0 0 20px #00f, 0 0 40px #00f, 0 0 60px #00f; }
+  .glow-red    { box-shadow: 0 0 20px #f00, 0 0 40px #f00, 0 0 60px #f00; }
+  .glow-orange { box-shadow: 0 0 20px #f90, 0 0 40px #f90, 0 0 60px #f90; }
+  .glow-green  { box-shadow: 0 0 20px #0f0, 0 0 40px #0f0, 0 0 60px #0f0; }
+
 </style>
 </head>
 <body>
@@ -290,40 +299,39 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-  function spinRoulette() {
-    const brawlers = allBrawlers;
-    const finalIndex = getDailyIndex(brawlers.length);
+  function spinRoulette(){
+  const stepsFast = 16;
+  const stepsSlow = 4;
+  const glowColors = ['blue','red','orange','green'];
+  const finalIndex = getDailyIndex(allBrawlers.length);
 
-    const fastCount = 16;     // brawlers rápidos
-    const slowCount = 4;      // brawlers finales con frenado
-    const fastDuration = 2000; // 2 segundos para los 16 primeros
-    const slowDuration = 3500; // 3.5 segundos para los últimos 4
+  let delay = 0;
+  brawlerImg.classList.remove('glow-blue','glow-red','glow-orange','glow-green');
 
-    const fastStep = fastDuration / fastCount;
-    const slowStep = slowDuration / slowCount;
+  // Pasos rápidos
+  for(let i=0;i<stepsFast;i++){
+    setTimeout(()=>{
+      const idx = Math.floor(Math.random()*allBrawlers.length);
+      brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+    }, delay);
+    delay += 2000; // 2 segundos cada paso rápido
+  }
 
-    let delay = 0;
-    brawlerImg.classList.remove('finalGlow');
+  // Últimos 4 pasos lentos con glow individual
+  const slowDurations = [3000, 3500, 4000, 4500]; // ms
+  for(let i=0;i<stepsSlow;i++){
+    setTimeout(()=>{
+      const idx = (i===stepsSlow-1) ? finalIndex : Math.floor(Math.random()*allBrawlers.length);
+      brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
 
-    // PASOS RÁPIDOS
-    for (let i = 0; i < fastCount; i++) {
-        setTimeout(() => {
-            const idx = Math.floor(Math.random() * brawlers.length);
-            brawlerImg.src = baseURL + brawlers[idx] + ".png";
-        }, delay);
-        delay += fastStep;
-    }
-
-    // PASOS LENTOS
-    for (let i = 0; i < slowCount; i++) {
-        setTimeout(() => {
-            const idx = (i === slowCount - 1) ? finalIndex : Math.floor(Math.random() * brawlers.length);
-            brawlerImg.src = baseURL + brawlers[idx] + ".png";
-            if (i === slowCount - 1) brawlerImg.classList.add('finalGlow');
-        }, delay);
-        delay += slowStep;
-    }
-    }
+      // aplicar glow
+      brawlerImg.classList.remove('glow-blue','glow-red','glow-orange','glow-green');
+      brawlerImg.classList.add('glow-' + glowColors[i]);
+    }, delay);
+    delay += slowDurations[i];
+  }
+  }
+  
   /* ===== INICIALIZACIÓN ===== */
   (async ()=>{
     await incrementarVisita();
