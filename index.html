@@ -333,8 +333,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function spinRoulette(){
-    const stepsFast = 30;
-    const stepsSlow = 4;
+    const stepsFast = 46;
+    const stepsSlow = 6;
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
     const finalIndex = getDailyIndex(allBrawlers.length);
     let delay = 0;
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Limpiar glow previo
     brawlerImg.classList.remove(...glowClasses);
 
-    // 30 pasos rápidos sin glow
+    // 46 pasos rápidos sin glow
     for(let i=0;i<stepsFast;i++){
       setTimeout(()=>{
         const idx = Math.floor(Math.random()*allBrawlers.length);
@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
       delay += 500; // velocidad rápida
     }
 
-    // Últimos 4 pasos con glow progresivo
+    // Últimos 6 pasos con glow progresivo
     for(let i=0;i<stepsSlow;i++){
       setTimeout(()=>{
         const idx = (i===stepsSlow-1) ? finalIndex : Math.floor(Math.random()*allBrawlers.length);
