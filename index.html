@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== BOTONES ===== */
-  calcBtn.addEventListener('click', calcular);
+  calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); spinRoulette(); });
   clearBtn.addEventListener('click', limpiar);
   shareBtn.addEventListener('click', share);
   spinBtn.addEventListener('click', () => { beep(520); vibrar(80); spinRoulette(); });
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
 
-  /* ===== BRAWLERS RUETA ===== */
+  /* ===== BRAWLERS RUEDA ===== */
   const allBrawlers = [
     "elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea",
     "8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie",
@@ -243,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
+
   /* ===== CALCULAR ===== */
   function calcular(){
     beep(600); vibrar();
@@ -297,8 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
-
-    spinRoulette(); // girar ruleta al calcular
   }
 
   /* ===== LIMPIAR ===== */
@@ -322,59 +321,55 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== RUEDA BRAWLER PROFESIONAL ===== */
-function getDailyIndex(max){
-  const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
-  localStorage.setItem('uid', uid);
-  const today = new Date().toISOString().slice(0,10); // solo fecha YYYY-MM-DD
-  const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-  if(saved.date===today && Number.isInteger(saved.index)) return saved.index;
-  const idx = Math.floor(Math.random()*max);
-  localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
-  return idx;
-}
-
-function spinRoulette(){
-  const stepsFast = 16; // pasos rápidos sin glow
-  const stepsSlow = 4;  // últimos pasos con glow
-  const glowColors = ['blue','red','orange','green'];
-  const finalIndex = getDailyIndex(allBrawlers.length);
-  const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-  let delay = 0;
-
-  // Limpiar glow anterior
-  brawlerImg.classList.remove(...glowClasses);
-
-  // Pasos rápidos sin glow
-  for(let i=0; i<stepsFast; i++){
-    setTimeout(()=>{
-      const idx = Math.floor(Math.random()*allBrawlers.length);
-      brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
-    }, delay);
-    delay += 500; // ajusta velocidad de los pasos rápidos (500ms = medio segundo)
+  function getDailyIndex(max){
+    const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
+    localStorage.setItem('uid', uid);
+    const today = new Date().toISOString().slice(0,10); // solo fecha
+    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
+    if(saved.date===today && Number.isInteger(saved.index)) return saved.index;
+    const idx = Math.floor(Math.random()*max);
+    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
+    return idx;
   }
 
-  // Últimos 4 pasos con glow progresivo
-  for(let i=0; i<stepsSlow; i++){
-    setTimeout(()=>{
-      const idx = (i === stepsSlow-1) ? finalIndex : Math.floor(Math.random()*allBrawlers.length);
-      brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+  function spinRoulette(){
+    const stepsFast = 16;
+    const stepsSlow = 4;
+    const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
+    const finalIndex = getDailyIndex(allBrawlers.length);
+    let delay = 0;
 
-      // Limpiar glow previo
-      brawlerImg.classList.remove(...glowClasses);
+    // Limpiar glow previo
+    brawlerImg.classList.remove(...glowClasses);
 
-      // Aplicar glow actual
-      brawlerImg.classList.add(glowClasses[i]);
-    }, delay);
-    delay += 700 + i*200; // pasos más lentos y progresivos (700ms, 900ms, 1100ms, 1300ms)
+    // 16 pasos rápidos sin glow
+    for(let i=0;i<stepsFast;i++){
+      setTimeout(()=>{
+        const idx = Math.floor(Math.random()*allBrawlers.length);
+        brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+      }, delay);
+      delay += 500; // velocidad rápida
+    }
+
+    // Últimos 4 pasos con glow progresivo
+    for(let i=0;i<stepsSlow;i++){
+      setTimeout(()=>{
+        const idx = (i===stepsSlow-1) ? finalIndex : Math.floor(Math.random()*allBrawlers.length);
+        brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+
+        brawlerImg.classList.remove(...glowClasses);
+        brawlerImg.classList.add(glowClasses[i]);
+      }, delay);
+      delay += 700 + i*200; // pasos más lentos
+    }
   }
-}
 
-/* ===== INICIALIZACIÓN ===== */
-(async ()=>{
-  await incrementarVisita();
-  await cargarMetricas();
-  // No girar automáticamente
-})();
+  /* ===== INICIALIZACIÓN ===== */
+  (async ()=>{
+    await incrementarVisita();
+    await cargarMetricas();
+    // No girar automáticamente, solo al pulsar botones
+  })();
 });
 </script>
 </body>
