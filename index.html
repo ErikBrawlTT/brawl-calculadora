@@ -291,35 +291,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function spinRoulette(){
-  const brawlers = allBrawlers; // array de brawlers
-  const finalIndex = getDailyIndex(brawlers.length); // brawler del día
-  let delay = 80; // inicio rápido
-  const steps = 50; // pasos rápidos para que se vea fluido
-
+  const brawlers = allBrawlers;
+  const finalIndex = getDailyIndex(brawlers.length);
+  const stepsFast = 26; // pasos rápidos iniciales
+  let delay = 100;
   brawlerImg.classList.remove('finalGlow');
 
-  // Mezclamos los brawlers para mostrar todos al menos una vez
-  let shuffled = [...brawlers].sort(() => Math.random() - 0.5);
-
-  // Primeros pasos rápidos
-  for(let i = 0; i < steps; i++){
+  // PASOS RÁPIDOS
+  for(let i=0;i<stepsFast;i++){
     setTimeout(()=>{
-      const idx = shuffled[i % shuffled.length]; // repetir si steps > brawlers.length
-      brawlerImg.src = baseURL + idx + ".png";
+      const idx = Math.floor(Math.random()*brawlers.length);
+      brawlerImg.src = baseURL + brawlers[idx] + ".png";
     }, delay);
-    delay += 100; // velocidad del paso rápido
+    delay += 150; // velocidad de los pasos rápidos
   }
 
-  // Últimos 4 pasos lentos para el efecto final
-  for(let i = 0; i < 4; i++){
+  // ÚLTIMOS 4 PASOS LENTOS
+  for(let i=0;i<4;i++){
     setTimeout(()=>{
-      const idx = (i === 3) ? finalIndex : shuffled[Math.floor(Math.random()*shuffled.length)];
-      brawlerImg.src = baseURL + idx + ".png";
-      if(i === 3) brawlerImg.classList.add('finalGlow');
+      const idx = (i===3)?finalIndex:Math.floor(Math.random()*brawlers.length);
+      brawlerImg.src = baseURL + brawlers[idx] + ".png";
+      if(i===3) brawlerImg.classList.add('finalGlow');
     }, delay);
-    delay += 400; // pasos finales más lentos
+    delay += 400; // pasos lentos
   }
-  }
+}
 
   /* ===== INICIALIZACIÓN ===== */
   (async ()=>{
