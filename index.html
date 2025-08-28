@@ -318,6 +318,34 @@ document.addEventListener('DOMContentLoaded', () => {
       if(i === 3) brawlerImg.classList.add('finalGlow');
     }, delay);
     delay += 400; // pasos finales más lentos
+    /* ===== Verificación visual de imágenes ===== */
+const checkContainer = document.createElement("div");
+checkContainer.style.position = "fixed";
+checkContainer.style.bottom = "10px";
+checkContainer.style.left = "10px";
+checkContainer.style.maxHeight = "150px";
+checkContainer.style.overflowY = "auto";
+checkContainer.style.background = "rgba(0,0,0,0.7)";
+checkContainer.style.color = "white";
+checkContainer.style.fontSize = "14px";
+checkContainer.style.padding = "8px";
+checkContainer.style.borderRadius = "8px";
+checkContainer.style.zIndex = "9999";
+checkContainer.innerText = "🔎 Comprobando brawlers...\n";
+document.body.appendChild(checkContainer);
+
+allBrawlers.forEach(brawler => {
+  const img = new Image();
+  img.src = `brawlers/${brawler}.png`; // ajusta la ruta si hace falta
+
+  img.onload = () => {
+    checkContainer.innerText += `✅ ${brawler}.png OK\n`;
+  };
+
+  img.onerror = () => {
+    checkContainer.innerText += `❌ ${brawler}.png FALTA\n`;
+  };
+});
   }
   }
 
