@@ -1,377 +1,119 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calculadora Brawl Stars</title>
-<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-
+<!DOCTYPE html>  
+<html lang="es">  
+<head>  
+<meta charset="UTF-8" />  
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+<title>Calculadora Brawl Stars</title>  
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@700&display=swap" rel="stylesheet">  
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>  
 <style>
-body {
-  margin: 0;
-  font-family: 'Bangers', cursive;
-  background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed;
-  background-size: cover;
-  color: white;
-  text-align: center;
-  position: relative;
-}
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(6px);
-  z-index: 0;
-}
-.container {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-/* ===== TITULO CON ESTRELLAS BRILLANTES ===== */
-h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-family: 'Bangers', cursive;
-  color: #FFD700;
-  text-shadow:
-    -2px -2px 0 black,
-     2px -2px 0 black,
-    -2px  2px 0 black,
-     2px  2px 0 black;
-}
-h1 .diamond {
-  font-family: 'Bangers', cursive;
-  font-size: 3rem;
-  color: #32CD32;
-  text-shadow:
-    -1px -1px 0 #000,
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000,
-     0 0 6px #32CD32,
-     0 0 12px #00FF00,
-     0 0 18px #00FF7F;
-  animation: glow 1.5s infinite alternate;
-}
-@keyframes glow {
-  0% { text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000,
-    0 0 4px #32CD32,
-    0 0 8px #00FF00,
-    0 0 12px #00FF7F; }
-  50% { text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000,
-    0 0 8px #32CD32,
-    0 0 16px #00FF00,
-    0 0 24px #00FF7F; }
-  100% { text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000,
-    0 0 4px #32CD32,
-    0 0 8px #00FF00,
-    0 0 12px #00FF7F; }
-}
-
-/* ===== FORMULARIO ===== */
-form {
-  background: rgba(0,0,0,0.5);
-  border-radius: 60px;
-  padding: 20px;
-  max-width: 600px;
-  width: 90%;
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  border: 2px solid #FFA500;
-  box-shadow: 0 0 18px rgba(255,165,0,.7), 0 0 36px rgba(255,165,0,.35);
-}
-label {
-  display:flex;
-  justify-content:space-between;
-  margin:8px 0;
-  width:100%;
-}
-input {
-  width:100px;
-  text-align:center;
-  border:none;
-  border-radius:8px;
-}
-.buttons {
-  display:flex;
-  justify-content:center;
-  gap:25px;
-  margin-top:15px;
-}
-  /* ===== BOTONES ===== */
-button {
-  padding:10px 20px;
-  border:none;
-  border-radius:12px;
-  font-family:'Bangers';
-  font-size:1.5rem;
-  color:white;
-  cursor:pointer;
-  transition: transform .08s ease;
-}
-button:active {
-  transform: scale(0.97);
-}
-button.flash {
-  box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff;
-  transition: box-shadow 0.2s ease;
-}
-
-/* Botones calcular y limpiar nuevos colores */
+/* ==== CSS BASE ==== */
+body { margin: 0; font-family: 'Bangers', cursive; background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed; background-size: cover; color: white; text-align: center; position: relative; }
+body::after { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); z-index: 0; }
+.container { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+/* ==== TITULO ==== */
+h1 { font-size: 3rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Bangers', cursive; color: #FFD700; text-shadow: -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 2px 0 black; }
+h1 .diamond { font-family: 'Bangers', cursive; font-size: 3rem; color: #32CD32; text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 6px #32CD32,0 0 12px #00FF00,0 0 18px #00FF7F; animation: glow 1.5s infinite alternate; }
+@keyframes glow { 0% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; } 50% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 8px #32CD32,0 0 16px #00FF00,0 0 24px #00FF7F; } 100% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; } }
+/* ==== FORMULARIO ==== */
+form { background: rgba(0,0,0,0.5); border-radius: 60px; padding: 20px; max-width: 600px; width: 90%; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; position: relative; border: 2px solid #FFA500; box-shadow: 0 0 18px rgba(255,165,0,.7),0 0 36px rgba(255,165,0,.35); }
+label { display:flex; justify-content:space-between; margin:8px 0; width:100%; }
+input { width:100px; text-align:center; border:none; border-radius:8px; }
+.buttons { display:flex; justify-content:center; gap:25px; margin-top:15px; }
+button { padding:10px 20px; border:none; border-radius:12px; font-family:'Bangers'; font-size:1.5rem; color:white; cursor:pointer; transition: transform .08s ease; }
+button:active { transform: scale(0.97); }
+button.flash { box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff; transition: box-shadow 0.2s ease; }
 #calcBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
 #clearBtn {background: linear-gradient(90deg,#FFD700,#FFA500); color: black;}
-
-/* Botón compartir mantiene pulso */
-#shareBtn{
-  background:linear-gradient(90deg,#00FFAA,#FF00FF); 
-  margin-top:20px; 
-  color:white;
-}
-@keyframes pulseBorder {
-  0% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
-  50% { box-shadow: 0 0 25px #FF00FF, 0 0 35px #FF00FF; transform: scale(1.05); }
-  100% { box-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF; transform: scale(1); }
-}
+#shareBtn{ background:linear-gradient(90deg,#00FFAA,#FF00FF); margin-top:20px; color:white; }
 #shareBtn.pulse { animation: pulseBorder 1s infinite; }
-
-/* Botón Girar Brawler */
-#spinBtn{
-  margin-top:10px;
-  padding:8px 16px;
-  font-size:1.1rem;
-  background: linear-gradient(90deg,#FFA500,#FF8C00);
-  color:#000;
-  box-shadow: 0 0 10px #FFA500, 0 0 20px rgba(255,165,0,.5);
-  border-radius: 12px;
-}
-
-/* Botón INFO flotante */
-#infoBtn{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform: translate(-50%, -50%);
-  width:70px;
-  height:70px;
-  border-radius:50%;
-  background: rgba(20,0,30,.25);
-  border: 2px solid #B300FF;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  letter-spacing: 2px;
-  color: #FFFFFF;
-  font-size: 1.1rem;
-  text-shadow: 0 0 6px #B300FF, 0 0 12px #8000FF;
-  box-shadow: 0 0 10px #B300FF, 0 0 20px rgba(179,0,255,.35);
-  cursor:pointer;
-  z-index:2;
-  animation: infoPulse 1.6s ease-in-out infinite;
-}
-@keyframes infoPulse{
-  0%   { box-shadow: 0 0 8px #B300FF, 0 0 16px rgba(179,0,255,.25); }
-  50%  { box-shadow: 0 0 14px #B300FF, 0 0 28px rgba(179,0,255,.45); }
-  100% { box-shadow: 0 0 8px #B300FF, 0 0 16px rgba(179,0,255,.25); }
-}
-
-/* Métricas */
-.metric-container {
-  display: flex;
-  justify-content: center;
-  gap: 22px;
-  margin-top: 18px;
-}
-.metric {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  font-family:'Orbitron', sans-serif;
-  font-size: 2rem;
-}
-.metric .box {
-  background: rgba(0,0,0,0.7);
-  padding: 8px 18px;
-  border-radius: 12px;
-  min-width: 70px;
-  text-align: center;
-  font-weight: 700;
-  user-select: none;
-  transition: all 0.2s ease;
-  cursor:pointer;
-}
+@keyframes pulseBorder { 0% { box-shadow: 0 0 10px #FF00FF,0 0 20px #FF00FF; transform: scale(1); } 50% { box-shadow: 0 0 25px #FF00FF,0 0 35px #FF00FF; transform: scale(1.05); } 100% { box-shadow: 0 0 10px #FF00FF,0 0 20px #FF00FF; transform: scale(1); } }
+#spinBtn{ margin-top:10px; padding:8px 16px; font-size:1.1rem; background: linear-gradient(90deg,#FFA500,#FF8C00); color:#000; box-shadow: 0 0 10px #FFA500,0 0 20px rgba(255,165,0,.5); border-radius: 12px; }
+#infoBtn{ position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); width:70px; height:70px; border-radius:50%; background: rgba(20,0,30,.25); border: 2px solid #B300FF; display:flex; align-items:center; justify-content:center; letter-spacing: 2px; color: #FFFFFF; font-size: 1.1rem; text-shadow: 0 0 6px #B300FF,0 0 12px #8000FF; box-shadow: 0 0 10px #B300FF,0 0 20px rgba(179,0,255,.35); cursor:pointer; z-index:2; animation: infoPulse 1.6s ease-in-out infinite; }
+@keyframes infoPulse{ 0% { box-shadow:0 0 8px #B300FF,0 0 16px rgba(179,0,255,.25); } 50% { box-shadow:0 0 14px #B300FF,0 0 28px rgba(179,0,255,.45); } 100% { box-shadow:0 0 8px #B300FF,0 0 16px rgba(179,0,255,.25); } }
+/* ==== METRICAS ==== */
+.metric-container { display: flex; justify-content: center; gap: 22px; margin-top: 18px; }
+.metric { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family:'Orbitron', sans-serif; font-size: 2rem; }
+.metric .box { background: rgba(0,0,0,0.7); padding: 8px 18px; border-radius: 12px; min-width: 70px; text-align: center; font-weight: 700; user-select: none; transition: all 0.2s ease; cursor:pointer; }
 .metric.visitas .box { border: 2px solid #00CFFF; color: #00CFFF; box-shadow:0 0 10px #00CFFF,0 0 20px #00CFFF;}
 .metric.likes .box { border: 2px solid #39ff14; color: #39ff14; box-shadow:0 0 10px #39ff14,0 0 20px #39ff14;}
 .metric.dislikes .box { border: 2px solid #FF073A; color: #FF073A; box-shadow:0 0 10px #FF073A,0 0 20px #FF073A;}
-
-/* Canvas y brawler centrado */
-canvas{
-  margin-top:15px;
-  max-width:400px;
-  position:relative;
-}
-#centerDiamond {
-  position: absolute;
-  top: 43%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: block;
-}
-#centerDiamond img {
-  width: 210px;
-  height: 210px;
-  border-radius: 50%;
-  object-fit: contain;
-  background: rgba(0,0,0,0.3);
-  transition: all 0.4s ease;
-}
-#centerDiamond img.finalGlow {
-  box-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 60px #fff;
-}
-#resultado { 
-  margin:10px 0; 
-  font-size:2rem;
-  font-family:'Bangers';
-  color:#00FF00;
-  text-shadow:0 0 8px #00FF00,0 0 15px #00FF00;
-}
-
-/* Modal INFO */
-#infoModal{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.8);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index: 9999;
-}
-#infoModal .content{
-  background: #0f0b18;
-  border: 2px solid #FFD700;
-  box-shadow: 0 0 18px #FFD700, 0 0 36px rgba(255,215,0,.4);
-  border-radius: 16px;
-  max-width: 560px;
-  width: 90%;
-  padding: 18px 18px 12px;
-  text-align: left;
-  font-family: 'Orbitron', sans-serif;
-  color: #fff;
-}
-#infoModal .content h3{
-  margin: 0 0 8px;
-  color: #FFD700;
-  font-family: 'Bangers';
-  font-size: 1.8rem;
-}
-#infoModal .content p{
-  margin: 6px 0;
-  line-height: 1.35;
-  font-size: 1rem;
-}
-#infoClose{
-  float:right;
-  font-size: 1.5rem;
-  color: #FF4D4D;
-  cursor:pointer;
-  margin-left: 8px;
-}
+/* ==== CANVAS Y BRAWLER ==== */
+canvas{ margin-top:15px; max-width:400px; position:relative; }
+#centerDiamond { position: absolute; top: 43%; left: 50%; transform: translate(-50%, -50%); display: block; }
+#centerDiamond img { width: 210px; height: 210px; border-radius: 50%; object-fit: contain; background: rgba(0,0,0,0.3); transition: all 0.4s ease; }
+#centerDiamond img.finalGlow { box-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 60px #fff; }
+#resultado { margin:10px 0; font-size:2rem; font-family:'Bangers'; color:#00FF00; text-shadow:0 0 8px #00FF00,0 0 15px #00FF00; }
+/* ==== MODAL INFO ==== */
+#infoModal{ position: fixed; inset: 0; background: rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index: 9999; }
+#infoModal .content{ background: #0f0b18; border: 2px solid #FFD700; box-shadow: 0 0 18px #FFD700,0 0 36px rgba(255,215,0,.4); border-radius: 16px; max-width: 560px; width: 90%; padding: 18px 18px 12px; text-align: left; font-family: 'Orbitron', sans-serif; color: #fff; }
+#infoModal .content h3{ margin: 0 0 8px; color: #FFD700; font-family: 'Bangers'; font-size: 1.8rem; }
+#infoModal .content p{ margin: 6px 0; line-height: 1.35; font-size: 1rem; }
+#infoClose{ float:right; font-size: 1.5rem; color: #FF4D4D; cursor:pointer; margin-left: 8px; }
 #infoClose:hover{ filter: brightness(1.2); }
+/* ==== GLOW SEGMENTOS RUEDA ==== */
+.segmentGlowBlue { box-shadow:0 0 15px 4px #00CFFF; }
+.segmentGlowRed { box-shadow:0 0 15px 4px #FF073A; }
+.segmentGlowOrange { box-shadow:0 0 15px 4px #FFA500; }
+.segmentGlowGreen { box-shadow:0 0 15px 4px #00FF00; }
 </style>
 </head>
 <body>
-  <div class="container">
-  <h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
-
-  <form id="calcForm">
-    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
-    <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
-    <label>💚 Raras: <input type="number" id="raras" value="0"></label>
-    <label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
-    <label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
-    <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
-    <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
-    <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
-
-    <button type="button" id="infoBtn">INFO</button>
-  </form>
-
-  <div id="resultado">Valor total: 0 🪙</div>
-
-  <div class="buttons">
-    <button id="calcBtn">Calcular</button>
-    <button id="clearBtn">Limpiar</button>
-  </div>
-
-  <button id="shareBtn">📤 Compartir</button>
-  <button id="spinBtn">🎲 Girar Brawler</button>
-
-  <div class="metric-container">
-    <div class="metric visitas">
-      <span class="icon">👀</span>
-      <div class="box" id="visitas-counter">0</div>
-    </div>
-    <div class="metric likes">
-      <span class="icon">👍</span>
-      <div class="box" id="likes-counter">0</div>
-    </div>
-    <div class="metric dislikes">
-      <span class="icon">👎</span>
-      <div class="box" id="dislikes-counter">0</div>
-    </div>
-  </div>
-
-  <div style="position:relative; display:inline-block;">
-    <canvas id="myChart" width="400" height="400"></canvas>
-    <div id="centerDiamond">
-      <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
-    </div>
-  </div>
+<div class="container">
+<h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
+<form id="calcForm">
+<label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
+<label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
+<label>💚 Raras: <input type="number" id="raras" value="0"></label>
+<label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
+<label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
+<label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
+<label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
+<label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
+<button type="button" id="infoBtn">INFO</button>
+</form>
+<div id="resultado">Valor total: 0 🪙</div>
+<div class="buttons">
+<button id="calcBtn">Calcular</button>
+<button id="clearBtn">Limpiar</button>
 </div>
-
+<button id="shareBtn">📤 Compartir</button>
+<button id="spinBtn">🎲 Girar Brawler</button>
+<div class="metric-container">
+<div class="metric visitas">
+<span class="icon">👀</span>
+<div class="box" id="visitas-counter">0</div>
+</div>
+<div class="metric likes">
+<span class="icon">👍</span>
+<div class="box" id="likes-counter">0</div>
+</div>
+<div class="metric dislikes">
+<span class="icon">👎</span>
+<div class="box" id="dislikes-counter">0</div>
+</div>
+</div>
+<div style="position:relative; display:inline-block;">
+<canvas id="myChart" width="400" height="400"></canvas>
+<div id="centerDiamond">
+<img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
+</div>
+</div>
 <div id="infoModal">
-  <div class="content">
-    <span id="infoClose">×</span>
-    <h3>Información</h3>
-    <p>Hola BRAWLER, esta es la calculadora que siempre has soñado probar.</p>
-    <p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que has utilizado.</p>
-    <p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins (en la tienda del juego en cada modalidad de skins te sale el total).</p>
-    <p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas, sabrás el valor aproximado de tu cuenta.</p>
-    <p>- 🎲 Interactua: ¡Gira y juega! Este es tu Brawler del dia, vuelve mañana sera otro🎯.<p>
-    <p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
-  </div>
+<div class="content">
+<span id="infoClose">×</span>
+<h3>Información</h3>
+<p>Hola BRAWLER, esta es la calculadora que siempre has soñado probar.</p>
+<p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que has utilizado.</p>
+<p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins (en la tienda del juego en cada modalidad de skins te sale el total).</p>
+<p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas, sabrás el valor aproximado de tu cuenta.</p>
+<p>- 🎲 Interactua: ¡Gira y juega! Este es tu Brawler del dia, vuelve mañana sera otro🎯.</p>
+<p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
+</div>
 </div>
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
@@ -443,11 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
   clearBtn.addEventListener('click', limpiar);
   shareBtn.addEventListener('click', share);
   spinBtn.addEventListener('click', () => { beep(520); vibrar(80); spinRoulette(); });
-
   infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
   infoClose.addEventListener('click', ()=> infoModal.style.display='none');
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
-
   shareBtn.classList.add('pulse');
 
   /* ===== BRAWLERS RUETA ===== */
@@ -460,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
-
   /* ===== CALCULAR ===== */
   function calcular(){
     beep(600); vibrar();
@@ -495,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const t0 = performance.now();
     function step(t){
       const p = Math.min((t-t0)/duration,1);
-      resultadoEl.innerText = "Valor total: "+Math.floor(start + (end-start)*p)+" €";
+      resultadoEl.innerText = "Valor total: "+Math.floor(start + (end-start)*p)+" 🪙";
       if(p<1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -524,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     beep(300); vibrar();
     clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
     document.getElementById("calcForm").reset();
-    document.getElementById("resultado").innerText="Valor total: 0 €";
+    document.getElementById("resultado").innerText="Valor total: 0 🪙";
     if(chart) chart.destroy();
   }
 
@@ -533,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
     const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-    if(navigator.share){ 
+    if(navigator.share){
       try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
       catch(err){console.log(err);}
     } else { alert("Tu navegador no soporta compartir nativo."); }
@@ -552,28 +291,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function spinRoulette(){
-    const brawlers = allBrawlers; // 30 brawlers
+    const brawlers = allBrawlers;
     const finalIndex = getDailyIndex(brawlers.length);
-    const steps = 26; // primeros pasos rápidos
+    const steps = 26; // pasos rápidos
     let delay = 100;
     brawlerImg.classList.remove('finalGlow');
 
+    // pasos rápidos
     for(let i=0;i<steps;i++){
-      setTimeout(()=>{ 
+      setTimeout(()=>{
         const idx = Math.floor(Math.random()*brawlers.length);
-        brawlerImg.src = baseURL + brawlers[idx] + ".png"; 
+        brawlerImg.src = baseURL + brawlers[idx] + ".png";
       }, delay);
-      delay += 150;
+      delay += 120; // velocidad rápida
     }
 
-    // últimos 4 pasos más lentos y mostrando brawlers finales
+    // últimos 4 pasos lentos con glow
+    const glowColors = ["#00FFFF","#FF0000","#FFA500","#00FF00"];
     for(let i=0;i<4;i++){
       setTimeout(()=>{
         const idx = (i===3)?finalIndex:Math.floor(Math.random()*brawlers.length);
-        brawlerImg.src = baseURL + brawlers[idx] + ".png"; 
+        brawlerImg.src = baseURL + brawlers[idx] + ".png";
         if(i===3) brawlerImg.classList.add('finalGlow');
+        brawlerImg.style.boxShadow = `0 0 15px ${glowColors[i]},0 0 25px ${glowColors[i]},0 0 35px ${glowColors[i]}`;
       }, delay);
-      delay += 400;
+      delay += 400; // pasos lentos
     }
   }
 
@@ -583,7 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
     await cargarMetricas();
     spinRoulette();
   })();
-
 });
 </script>
 </body>
