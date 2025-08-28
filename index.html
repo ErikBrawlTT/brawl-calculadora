@@ -355,18 +355,18 @@ function spinRoulette(){
   const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
   const slowDelays = [3000, 3300, 3600, 3900]; // frenado progresivo
 
-  for (let i = 0; i < stepsSlow; i++) {
-    setTimeout(() => {
-      const idx = (i === stepsSlow-1) ? finalIndex : Math.floor(Math.random() * allBrawlers.length);
-      brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+  for (let i = 0; i < 4; i++) {
+  setTimeout(() => {
+    const idx = (i === 3) ? finalIndex : Math.floor(Math.random() * allBrawlers.length);
+    brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
 
-      // Limpiar clases de glow anteriores
-      brawlerImg.classList.remove(...glowClasses);
+    // Limpiar clases de glow anteriores
+    brawlerImg.classList.remove(...glowClasses);
 
-      // Aplicar glow correspondiente
-      brawlerImg.classList.add(glowClasses[i]);
-    }, delay);
-    delay += slowDelays[i];
+    // Aplicar glow correspondiente
+    brawlerImg.classList.add(glowClasses[i]);
+  }, delay);
+  delay += 300 + i * 100;
   }
   }
   
