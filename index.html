@@ -291,32 +291,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function spinRoulette(){
-    const brawlers = allBrawlers;
-    const finalIndex = getDailyIndex(brawlers.length);
-    const steps = 26; // pasos rápidos
-    let delay = 100;
-    brawlerImg.classList.remove('finalGlow');
+  const brawlers = allBrawlers; // array de brawlers
+  const finalIndex = getDailyIndex(brawlers.length); // brawler del día
+  let delay = 80; // inicio rápido
+  const steps = 50; // pasos rápidos para que se vea fluido
 
-    // pasos rápidos
-    for(let i=0;i<steps;i++){
-      setTimeout(()=>{
-        const idx = Math.floor(Math.random()*brawlers.length);
-        brawlerImg.src = baseURL + brawlers[idx] + ".png";
-      }, delay);
-      delay += 120; // velocidad rápida
-    }
+  brawlerImg.classList.remove('finalGlow');
 
-    // últimos 4 pasos lentos con glow
-    const glowColors = ["#00FFFF","#FF0000","#FFA500","#00FF00"];
-    for(let i=0;i<4;i++){
-      setTimeout(()=>{
-        const idx = (i===3)?finalIndex:Math.floor(Math.random()*brawlers.length);
-        brawlerImg.src = baseURL + brawlers[idx] + ".png";
-        if(i===3) brawlerImg.classList.add('finalGlow');
-        brawlerImg.style.boxShadow = `0 0 15px ${glowColors[i]},0 0 25px ${glowColors[i]},0 0 35px ${glowColors[i]}`;
-      }, delay);
-      delay += 400; // pasos lentos
-    }
+  // Mezclamos los brawlers para mostrar todos al menos una vez
+  let shuffled = [...brawlers].sort(() => Math.random() - 0.5);
+
+  // Primeros pasos rápidos
+  for(let i = 0; i < steps; i++){
+    setTimeout(()=>{
+      const idx = shuffled[i % shuffled.length]; // repetir si steps > brawlers.length
+      brawlerImg.src = baseURL + idx + ".png";
+    }, delay);
+    delay += 100; // velocidad del paso rápido
+  }
+
+  // Últimos 4 pasos lentos para el efecto final
+  for(let i = 0; i < 4; i++){
+    setTimeout(()=>{
+      const idx = (i === 3) ? finalIndex : shuffled[Math.floor(Math.random()*shuffled.length)];
+      brawlerImg.src = baseURL + idx + ".png";
+      if(i === 3) brawlerImg.classList.add('finalGlow');
+    }, delay);
+    delay += 400; // pasos finales más lentos
+  }
   }
 
   /* ===== INICIALIZACIÓN ===== */
