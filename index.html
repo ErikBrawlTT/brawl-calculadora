@@ -58,13 +58,47 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 .segmentGlowOrange { box-shadow:0 0 15px 4px #FFA500; }
 .segmentGlowGreen { box-shadow:0 0 15px 4px #00FF00; }
 <style>
-  /* --- tu CSS existente --- */
+  /* --- tu CSS existente hasta ahora --- */
 
-  /* Glows de los últimos 4 pasos de la ruleta */
-  .glow-blue   { box-shadow: 0 0 20px #00f, 0 0 40px #00f, 0 0 60px #00f; }
-  .glow-red    { box-shadow: 0 0 20px #f00, 0 0 40px #f00, 0 0 60px #f00; }
-  .glow-orange { box-shadow: 0 0 20px #f90, 0 0 40px #f90, 0 0 60px #f90; }
-  .glow-green  { box-shadow: 0 0 20px #0f0, 0 0 40px #0f0, 0 0 60px #0f0; }
+  /* ===== Glows de los últimos 4 pasos de la ruleta ===== */
+  .glow-blue   { 
+    box-shadow: 0 0 20px #00f, 0 0 40px #00f, 0 0 60px #00f; 
+    animation: glow-blue 1.5s infinite alternate;
+  }
+  .glow-red    { 
+    box-shadow: 0 0 20px #f00, 0 0 40px #f00, 0 0 60px #f00; 
+    animation: glow-red 1.5s infinite alternate;
+  }
+  .glow-orange { 
+    box-shadow: 0 0 20px #f90, 0 0 40px #f90, 0 0 60px #f90; 
+    animation: glow-orange 1.5s infinite alternate;
+  }
+  .glow-green  { 
+    box-shadow: 0 0 20px #0f0, 0 0 40px #0f0, 0 0 60px #0f0; 
+    animation: glow-green 1.5s infinite alternate;
+  }
+
+  /* Animaciones de glow para suavizar el parpadeo */
+  @keyframes glow-blue {
+    0% { box-shadow: 0 0 10px #00f, 0 0 20px #00f; }
+    50% { box-shadow: 0 0 25px #00f, 0 0 45px #00f; }
+    100% { box-shadow: 0 0 10px #00f, 0 0 20px #00f; }
+  }
+  @keyframes glow-red {
+    0% { box-shadow: 0 0 10px #f00, 0 0 20px #f00; }
+    50% { box-shadow: 0 0 25px #f00, 0 0 45px #f00; }
+    100% { box-shadow: 0 0 10px #f00, 0 0 20px #f00; }
+  }
+  @keyframes glow-orange {
+    0% { box-shadow: 0 0 10px #f90, 0 0 20px #f90; }
+    50% { box-shadow: 0 0 25px #f90, 0 0 45px #f90; }
+    100% { box-shadow: 0 0 10px #f90, 0 0 20px #f90; }
+  }
+  @keyframes glow-green {
+    0% { box-shadow: 0 0 10px #0f0, 0 0 20px #0f0; }
+    50% { box-shadow: 0 0 25px #0f0, 0 0 45px #0f0; }
+    100% { box-shadow: 0 0 10px #0f0, 0 0 20px #0f0; }
+  }
 
 </style>
 </head>
@@ -317,20 +351,23 @@ document.addEventListener('DOMContentLoaded', () => {
     delay += 2000; // 2 segundos cada paso rápido
   }
 
-  // Últimos 4 pasos lentos con glow individual
-  const slowDurations = [3000, 3500, 4000, 4500]; // ms
-  for(let i=0;i<stepsSlow;i++){
-    setTimeout(()=>{
-      const idx = (i===stepsSlow-1) ? finalIndex : Math.floor(Math.random()*allBrawlers.length);
-      brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+// últimos 4 pasos más lentos y mostrando brawlers finales
+const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
 
-      // aplicar glow
-      brawlerImg.classList.remove('glow-blue','glow-red','glow-orange','glow-green');
-      brawlerImg.classList.add('glow-' + glowColors[i]);
-    }, delay);
-    delay += slowDurations[i];
-  }
-  }
+for (let i = 0; i < 4; i++) {
+  setTimeout(() => {
+    const idx = (i === 3) ? finalIndex : Math.floor(Math.random() * brawlers.length);
+    brawlerImg.src = baseURL + brawlers[idx] + ".png";
+
+    // Limpiar clases de glow anteriores
+    brawlerImg.classList.remove(...glowClasses);
+
+    // Aplicar glow correspondiente
+    brawlerImg.classList.add(glowClasses[i]);
+  }, delay);
+  // incrementar delay para frenado progresivo
+  delay += 300 + i * 100; // 300ms, 400ms, 500ms, 600ms
+}
   
   /* ===== INICIALIZACIÓN ===== */
   (async ()=>{
