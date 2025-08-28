@@ -61,9 +61,9 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
   /* --- tu CSS existente hasta ahora --- */
 
   /* ===== Glows de los últimos 4 pasos de la ruleta ===== */
-  .glow-blue   { 
-    box-shadow: 0 0 20px #00f, 0 0 40px #00f, 0 0 60px #00f; 
-    animation: glow-blue 3s infinite alternate;
+  .glow-blue { 
+  box-shadow: 0 0 25px #00f, 0 0 50px #00f, 0 0 75px #00f, 0 0 100px #00CFFF; 
+  animation: glow-blue 3s infinite alternate;
   }
   .glow-red    { 
     box-shadow: 0 0 20px #f00, 0 0 40px #f00, 0 0 60px #f00; 
@@ -80,9 +80,9 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 
   /* Animaciones de glow para suavizar el parpadeo */
   @keyframes glow-blue {
-    0% { box-shadow: 0 0 10px #00f, 0 0 20px #00f; }
-    50% { box-shadow: 0 0 25px #00f, 0 0 45px #00f; }
-    100% { box-shadow: 0 0 10px #00f, 0 0 20px #00f; }
+  0% { box-shadow: 0 0 10px #00f, 0 0 20px #00CFFF; }
+  50% { box-shadow: 0 0 40px #00f, 0 0 80px #00CFFF; }
+  100% { box-shadow: 0 0 10px #00f, 0 0 20px #00CFFF; }
   }
   @keyframes glow-red {
     0% { box-shadow: 0 0 10px #f00, 0 0 20px #f00; }
@@ -338,37 +338,39 @@ function getDailyIndex(max){
 }
 
 function spinRoulette(){
-  const stepsFast = 16;  // primeros 16 pasos rápidos
-  const stepsSlow = 4;   // últimos 4 pasos lentos
+  const stepsFast = 16;  // pasos rápidos
+  const stepsSlow = 4;   // últimos pasos lentos con glow
   const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
   const finalIndex = getDailyIndex(allBrawlers.length);
   let delay = 0;
 
+  // Limpiar cualquier glow previo
   brawlerImg.classList.remove(...glowClasses);
 
-  // Pasos rápidos
+  // PASOS RÁPIDOS (sin glow)
   for(let i=0; i<stepsFast; i++){
     setTimeout(()=>{
       const idx = Math.floor(Math.random()*allBrawlers.length);
       brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
     }, delay);
-    delay += 500; // pasos rápidos cada 0.5s
+    delay += 500; // velocidad rápida
   }
 
-  // Últimos pasos con glow progresivo
+  // ÚLTIMOS PASOS LENTOS (con glow)
   for(let i=0; i<stepsSlow; i++){
     setTimeout(()=>{
       const idx = (i === stepsSlow-1) ? finalIndex : Math.floor(Math.random()*allBrawlers.length);
       brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
 
+      // Limpiar glow previo y aplicar el glow del paso actual
       brawlerImg.classList.remove(...glowClasses);
       brawlerImg.classList.add(glowClasses[i]);
     }, delay);
 
-    // Frenado progresivo: 0.7s, 1s, 1.3s, 1.6s
-    delay += 700 + i*300;
+    // Frenado progresivo: más lento en cada paso
+    delay += 800 + i*400; // 800ms, 1200ms, 1600ms, 2000ms
   }
-  }
+    }
   
   /* ===== INICIALIZACIÓN ===== */
   (async ()=>{
