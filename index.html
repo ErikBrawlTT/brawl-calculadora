@@ -318,26 +318,43 @@ document.addEventListener('DOMContentLoaded', () => {
       if(i === 3) brawlerImg.classList.add('finalGlow');
     }, delay);
     delay += 400; // pasos finales más lentos
-/* ===== Verificación visual muy simple ===== */
+/* ===== Verificación visual con miniaturas ===== */
 const resultDiv = document.createElement("div");
 resultDiv.style.padding = "20px";
 resultDiv.style.background = "#111";
 resultDiv.style.color = "white";
-resultDiv.style.fontSize = "16px";
+resultDiv.style.fontSize = "14px";
 resultDiv.innerHTML = "<h3>Verificación de Brawlers</h3>";
 document.body.appendChild(resultDiv);
 
 allBrawlers.forEach(brawler => {
   const img = new Image();
-  img.src = `brawlers/${brawler}.png`;
+  img.src = `brawlers/${brawler}.png`; // 👈 Ajusta esta ruta igual que en tu ruleta
+
+  const row = document.createElement("div");
+  row.style.display = "flex";
+  row.style.alignItems = "center";
+  row.style.marginBottom = "8px";
+
+  const label = document.createElement("span");
+  label.textContent = brawler + ": ";
+  label.style.marginRight = "10px";
+
+  row.appendChild(label);
 
   img.onload = () => {
-    resultDiv.innerHTML += `✅ ${brawler}.png OK<br>`;
+    row.innerHTML += "✅";
+    row.appendChild(img);
+    img.style.width = "40px";
+    img.style.height = "40px";
+    img.style.marginLeft = "10px";
   };
 
   img.onerror = () => {
-    resultDiv.innerHTML += `❌ ${brawler}.png FALTA<br>`;
+    row.innerHTML += "❌ (imagen no encontrada)";
   };
+
+  resultDiv.appendChild(row);
 });
   }
   }
