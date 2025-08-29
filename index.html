@@ -188,27 +188,65 @@ document.addEventListener('DOMContentLoaded', () => {
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
   
-  /* ===== BOTONES DE LIKE / DISLIKE ===== */
-  const likesCounter = document.getElementById('likes-counter');
-  const dislikesCounter = document.getElementById('dislikes-counter');
+  // ===== BOTONES DE LIKE / DISLIKE =====
+const likesBox = document.getElementById('likes-counter');
+const dislikesBox = document.getElementById('dislikes-counter');
 
-  likesCounter.addEventListener('click', async () => {
-    try {
-      await supabase.rpc('increment_likes', { pid: PAGE_ID });
-      const { data, error } = await supabase.from('metrics').select('likes').eq('page_id', PAGE_ID).single();
-      if (!error && data) animateCounter('likes-counter', data.likes);
-      beep(600); vibrar();
-    } catch(e) { console.error(e); }
-  });
+// Revisar elección previa en localStorage
+let userVote = localStorage.getItem('brawl_vote') || null;
 
-  dislikesCounter.addEventListener('click', async () => {
-    try {
-      await supabase.rpc('increment_dislikes', { pid: PAGE_ID });
-      const { data, error } = await supabase.from('metrics').select('dislikes').eq('page_id', PAGE_ID).single();
-      if (!error && data) animateCounter('dislikes-counter', data.dislikes);
-      beep(400); vibrar();
-    } catch(e) { console.error(e); }
-  });
+function updateVoteUI() {
+  if(userVote==='like'){
+    likesBox.style.opacity = '1';
+    dislikesBox.style.opacity = '0.5';
+  } else if(userVote==='dislike'){
+    likesBox.style.opacity = '0.5';
+    dislikesBox.style.opacity = '1';
+  } else {
+    likesBox.style.opacity = '1';
+    dislikesBox.style.opacity = '1';
+  }
+}
+
+updateVoteUI();
+
+likesBox.addEventListener('click', async () => {
+  if(userVote==='like') return; // ya votó like
+  try {
+    if(userVote==='dislike'){
+      await supabase.rpc('decrement_dislikes',{pid: PAGE_ID});
+    }
+    await supabase.rpc('increment_likes',{pid: PAGE_ID});
+    localStorage.setItem('brawl_vote','like');
+    userVote='like';
+    const { data, error } = await supabase.from('metrics').select('likes,dislikes').eq('page_id', PAGE_ID).single();
+    if (!error && data){
+      animateCounter('likes-counter', data.likes);
+      animateCounter('dislikes-counter', data.dislikes);
+    }
+    beep(600); vibrar();
+    updateVoteUI();
+  } catch(e){ console.error(e); }
+});
+
+dislikesBox.addEventListener('click', async () => {
+  if(userVote==='dislike') return; // ya votó dislike
+  try {
+    if(userVote==='like'){
+      await supabase.rpc('decrement_likes',{pid: PAGE_ID});
+    }
+    await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
+    localStorage.setItem('brawl_vote','dislike');
+    userVote='dislike';
+    const { data, error } = await supabase.from('metrics').select('likes,dislikes').eq('page_id', PAGE_ID).single();
+    if (!error && data){
+      animateCounter('likes-counter', data.likes);
+      animateCounter('dislikes-counter', data.dislikes);
+    }
+    beep(400); vibrar();
+    updateVoteUI();
+  } catch(e){ console.error(e); }
+});
 
   /* ===== BRAWLERS (lista amplia) ===== */
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
