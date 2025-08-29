@@ -276,74 +276,77 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-  /* ===== RULETA 7s + FRENADO DE 6 BRAWLERS ===== */
-  function spinRouletteSmooth(){
-    const numBrawlers = allBrawlers.length;
-    const finalIndex = getDailyIndex(numBrawlers);
+/* ===== RULETA 7s + FRENADO DE 6 BRAWLERS ===== */
+function spinRouletteSmooth(){
+  const numBrawlers = allBrawlers.length;
+  const finalIndex = getDailyIndex(numBrawlers);
 
-    const totalDuration = 7000;        // 7s totales
-    const slowDuration  = 2000;        // últimos 2s: frenado visible
-    const fastDuration  = totalDuration - slowDuration;
+  const totalDuration = 7000;        // 7s totales
+  const slowDuration  = 2000;        // últimos 2s: frenado visible
+  const fastDuration  = totalDuration - slowDuration;
 
-    const finalSlowSteps = Math.min(6, numBrawlers); // 6 brawlers lentos
+  const finalSlowSteps = Math.min(6, numBrawlers); // 6 brawlers lentos
 
-    // Secuencia final de frenado que termina en finalIndex
-    const slowSequence = [];
-    for(let i = finalSlowSteps-1; i >= 0; i--){
-      slowSequence.push((finalIndex - i + numBrawlers) % numBrawlers);
-    }
-
-    let currentIndex = 0;
-    let step = 0;
-    const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-    const t0 = performance.now();
-
-    function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
-
-    function fastPhase(){
-      const now = performance.now();
-      const elapsed = now - t0;
-
-      if(elapsed >= fastDuration){
-        // Saltamos directamente al inicio de la secuencia lenta
-        startSlowPhase(0);
-        return;
-      }
-
-      // Avanzar índice y pintar
-      const name = allBrawlers[currentIndex % numBrawlers];
-      brawlerImg.src = brawlerCache[name].src;
-      brawlerImg.className = glowClasses[step % glowClasses.length];
-
-      currentIndex++;
-      step++;
-
-      // Velocidad: empieza muy rápido y se va ralentizando un poco
-      const p = Math.min(elapsed / fastDuration, 1);
-      const delay = 35 + (140 - 35) * easeOutCubic(p); // ~35ms → ~140ms
-
-      setTimeout(fastPhase, delay);
-    }
-
-    function startSlowPhase(idx){
-      if(idx >= slowSequence.length){
-        // Resultado final
-        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-        brawlerImg.className = "finalGlow";
-        confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-        return;
-      }
-      const name = allBrawlers[slowSequence[idx]];
-      brawlerImg.src = brawlerCache[name].src;
-      brawlerImg.className = "finalGlow"; // más intenso al ir lento
-
-      const stepDelay = slowDuration / finalSlowSteps; // repartir en 2s
-      setTimeout(()=>startSlowPhase(idx+1), stepDelay);
-    }
-
-    // Inicia
-    fastPhase();
+  // Secuencia final de frenado que termina en finalIndex
+  const slowSequence = [];
+  for(let i = finalSlowSteps-1; i >= 0; i--){
+    slowSequence.push((finalIndex - i + numBrawlers) % numBrawlers);
   }
+
+  let currentIndex = 0;
+  let step = 0;
+  const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
+  const t0 = performance.now();
+
+  function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
+
+  function fastPhase(){
+    const now = performance.now();
+    const elapsed = now - t0;
+
+    if(elapsed >= fastDuration){
+      // Saltamos directamente al inicio de la secuencia lenta
+      startSlowPhase(0);
+      return;
+    }
+
+    // Avanzar índice y pintar
+    const name = allBrawlers[currentIndex % numBrawlers];
+    brawlerImg.src = brawlerCache[name].src;
+    brawlerImg.className = glowClasses[step % glowClasses.length];
+
+    currentIndex++;
+    step++;
+
+    // Velocidad: empieza muy rápido y se va ralentizando un poco
+    const p = Math.min(elapsed / fastDuration, 1);
+    const delay = 35 + (140 - 35) * easeOutCubic(p); // ~35ms → ~140ms
+
+    setTimeout(fastPhase, delay);
+  }
+
+  function startSlowPhase(idx){
+    if(idx >= slowSequence.length){
+      // Resultado final → SIEMPRE verde
+      brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
+      brawlerImg.className = "glow-green";
+      confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+      return;
+    }
+
+    const name = allBrawlers[slowSequence[idx]];
+    brawlerImg.src = brawlerCache[name].src;
+
+    // Alterna glow como en la fase rápida
+    brawlerImg.className = glowClasses[(step + idx) % glowClasses.length];
+
+    const stepDelay = slowDuration / finalSlowSteps; // repartir en 2s
+    setTimeout(()=>startSlowPhase(idx+1), stepDelay);
+  }
+
+  // Inicia
+  fastPhase();
+    }
 
   /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
