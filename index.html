@@ -248,52 +248,64 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== RUELTA ULTRA REALISTA ===== */
-  function spinRouletteParametrizable({
-      totalDuration = 6000,
-      preSlowDuration = 3000,
-      lastSteps = 6
-  } = {}){
-      const finalIndex = getDailyIndex(allBrawlers.length);
-      const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-      const startTime = performance.now();
-      let lastGlow = -1;
-      function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
-      function animate(){
-          const now = performance.now();
-          const elapsed = now - startTime;
-          let progress;
-          if(elapsed < preSlowDuration){
-              progress = (elapsed / preSlowDuration) * 0.7;
-          } else {
-              const slowElapsed = elapsed - preSlowDuration;
-              const slowT = Math.min(slowElapsed / (totalDuration - preSlowDuration), 1);
-              progress = 0.7 + easeOutCubic(slowT) * 0.3;
-          }
-          const totalSpins = 8;
-          const index = Math.floor(progress * totalSpins * allBrawlers.length) % allBrawlers.length;
-          brawlerImg.src = brawlerCache[allBrawlers[index]].src;
+  function spinRouletteProgresiva({
+    totalDuration = 7000,       // Duración total de la animación
+    fastPhaseRatio = 0.6,       // % de duración fase rápida
+    lastSteps = 6               // últimos brawlers a ralentizar
+} = {}) {
+    const finalIndex = getDailyIndex(allBrawlers.length);
+    const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
+    const startTime = performance.now();
+    let lastGlowStep = -1;
 
-          const slowElapsed = Math.max(elapsed - preSlowDuration, 0);
-          if(slowElapsed > 0){
-              const stepDuration = (totalDuration - preSlowDuration) / lastSteps;
-              const step = Math.floor(slowElapsed / stepDuration);
-              if(step !== lastGlow && step < lastSteps){
-                  brawlerImg.classList.remove(...glowClasses);
-                  brawlerImg.classList.add(glowClasses[step % glowClasses.length]);
-                  lastGlow = step;
-              }
-          }
+    function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
 
-          if(elapsed < totalDuration){
-              requestAnimationFrame(animate);
-          } else {
-              brawlerImg.classList.remove(...glowClasses);
-              brawlerImg.classList.add("glow-green");
-              brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-              confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-          }
-      }
-      animate();
+    function animate() {
+        const now = performance.now();
+        const elapsed = now - startTime;
+        let progress;
+
+        const fastDuration = totalDuration * fastPhaseRatio;
+        const slowDuration = totalDuration - fastDuration;
+
+        if(elapsed < fastDuration){
+            // fase rápida lineal
+            progress = (elapsed / fastDuration) * fastPhaseRatio;
+        } else {
+            // fase de frenado progresivo
+            const slowElapsed = elapsed - fastDuration;
+            const slowT = Math.min(slowElapsed / slowDuration, 1);
+            progress = fastPhaseRatio + easeOutCubic(slowT) * (1 - fastPhaseRatio);
+        }
+
+        const totalSpins = 8; // vueltas completas
+        const index = Math.floor(progress * totalSpins * allBrawlers.length) % allBrawlers.length;
+        brawlerImg.src = brawlerCache[allBrawlers[index]].src;
+
+        // Glow dinámico en últimos pasos
+        if(elapsed >= fastDuration){
+            const stepDuration = slowDuration / lastSteps;
+            const step = Math.floor((elapsed - fastDuration) / stepDuration);
+            if(step !== lastGlowStep && step < lastSteps){
+                brawlerImg.classList.remove(...glowClasses);
+                brawlerImg.classList.add(glowClasses[step % glowClasses.length]);
+                lastGlowStep = step;
+            }
+        }
+
+        if(elapsed < totalDuration){
+            requestAnimationFrame(animate);
+        } else {
+            // Glow final verde fijo
+            brawlerImg.classList.remove(...glowClasses);
+            brawlerImg.classList.add("glow-green");
+            brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
+            confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+        }
+    }
+
+    animate();
+                                         
   }
 
   /* ===== BOTONES ===== */
