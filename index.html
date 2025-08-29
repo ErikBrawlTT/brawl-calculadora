@@ -108,16 +108,17 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 </div>
 </div>
 
-<script type="module">
+  <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
     'https://ttkneykkrkbajymzsgcr.supabase.co',
-    'TU_API_KEY_AQUI'
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
   );
   const PAGE_ID = 'pagina1';
 
+  /* ===== ELEMENTOS ===== */
   const calcBtn = document.getElementById('calcBtn');
   const clearBtn = document.getElementById('clearBtn');
   const shareBtn = document.getElementById('shareBtn');
@@ -127,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoClose = document.getElementById('infoClose');
   const brawlerImg = document.getElementById('brawlerImg');
 
+  /* ===== UTILIDADES ===== */
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
           o = ctx.createOscillator(),
@@ -136,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
+  /* ===== CONTADORES METRICAS ===== */
   async function cargarMetricas(){
     const { data, error } = await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id', PAGE_ID).single();
     if (!error && data){
@@ -145,8 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   async function incrementarVisita(){
-    try{ await supabase.rpc('increment_visitas',{pid: PAGE_ID}); await cargarMetricas(); }
-    catch(e){ console.error(e); }
+    try{
+      await supabase.rpc('increment_visitas',{pid: PAGE_ID});
+      await cargarMetricas();
+    }catch(e){ console.error(e); }
   }
   function animateCounter(id, value){
     const el = document.getElementById(id);
@@ -162,12 +167,14 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(step);
   }
 
-  /* ===== BRAWLERS Y CACHE ===== */
+  /* ===== BRAWLERS ===== */
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
+  let chart;
+
+  /* ===== Pre-carga de imágenes ===== */
   const brawlerCache = {};
   allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
-  let chart;
 
   /* ===== CALCULAR ===== */
   function calcular(){
@@ -206,8 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
-    
-    spinRouletteSmooth();
   }
 
   /* ===== LIMPIAR ===== */
@@ -217,10 +222,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("calcForm").reset();
     document.getElementById("resultado").innerText="Valor total: 0 🪙";
     if(chart) chart.destroy();
-    brawlerImg.className = "";
   }
 
-  /* ===== SPIN SUAVE CON FRENADO Y GLOW DINÁMICO ===== */
+  /* ===== COMPARTIR ===== */
+  async function share(){
+    beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
+    const url = window.location.href;
+    const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
+    if(navigator.share){
+      try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
+      catch(err){console.log(err);}
+    } else { alert("Tu navegador no soporta compartir nativo."); }
+  }
+
+  /* ===== BRAWLER DEL DIA ===== */
   function getDailyIndex(max){
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
@@ -232,72 +247,71 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-  function spinRouletteSmooth(){
-    const finalIndex = getDailyIndex(allBrawlers.length);
-    const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-    const totalDuration = 6000;
-    const slowDownDuration = 3000;
-    const startTime = performance.now();
-    let lastGlow = -1;
+  /* ===== RUELTA ULTRA REALISTA ===== */
+  function spinRouletteParametrizable({
+      totalDuration = 6000,
+      preSlowDuration = 3000,
+      lastSteps = 6
+  } = {}){
+      const finalIndex = getDailyIndex(allBrawlers.length);
+      const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
+      const startTime = performance.now();
+      let lastGlow = -1;
+      function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+      function animate(){
+          const now = performance.now();
+          const elapsed = now - startTime;
+          let progress;
+          if(elapsed < preSlowDuration){
+              progress = (elapsed / preSlowDuration) * 0.7;
+          } else {
+              const slowElapsed = elapsed - preSlowDuration;
+              const slowT = Math.min(slowElapsed / (totalDuration - preSlowDuration), 1);
+              progress = 0.7 + easeOutCubic(slowT) * 0.3;
+          }
+          const totalSpins = 8;
+          const index = Math.floor(progress * totalSpins * allBrawlers.length) % allBrawlers.length;
+          brawlerImg.src = brawlerCache[allBrawlers[index]].src;
 
-    function animate(){
-      const now = performance.now();
-      const elapsed = now - startTime;
-      const t = Math.min(elapsed / totalDuration, 1);
+          const slowElapsed = Math.max(elapsed - preSlowDuration, 0);
+          if(slowElapsed > 0){
+              const stepDuration = (totalDuration - preSlowDuration) / lastSteps;
+              const step = Math.floor(slowElapsed / stepDuration);
+              if(step !== lastGlow && step < lastSteps){
+                  brawlerImg.classList.remove(...glowClasses);
+                  brawlerImg.classList.add(glowClasses[step % glowClasses.length]);
+                  lastGlow = step;
+              }
+          }
 
-      let progress;
-      if(elapsed < totalDuration - slowDownDuration){
-        progress = elapsed / (totalDuration - slowDownDuration);
-      } else {
-        const slowElapsed = elapsed - (totalDuration - slowDownDuration);
-        const slowT = slowElapsed / slowDownDuration;
-        progress = 1 - Math.pow(1 - slowT, 3);
+          if(elapsed < totalDuration){
+              requestAnimationFrame(animate);
+          } else {
+              brawlerImg.classList.remove(...glowClasses);
+              brawlerImg.classList.add("glow-green");
+              brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
+              confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+          }
       }
-
-      const totalSpins = 8;
-      const index = Math.floor(progress * totalSpins * allBrawlers.length) % allBrawlers.length;
-      brawlerImg.src = brawlerCache[allBrawlers[index]].src;
-
-      if(elapsed >= totalDuration - slowDownDuration){
-        const step = Math.floor((elapsed - (totalDuration - slowDownDuration)) / (slowDownDuration / 4));
-        if(step !== lastGlow && step < 4){
-          brawlerImg.classList.remove(...glowClasses);
-          brawlerImg.classList.add(glowClasses[step]);
-          lastGlow = step;
-        }
-      }
-
-      if(elapsed < totalDuration){
-        requestAnimationFrame(animate);
-      } else {
-        brawlerImg.classList.remove(...glowClasses);
-        brawlerImg.classList.add("glow-green");
-        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-        confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-      }
-    }
-
-    animate();
+      animate();
   }
 
   /* ===== BOTONES ===== */
-  calcBtn.addEventListener('click', calcular);
+  calcBtn.addEventListener('click', () => { 
+      beep(520); vibrar(80); 
+      calcular(); 
+      spinRouletteParametrizable({totalDuration:7000, preSlowDuration:4000, lastSteps:6}); 
+  });
   clearBtn.addEventListener('click', limpiar);
-  spinBtn.addEventListener('click', spinRouletteSmooth);
+  shareBtn.addEventListener('click', share);
+  spinBtn.addEventListener('click', () => { 
+      beep(520); vibrar(80); 
+      spinRouletteParametrizable({totalDuration:7000, preSlowDuration:4000, lastSteps:6}); 
+  });
   infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
   infoClose.addEventListener('click', ()=> infoModal.style.display='none');
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
-
-  async function share(){
-    beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
-    const url = window.location.href;
-    const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-    if(navigator.share){
-      try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
-      catch(err){console.log(err);}
-    } else { alert("Tu navegador no soporta compartir nativo."); }
-  }
 
   /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
@@ -307,6 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
   brawlerImg.className = "finalGlow";
 
 });
-</script>
-</body>
+  </script>
+  </body>
 </html>
