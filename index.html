@@ -104,7 +104,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
     </div>
   </div>
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
   );
   const PAGE_ID = 'pagina1';
 
+  /* ===== ELEMENTOS ===== */
   const calcBtn = document.getElementById('calcBtn');
   const clearBtn = document.getElementById('clearBtn');
   const shareBtn = document.getElementById('shareBtn');
@@ -126,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
 
+  /* ===== UTILIDADES ===== */
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
           o = ctx.createOscillator(),
@@ -135,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
+  /* ===== CONTADORES METRICAS ===== */
   async function cargarMetricas(){
     const { data, error } = await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id', PAGE_ID).single();
     if (!error && data){
@@ -143,28 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
       animateCounter('dislikes-counter', data.dislikes);
     }
   }
-
   async function incrementarVisita(){
     try{
       await supabase.rpc('increment_visitas',{pid: PAGE_ID});
       await cargarMetricas();
     }catch(e){ console.error(e); }
   }
-
-  async function incrementarLikes(){
-    try{
-      await supabase.rpc('increment_likes',{pid: PAGE_ID});
-      await cargarMetricas();
-    }catch(e){ console.error(e); }
-  }
-
-  async function incrementarDislikes(){
-    try{
-      await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
-      await cargarMetricas();
-    }catch(e){ console.error(e); }
-  }
-
   function animateCounter(id, value){
     const el = document.getElementById(id);
     let start = parseInt(el.innerText)||0;
@@ -179,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(step);
   }
 
+  /* ===== BOTONES ===== */
   calcBtn.addEventListener('click', () => { 
     beep(520); vibrar(80); 
     calcular(); 
@@ -199,15 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
 
-  likesCounter.addEventListener('click', () => { beep(400); vibrar(); incrementarLikes(); });
-  dislikesCounter.addEventListener('click', () => { beep(300); vibrar(); incrementarDislikes(); });
-
+  /* ===== BRAWLERS ===== */
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
+
   const brawlerCache = {};
   allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
 
+  /* ===== CALCULAR ===== */
   function calcular(){
     beep(600); vibrar();
     calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
@@ -254,15 +242,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('centerDiamond').style.display="block";
   }
 
+  /* ===== LIMPIAR ===== */
   function limpiar(){
     beep(300); vibrar();
     clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
     document.getElementById("calcForm").reset();
     document.getElementById("resultado").innerText="Valor total: 0 🪙";
     if(chart) chart.destroy();
-    brawlerImg.className = "";
+    brawlerImg.className = ""; // reinicia glow
   }
 
+  /* ===== COMPARTIR ===== */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
@@ -273,6 +263,50 @@ document.addEventListener('DOMContentLoaded', () => {
     } else { alert("Tu navegador no soporta compartir nativo."); }
   }
 
+  /* ===== VOTO ÚNICO POR USUARIO (like/dislike) ===== */
+  function getUserVote() {
+    return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}');
+  }
+
+  function setUserVote(vote) {
+    localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote));
+  }
+
+  likesCounter.addEventListener('click', async () => {
+    beep(400); vibrar();
+    let vote = getUserVote();
+    if(vote.type === 'like'){
+      vote = {};
+      await supabase.rpc('decrement_likes',{pid: PAGE_ID});
+    } else {
+      if(vote.type === 'dislike'){
+        await supabase.rpc('decrement_dislikes',{pid: PAGE_ID});
+      }
+      vote = { type: 'like' };
+      await supabase.rpc('increment_likes',{pid: PAGE_ID});
+    }
+    setUserVote(vote);
+    cargarMetricas();
+  });
+
+  dislikesCounter.addEventListener('click', async () => {
+    beep(300); vibrar();
+    let vote = getUserVote();
+    if(vote.type === 'dislike'){
+      vote = {};
+      await supabase.rpc('decrement_dislikes',{pid: PAGE_ID});
+    } else {
+      if(vote.type === 'like'){
+        await supabase.rpc('decrement_likes',{pid: PAGE_ID});
+      }
+      vote = { type: 'dislike' };
+      await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
+    }
+    setUserVote(vote);
+    cargarMetricas();
+  });
+
+  /* ===== BRAWLER DEL DIA ===== */
   function getDailyIndex(max){
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
@@ -284,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
+  /* ===== RULETA ===== */
   function spinRouletteSmooth(){
     const numBrawlers = allBrawlers.length;
     const finalIndex = getDailyIndex(numBrawlers);
@@ -340,13 +375,14 @@ document.addEventListener('DOMContentLoaded', () => {
     fastPhase();
   }
 
+  /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
   incrementarVisita();
   const dailyIdx = getDailyIndex(allBrawlers.length);
   brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
   brawlerImg.className = "finalGlow";
 });
-  </script>
+</script>
 </body>
 </html>
   
