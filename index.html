@@ -156,7 +156,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 </div>
 </div>
 <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+          import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
@@ -243,25 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
-  /* PRE-CARGA IMÁGENES */
+  /* CACHE DE IMÁGENES */
   const brawlerCache = {};
-  let brawlersReady = false;
-  function precargarBrawlers(onComplete){
-    let cargadas = 0;
-    allBrawlers.forEach(name => {
-      const img = new Image();
-      img.src = baseURL + name + ".png";
-      img.onload = () => {
-        cargadas++;
-        if(cargadas === allBrawlers.length){
-          brawlersReady = true;
-          if(onComplete) onComplete();
-        }
-      };
-      brawlerCache[name] = img;
-    });
-  }
-  precargarBrawlers(() => console.log("✅ Todas las imágenes cargadas"));
 
   /* CALCULAR */
   function calcular(){
@@ -342,15 +325,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-  /* RUEDA CON FRENADO VISUAL */
+  /* ===== RUEDA CON FRENADO Y GLOW FINAL ===== */
   function spinRouletteFrenado(){
-    if(!brawlersReady) return alert("⏳ Las imágenes aún se están cargando.");
-
     const finalIndex = getDailyIndex(allBrawlers.length);
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-    const totalFrames = 320; // aprox 7s
+    const totalFrames = 320; // ~7s
     const spinFastFrames = 250; // primeros 5s
-    const spinSlowFrames = totalFrames - spinFastFrames; // últimos 2s
+    const spinSlowFrames = totalFrames - spinFastFrames;
     let frame = 0;
 
     function animate(){
@@ -358,12 +339,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if(frame < spinFastFrames){
         idx = Math.floor(Math.random() * allBrawlers.length);
       } else {
-        const t = (frame - spinFastFrames) / spinSlowFrames;const eased = 1 - Math.pow(1 - t, 5); // easing quint para frenado
-        const slowIndex = Math.floor(eased * allBrawlers.length);
+        const t = (frame - spinFastFrames) / spinSlowFrames;
+        const eased = 1 - Math.pow(1 - t, 5);
+        const slowIndex =const slowIndex = Math.floor(eased * allBrawlers.length);
         idx = (slowIndex + finalIndex) % allBrawlers.length;
       }
 
-      // Glow progresivo últimos frames
+      // Glow últimos frames
       if(frame >= spinFastFrames){
         const glowStep = Math.floor((frame - spinFastFrames) / (spinSlowFrames/4));
         brawlerImg.classList.remove(...glowClasses);
@@ -372,7 +354,15 @@ document.addEventListener('DOMContentLoaded', () => {
         brawlerImg.classList.remove(...glowClasses);
       }
 
-      brawlerImg.src = brawlerCache[allBrawlers[idx]].src;
+      // Mostrar imagen desde cache si existe, si no cargarla
+      if(brawlerCache[allBrawlers[idx]]){
+        brawlerImg.src = brawlerCache[allBrawlers[idx]].src;
+      } else {
+        brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+        const img = new Image();
+        img.src = brawlerImg.src;
+        brawlerCache[allBrawlers[idx]] = img;
+      }
 
       frame++;
       if(frame <= totalFrames){
@@ -381,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ajuste final
         brawlerImg.classList.remove(...glowClasses);
         brawlerImg.classList.add(glowClasses[3]); // glow verde final
-        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
+        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]]?.src || baseURL + allBrawlers[finalIndex] + ".png";
       }
     }
 
