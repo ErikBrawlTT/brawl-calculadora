@@ -276,25 +276,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-/* ===== RULETA 7s + FRENADO DE 6 BRAWLERS ===== */
+/* ===== RULETA 7s + FRENADO VISUAL CON TODOS LOS BRAWLERS ===== */
 function spinRouletteSmooth(){
   const numBrawlers = allBrawlers.length;
   const finalIndex = getDailyIndex(numBrawlers);
 
-  const totalDuration = 7000;        // 7s totales
-  const slowDuration  = 2000;        // últimos 2s: frenado visible
+  const totalDuration = 7000;  // 7s totales
+  const slowDuration  = 2000;  // últimos 2s: frenado visible
   const fastDuration  = totalDuration - slowDuration;
 
   const finalSlowSteps = Math.min(6, numBrawlers); // 6 brawlers lentos
 
-  // Secuencia final de frenado que termina en finalIndex
-  const slowSequence = [];
-  for(let i = finalSlowSteps-1; i >= 0; i--){
-    slowSequence.push((finalIndex - i + numBrawlers) % numBrawlers);
-  }
+  // Crear array con todos los índices
+  const indices = Array.from({length: numBrawlers}, (_, i) => i);
+  
+  // Mezclamos el array para que el orden sea diferente cada vez
+  const shuffled = indices.sort(() => Math.random() - 0.5);
 
-  let currentIndex = 0;
-  let step = 0;
+  let currentStep = 0;
   const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
   const t0 = performance.now();
 
@@ -305,28 +304,25 @@ function spinRouletteSmooth(){
     const elapsed = now - t0;
 
     if(elapsed >= fastDuration){
-      // Saltamos directamente al inicio de la secuencia lenta
+      // Saltamos a la fase lenta
       startSlowPhase(0);
       return;
     }
 
-    // Avanzar índice y pintar
-    const name = allBrawlers[currentIndex % numBrawlers];
+    // Índice de brawler mezclado
+    const name = allBrawlers[shuffled[currentStep % numBrawlers]];
     brawlerImg.src = brawlerCache[name].src;
-    brawlerImg.className = glowClasses[step % glowClasses.length];
+    brawlerImg.className = glowClasses[currentStep % glowClasses.length];
 
-    currentIndex++;
-    step++;
+    currentStep++;
 
-    // Velocidad: empieza muy rápido y se va ralentizando un poco
     const p = Math.min(elapsed / fastDuration, 1);
-    const delay = 35 + (140 - 35) * easeOutCubic(p); // ~35ms → ~140ms
-
+    const delay = 35 + (140 - 35) * easeOutCubic(p); // misma velocidad que antes
     setTimeout(fastPhase, delay);
   }
 
   function startSlowPhase(idx){
-    if(idx >= slowSequence.length){
+    if(idx >= finalSlowSteps){
       // Resultado final → SIEMPRE verde
       brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
       brawlerImg.className = "glow-green";
@@ -334,19 +330,29 @@ function spinRouletteSmooth(){
       return;
     }
 
-    const name = allBrawlers[slowSequence[idx]];
+    // Tomamos brawler de la secuencia mezclada para los 5 primeros
+    let name;
+    if(idx < finalSlowSteps - 1){
+      // Evitamos que sea el finalIndex
+      let i = 0;
+      do { i = Math.floor(Math.random() * numBrawlers); } while(i === finalIndex);
+      name = allBrawlers[i];
+      brawlerImg.className = glowClasses[(currentStep + idx) % glowClasses.length];
+    } else {
+      // Último → brawler del día verde
+      name = allBrawlers[finalIndex];
+      brawlerImg.className = "glow-green";
+    }
+
     brawlerImg.src = brawlerCache[name].src;
 
-    // Alterna glow como en la fase rápida
-    brawlerImg.className = glowClasses[(step + idx) % glowClasses.length];
-
-    const stepDelay = slowDuration / finalSlowSteps; // repartir en 2s
-    setTimeout(()=>startSlowPhase(idx+1), stepDelay);
+    const stepDelay = slowDuration / finalSlowSteps;
+    setTimeout(() => startSlowPhase(idx + 1), stepDelay);
   }
 
-  // Inicia
   fastPhase();
-    }
+                               
+}
 
   /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
