@@ -266,46 +266,41 @@ function spinRouletteSmooth(){
   const finalIndex = getDailyIndex(allBrawlers.length);
   const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
   const totalDuration = 6000; // 6 segundos en total
-  const slowDownDuration = 2000; // últimos 2s para frenar
   const startTime = performance.now();
   let lastGlow = -1;
+
+  function easeOutQuint(x) {
+    return 1 - Math.pow(1 - x, 5);
+  }
 
   function animate(){
     const now = performance.now();
     const elapsed = now - startTime;
     const t = Math.min(elapsed / totalDuration, 1);
 
-    // Fase 1: rápida (0–4s), Fase 2: frenado (últimos 2s)
-    let progress;
-    if(elapsed < totalDuration - slowDownDuration){
-      // Lineal en la parte rápida
-      progress = elapsed / (totalDuration - slowDownDuration);
-    } else {
-      // Desaceleración suave en los últimos 2s
-      const slowElapsed = elapsed - (totalDuration - slowDownDuration);
-      const slowT = slowElapsed / slowDownDuration;
-      progress = 1 - Math.pow(1 - slowT, 3); // easing cúbico
-    }
+    // Easing suave: rápido al inicio, lento al final
+    const easedProgress = easeOutQuint(t);
 
-    // Calcular índice actual
-    const totalSpins = 8; // vueltas completas antes de parar
-    const index = Math.floor(progress * totalSpins * allBrawlers.length) % allBrawlers.length;
+    // Número de vueltas completas antes de parar
+    const totalSpins = 6; 
+    const index = Math.floor(easedProgress * totalSpins * allBrawlers.length) % allBrawlers.length;
     brawlerImg.src = brawlerCache[allBrawlers[index]].src;
 
-    // Glow SOLO en los últimos 4 brawlers antes de parar
-    if(elapsed >= totalDuration - slowDownDuration){
-      const step = Math.floor((elapsed - (totalDuration - slowDownDuration)) / (slowDownDuration / 4));
-      if(step !== lastGlow && step < 4){
+    // Glow en los últimos 15% del giro
+    const remaining = 1 - easedProgress;
+    if (remaining < 0.15) {
+      const step = Math.floor((0.15 - remaining) / 0.0375); // 4 fases de glow
+      if (step !== lastGlow && step < 4) {
         brawlerImg.classList.remove(...glowClasses);
         brawlerImg.classList.add(glowClasses[step]);
         lastGlow = step;
       }
     }
 
-    if(elapsed < totalDuration){
+    if (t < 1) {
       requestAnimationFrame(animate);
     } else {
-      // Resultado final con glow fijo
+      // Resultado final con glow verde
       brawlerImg.classList.remove(...glowClasses);
       brawlerImg.classList.add("glow-green");
       brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
@@ -315,7 +310,7 @@ function spinRouletteSmooth(){
   }
 
   animate();
-  }
+      }
   /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
   incrementarVisita();
