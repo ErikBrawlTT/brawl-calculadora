@@ -57,6 +57,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 .segmentGlowRed { box-shadow:0 0 15px 4px #FF073A; }
 .segmentGlowOrange { box-shadow:0 0 15px 4px #FFA500; }
 .segmentGlowGreen { box-shadow:0 0 15px 4px #00FF00; }
+/* ===== Glows ruleta ===== */
 .glow-blue { box-shadow: 0 0 25px #00f, 0 0 50px #00f, 0 0 75px #00f, 0 0 100px #00CFFF; animation: glow-blue 3s infinite alternate; }
 .glow-red  { box-shadow: 0 0 20px #f00, 0 0 40px #f00, 0 0 60px #f00; animation: glow-red 3s infinite alternate; }
 .glow-orange { box-shadow: 0 0 20px #f90, 0 0 40px #f90, 0 0 60px #f90; animation: glow-orange 3s infinite alternate; }
@@ -69,49 +70,56 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 </head>
 <body>
 <div class="container">
-<h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
-<form id="calcForm">
-<label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
-<label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
-<label>💚 Raras: <input type="number" id="raras" value="0"></label>
-<label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
-<label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
-<label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
-<label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
-<label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
-<button type="button" id="infoBtn">INFO</button>
-</form>
-<div id="resultado">Valor total: 0 🪙</div>
-<div class="buttons">
-<button id="calcBtn">Calcular</button>
-<button id="clearBtn">Limpiar</button>
-</div>
-<button id="shareBtn">📤 Compartir</button>
-<button id="spinBtn">🎲 Girar Brawler</button>
-<div class="metric-container">
-<div class="metric visitas"><span class="icon">👀</span><div class="box" id="visitas-counter">0</div></div>
-<div class="metric likes"><span class="icon">👍</span><div class="box" id="likes-counter">0</div></div>
-<div class="metric dislikes"><span class="icon">👎</span><div class="box" id="dislikes-counter">0</div></div>
-</div>
-<div style="position:relative; display:inline-block;">
-<canvas id="myChart" width="400" height="400"></canvas>
-<div id="centerDiamond">
-<img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
-</div>
-</div>
-<div id="infoModal">
-<div class="content">
-<span id="infoClose">×</span>
-<h3>Información</h3>
-<p>Hola BRAWLER, esta es la calculadora que siempre has soñado probar.</p>
-<p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que has utilizado.</p>
-<p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins (en la tienda del juego en cada modalidad de skins te sale el total).</p>
-<p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas, sabrás el valor aproximado de tu cuenta.</p>
-<p>- 🎲 Interactua: ¡Gira y juega! Este es tu Brawler del dia,aparecera dentro de un glow🟢! vuelve mañana sera otro🎯.</p>
-<p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
-</div>
-</div>
-<script type="module">
+  <h1><span class="diamond">⭐</span> Calculadora Brawl Stars <span class="diamond">⭐</span></h1>
+
+  <form id="calcForm">
+    <label>🎟️ Brawl Pass: <input type="number" id="bpass" value="0"></label>
+    <label>🩵 Comunes: <input type="number" id="comunes" value="0"></label>
+    <label>💚 Raras: <input type="number" id="raras" value="0"></label>
+    <label>💜 Épicas: <input type="number" id="epicas" value="0"></label>
+    <label>❤️ Míticas: <input type="number" id="miticas" value="0"></label>
+    <label>🌟 Legendarias: <input type="number" id="legendarias" value="0"></label>
+    <label>⚡ Hipercarga: <input type="number" id="hipercarga" value="0"></label>
+    <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
+    <button type="button" id="infoBtn">INFO</button>
+  </form>
+
+  <div id="resultado">Valor total: 0 🪙</div>
+
+  <div class="buttons">
+    <button id="calcBtn">Calcular</button>
+    <button id="clearBtn">Limpiar</button>
+  </div>
+
+  <button id="shareBtn">📤 Compartir</button>
+  <button id="spinBtn">🎲 Girar Brawler</button>
+
+  <div class="metric-container">
+    <div class="metric visitas"><span class="icon">👀</span><div class="box" id="visitas-counter">0</div></div>
+    <div class="metric likes"><span class="icon">👍</span><div class="box" id="likes-counter">0</div></div>
+    <div class="metric dislikes"><span class="icon">👎</span><div class="box" id="dislikes-counter">0</div></div>
+  </div>
+
+  <div style="position:relative; display:inline-block;">
+    <canvas id="myChart" width="400" height="400"></canvas>
+    <div id="centerDiamond">
+      <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
+    </div>
+  </div>
+
+  <div id="infoModal">
+    <div class="content">
+      <span id="infoClose">×</span>
+      <h3>Información</h3>
+      <p>Hola BRAWLER, esta es la calculadora que siempre has soñado probar.</p>
+      <p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que has utilizado.</p>
+      <p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins (en la tienda del juego en cada modalidad de skins te sale el total).</p>
+      <p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas, sabrás el valor aproximado de tu cuenta.</p>
+      <p>- 🎲 Interactua: ¡Gira y juega! Este es tu Brawler del dia,aparecera dentro de un glow🟢! vuelve mañana sera otro🎯.</p>
+      <p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
+    </div>
+  </div>
+  <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -179,8 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
   infoClose.addEventListener('click', ()=> infoModal.style.display='none');
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
-
-  /* ===== BRAWLERS ===== */
+  /* ===== BRAWLERS (lista amplia) ===== */
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
@@ -203,7 +210,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const hipercarga = Number(document.getElementById("hipercarga").value)||0;
     const maxeados = Number(document.getElementById("maxeados").value)||0;
 
-    const valores={"🎟️ Brawl Pass":bpass*10,"🩵 Comunes":comunes*2,"💚 Raras":raras*5,"💜 Épicas":epicas*10,"❤️ Míticas":miticas*12,"🌟 Legendarias":legendarias*15,"⚡ Hipercarga":hipercarga*20,"🔥 Maxeados":maxeados*50};
+    const valores={
+      "🎟️ Brawl Pass":bpass*10,
+      "🩵 Comunes":comunes*2,
+      "💚 Raras":raras*5,
+      "💜 Épicas":epicas*10,
+      "❤️ Míticas":miticas*12,
+      "🌟 Legendarias":legendarias*15,
+      "⚡ Hipercarga":hipercarga*20,
+      "🔥 Maxeados":maxeados*50
+    };
     const total = Object.values(valores).reduce((a,b)=>a+b,0);
 
     const resultadoEl = document.getElementById("resultado");
@@ -247,9 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
       try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
       catch(err){console.log(err);}
     } else { alert("Tu navegador no soporta compartir nativo."); }
-  }
-
-  /* ===== BRAWLER DEL DIA ===== */
+    }
+  /* ===== BRAWLER DEL DIA (respeta tu base) ===== */
   function getDailyIndex(max){
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
@@ -260,77 +275,85 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
     return idx;
   }
-/* ===== SPIN SUAVE CON FRENADO NATURAL Y REBOTE FINAL ===== */
-function spinRouletteSmooth(){
-  const finalIndex = getDailyIndex(allBrawlers.length);
-  const totalSteps = allBrawlers.length * 5; // 5 vueltas completas
-  const finalSlowSteps = Math.min(6, allBrawlers.length); // últimos pasos lentos
-  const minSpeed = 50;  // inicio rápido
-  const maxSpeed = 550; // final lento
-  const reboundSteps = 3; // pasos del rebote final
-  let currentIndex = 0;
-  let step = 0;
 
-  function nextStep(){
-    let brawlerName = allBrawlers[currentIndex % allBrawlers.length];
-    brawlerImg.src = brawlerCache[brawlerName].src;
+  /* ===== RULETA 7s + FRENADO DE 6 BRAWLERS ===== */
+  function spinRouletteSmooth(){
+    const numBrawlers = allBrawlers.length;
+    const finalIndex = getDailyIndex(numBrawlers);
 
-    // Glow adaptativo
-    let glowIntensity;
-    if(step <= totalSteps - finalSlowSteps){
-      glowIntensity = 0.2 + Math.pow(step / (totalSteps - finalSlowSteps), 2) * 0.5;
-    } else {
-      const slowStep = step - (totalSteps - finalSlowSteps);
-      glowIntensity = 0.7 + Math.pow(slowStep / finalSlowSteps, 2) * 0.3;
+    const totalDuration = 7000;        // 7s totales
+    const slowDuration  = 2000;        // últimos 2s: frenado visible
+    const fastDuration  = totalDuration - slowDuration;
+
+    const finalSlowSteps = Math.min(6, numBrawlers); // 6 brawlers lentos
+
+    // Secuencia final de frenado que termina en finalIndex
+    const slowSequence = [];
+    for(let i = finalSlowSteps-1; i >= 0; i--){
+      slowSequence.push((finalIndex - i + numBrawlers) % numBrawlers);
     }
 
-    // Glow visual
+    let currentIndex = 0;
+    let step = 0;
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-    if(step <= totalSteps - finalSlowSteps){
-      brawlerImg.className = glowClasses[step % glowClasses.length];
-    } else {
-      brawlerImg.className = "finalGlow";
-    }
+    const t0 = performance.now();
 
-    currentIndex++;
-    step++;
+    function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
 
-    if(step <= totalSteps){
-      // Velocidad con easing natural
-      let speed;
-      if(step <= totalSteps - finalSlowSteps){
-        speed = minSpeed + (maxSpeed / 3) * Math.pow(step / (totalSteps - finalSlowSteps), 2);
-      } else {
-        const slowStep = step - (totalSteps - finalSlowSteps);
-        speed = (maxSpeed / 3) + (maxSpeed - maxSpeed / 3) * Math.pow(slowStep / finalSlowSteps, 3);
+    function fastPhase(){
+      const now = performance.now();
+      const elapsed = now - t0;
+
+      if(elapsed >= fastDuration){
+        // Saltamos directamente al inicio de la secuencia lenta
+        startSlowPhase(0);
+        return;
       }
-      setTimeout(nextStep, speed);
-    } else if(step <= totalSteps + reboundSteps){
-      // Rebote final: vaivén de 2 pasos antes de detenerse
-      const reboundIndex = finalIndex + ((step - totalSteps) % 2 === 0 ? -1 : 1);
-      brawlerImg.src = brawlerCache[allBrawlers[reboundIndex % allBrawlers.length]].src;
-      brawlerImg.className = "finalGlow";
+
+      // Avanzar índice y pintar
+      const name = allBrawlers[currentIndex % numBrawlers];
+      brawlerImg.src = brawlerCache[name].src;
+      brawlerImg.className = glowClasses[step % glowClasses.length];
+
+      currentIndex++;
       step++;
-      setTimeout(nextStep, 200); // velocidad del rebote
-    } else {
-      // Resultado final definitivo
-      brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-      brawlerImg.className = "finalGlow";
-      confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+
+      // Velocidad: empieza muy rápido y se va ralentizando un poco
+      const p = Math.min(elapsed / fastDuration, 1);
+      const delay = 35 + (140 - 35) * easeOutCubic(p); // ~35ms → ~140ms
+
+      setTimeout(fastPhase, delay);
     }
+
+    function startSlowPhase(idx){
+      if(idx >= slowSequence.length){
+        // Resultado final
+        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
+        brawlerImg.className = "finalGlow";
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+        return;
+      }
+      const name = allBrawlers[slowSequence[idx]];
+      brawlerImg.src = brawlerCache[name].src;
+      brawlerImg.className = "finalGlow"; // más intenso al ir lento
+
+      const stepDelay = slowDuration / finalSlowSteps; // repartir en 2s
+      setTimeout(()=>startSlowPhase(idx+1), stepDelay);
+    }
+
+    // Inicia
+    fastPhase();
   }
 
-  nextStep();
-    }
-
-/* ===== INICIALIZACIÓN ===== */
-cargarMetricas();
-incrementarVisita();
-// mostrar brawler inicial
-const dailyIdx = getDailyIndex(allBrawlers.length);
-brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
-brawlerImg.className = "finalGlow";
-   });
+  /* ===== INICIALIZACIÓN ===== */
+  cargarMetricas();
+  incrementarVisita();
+  // Mostrar brawler inicial del día
+  const dailyIdx = getDailyIndex(allBrawlers.length);
+  brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
+  brawlerImg.className = "finalGlow";
+}); // DOMContentLoaded
 </script>
 </body>
 </html>
+  
