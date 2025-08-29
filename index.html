@@ -38,7 +38,7 @@ button.flash { box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff; transition
 .metric .box { background: rgba(0,0,0,0.7); padding: 8px 18px; border-radius: 12px; min-width: 70px; text-align: center; font-weight: 700; user-select: none; transition: all 0.2s ease; cursor:pointer; }
 .metric.visitas .box { border: 2px solid #00CFFF; color: #00CFFF; box-shadow:0 0 10px #00CFFF,0 0 20px #00CFFF;}
 .metric.likes .box { border: 2px solid #39ff14; color: #39ff14; box-shadow:0 0 10px #39ff14,0 0 20px #39ff14;}
-.metric.dislikes .box { border: 2px solid #FF073A; color: #FF073A; box-shadow:0 0 10px #FF073A,0 0 20px #FF073A;}
+.metric.dislikes .box { border:2px solid #FF073A; color:#FF073A; box-shadow:0 0 10px #FF073A,0 0 20px #FF073A;}
 /* ==== CANVAS Y BRAWLER ==== */
 canvas{ margin-top:15px; max-width:400px; position:relative; }
 #centerDiamond { position: absolute; top: 43%; left: 50%; transform: translate(-50%, -50%); display: block; }
@@ -96,287 +96,275 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 <div style="position:relative; display:inline-block;">
 <canvas id="myChart" width="400" height="400"></canvas>
 <div id="centerDiamond">
-  <img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
+<img id="brawlerImg" src="" alt="Brawler">
+</div>
 </div>
 <div id="infoModal">
-  <div class="content">
-    <span id="infoClose">×</span>
-    <h3>Información</h3>
-    <p>Hola BRAWLER, esta es la calculadora que siempre has soñado probar.</p>
-    <p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que has utilizado.</p>
-    <p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins (en la tienda del juego en cada modalidad de skins te sale el total).</p>
-    <p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas, sabrás el valor aproximado de tu cuenta.</p>
-    <p>- 🎲 Interactua: ¡Gira y juega! Este es tu Brawler del dia, aparecerá dentro de un glow🟢! vuelve mañana será otro🎯.</p>
-    <p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
-  </div>
+<div class="content">
+<span id="infoClose">×</span>
+<h3>Información</h3>
+<p>Hola BRAWLER, esta es la calculadora que siempre has soñado probar.</p>
+<p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que has utilizado.</p>
+<p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins (en la tienda del juego en cada modalidad de skins te sale el total).</p>
+<p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas, sabrás el valor aproximado de tu cuenta.</p>
+<p>- 🎲 Interactua: ¡Gira y juega! Este es tu Brawler del dia,aparecera dentro de un glow🟢! vuelve mañana sera otro🎯.</p>
+<p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
 </div>
+</div>
+  <script>
+// ==== DATOS BRAWLERS ====
+const allBrawlers = [
+  "Shelly","Colt","Bull","Brock","Rico","Spike","Barley","Jessie","Nita","Dynamike",
+  "El Primo","Mortis","Poco","Bo","Pam","Tara","Gene","Frank","Bibi","Bea",
+  "Emz","Mortis2","MrP","Sprout","Sandy","Byron","Edgar","Ruffs","Belle","Buzz",
+  "Griff","Ash","Janet","Lou","Fang","Meg","Colette","Stu","Jacky","Grom",
+  "Chester","Bonnie","Lou2","Amber","Meg2","Janet2","Buster","Rico2","Surge","Max",
+  "Shelly2","Colt2","Bull2","Brock2","Rico3","Spike2","Barley2","Jessie2","Nita2","Dynamike2",
+  "ElPrimo2","Mortis3","Poco2","Bo2","Pam2","Tara2","Gene2","Frank2","Bibi2","Bea2",
+  "Emz2","Mortis4","MrP2","Sprout2","Sandy2","Byron2","Edgar2","Ruffs2","Belle2","Buzz2",
+  "Griff2","Ash2","Janet3","Lou3","Fang2","Meg3","Colette2","Stu2","Jacky2","Grom2",
+  "Chester2","Bonnie2","Lou4","Amber2","Meg4","Janet4"
+];
 
-<script type="module">
+// ==== CACHE DE IMÁGENES ====
+const brawlerCache = {};
+const brawlerImg = document.getElementById("brawlerImg");
+
+// Pre-cargar imágenes y asegurar que no falte ninguna
+allBrawlers.forEach(name => {
+  const img = new Image();
+  img.src = `img/${name}.png`; // ruta de tus imágenes
+  img.onload = () => brawlerCache[name] = img; // sólo guardar las cargadas
+  img.onerror = () => {
+    console.warn(`Error cargando imagen ${name}`);
+    // fallback a imagen genérica
+    const fallback = new Image();
+    fallback.src = `img/placeholder.png`;
+    brawlerCache[name] = fallback;
+  };
+});
+
+// ==== UTILIDADES ====
+function getDailyIndex(total) {
+  // Brawler del día: siempre el mismo
+  const day = new Date().getDate(); // 1-31
+  return day % total;
+}
+
+// ==== ROULETTE 10s CON FRENADO 6 BRAWLERS ====
+function spinRouletteSmooth(){
+  const numBrawlers = allBrawlers.length;
+  const finalIndex = getDailyIndex(numBrawlers);
+
+  const totalDuration = 10000;  // 10s totales
+  const slowDuration  = 3000;   // últimos 3s: frenado visible
+  const fastDuration  = totalDuration - slowDuration;
+
+  const finalSlowSteps = Math.min(6, numBrawlers); // 6 brawlers lentos
+  const slowSequence = [];
+  for(let i = finalSlowSteps-1; i >= 0; i--){
+    slowSequence.push((finalIndex - i + numBrawlers) % numBrawlers);
+  }
+
+  let currentIndex = 0;
+  let step = 0;
+  const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
+  const t0 = performance.now();
+
+  function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
+
+  function fastPhase(){
+    const now = performance.now();
+    const elapsed = now - t0;
+    if(elapsed >= fastDuration){
+      startSlowPhase(0);
+      return;
+    }
+
+    // Elegir índice alternando brawlers cargados
+    let nextBrawler;
+    let attempts = 0;
+    do {
+      nextBrawler = allBrawlers[currentIndex % numBrawlers];
+      currentIndex++;
+      attempts++;
+    } while(!brawlerCache[nextBrawler] && attempts < numBrawlers);
+
+    brawlerImg.src = brawlerCache[nextBrawler].src;
+    brawlerImg.className = glowClasses[step % glowClasses.length];
+
+    step++;
+    const p = Math.min(elapsed / fastDuration, 1);
+    const delay = 35 + (140 - 35) * easeOutCubic(p); // ~35ms → ~140ms
+    setTimeout(fastPhase, delay);
+  }
+
+  function startSlowPhase(idx){
+    if(idx >= slowSequence.length){
+      // Resultado final
+      const finalBrawler = allBrawlers[finalIndex];
+      brawlerImg.src = brawlerCache[finalBrawler].src;
+      brawlerImg.className = "finalGlow"; // verde intenso
+      confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+      return;
+    }
+
+    const name = allBrawlers[slowSequence[idx]];
+    brawlerImg.src = brawlerCache[name]?.src || 'img/placeholder.png';
+    // Alternar glow en frenado
+    const glowOrder = ["glow-blue","glow-red","glow-orange","glow-green"];
+    brawlerImg.className = idx === slowSequence.length-1 ? "finalGlow" : glowOrder[idx % glowOrder.length];
+
+    const stepDelay = slowDuration / finalSlowSteps; // repartir en 3s
+    setTimeout(()=>startSlowPhase(idx+1), stepDelay);
+  }
+
+  fastPhase();
+}
+
+// ==== BOTÓN SPIN ====
+document.getElementById("spinBtn").addEventListener("click", spinRouletteSmooth);
+
+  <script>
+// ==== METRICAS Y SUPABASE ====
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const supabase = createClient(
-    'https://ttkneykkrkbajymzsgcr.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
-  );
-  const PAGE_ID = 'pagina1';
+const supabase = createClient(
+  'https://ttkneykkrkbajymzsgcr.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
+);
 
-  /* ===== ELEMENTOS ===== */
-  const calcBtn = document.getElementById('calcBtn');
-  const clearBtn = document.getElementById('clearBtn');
-  const shareBtn = document.getElementById('shareBtn');
-  const spinBtn = document.getElementById('spinBtn');
-  const infoBtn = document.getElementById('infoBtn');
-  const infoModal = document.getElementById('infoModal');
-  const infoClose = document.getElementById('infoClose');
-  const brawlerImg = document.getElementById('brawlerImg');
+const PAGE_ID = 'pagina1';
 
-  /* ===== UTILIDADES ===== */
-  function beep(freq){
-    const ctx = new (AudioContext||webkitAudioContext)(),
-          o = ctx.createOscillator(),
-          g = ctx.createGain();
-    o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination);
-    g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15);
+// ==== CONTADORES ====
+async function cargarMetricas(){
+  const { data, error } = await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id', PAGE_ID).single();
+  if (!error && data){
+    animateCounter('visitas-counter', data.visitas);
+    animateCounter('likes-counter', data.likes);
+    animateCounter('dislikes-counter', data.dislikes);
   }
-  function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
+}
 
-  /* ===== CONTADORES METRICAS ===== */
-  async function cargarMetricas(){
-    const { data, error } = await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id', PAGE_ID).single();
-    if (!error && data){
-      animateCounter('visitas-counter', data.visitas);
-      animateCounter('likes-counter', data.likes);
-      animateCounter('dislikes-counter', data.dislikes);
-    }
+async function incrementarVisita(){
+  try{
+    await supabase.rpc('increment_visitas',{pid: PAGE_ID});
+    await cargarMetricas();
+  }catch(e){ console.error(e); }
+}
+
+async function incrementarLike(){
+  try{
+    await supabase.rpc('increment_likes',{pid: PAGE_ID});
+    await cargarMetricas();
+  }catch(e){ console.error(e); }
+}
+
+async function incrementarDislike(){
+  try{
+    await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
+    await cargarMetricas();
+  }catch(e){ console.error(e); }
+}
+
+// ==== ANIMACIÓN CONTADOR ====
+function animateCounter(id, value){
+  const el = document.getElementById(id);
+  let start = parseInt(el.innerText)||0;
+  const end = Number(value)||0;
+  const duration = 800;
+  const t0 = performance.now();
+  function step(t){
+    const p = Math.min((t-t0)/duration,1);
+    el.innerText = Math.floor(start + (end-start)*p);
+    if(p<1) requestAnimationFrame(step);
   }
-  async function incrementarVisita(){
-    try{
-      await supabase.rpc('increment_visitas',{pid: PAGE_ID});
-      await cargarMetricas();
-    }catch(e){ console.error(e); }
+  requestAnimationFrame(step);
+}
+
+// ==== BOTONES METRICAS ====
+document.getElementById("visitas-counter").addEventListener("click", incrementarVisita);
+document.getElementById("likes-counter").addEventListener("click", incrementarLike);
+document.getElementById("dislikes-counter").addEventListener("click", incrementarDislike);
+
+// ==== BOTONES CALCULAR / LIMPIAR / COMPARTIR ====
+const calcBtn = document.getElementById('calcBtn');
+const clearBtn = document.getElementById('clearBtn');
+const shareBtn = document.getElementById('shareBtn');
+
+function beep(freq){
+  const ctx = new (AudioContext||webkitAudioContext)(),
+        o = ctx.createOscillator(),
+        g = ctx.createGain();
+  o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15);
+}
+function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
+
+calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); spinRouletteSmooth(); });
+clearBtn.addEventListener('click', limpiar);
+shareBtn.addEventListener('click', share);
+
+function share(){
+  beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
+  const url = window.location.href;
+  const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
+  if(navigator.share){
+    navigator.share({title:"Calculadora Brawl Stars",text,url}).catch(err=>console.log(err));
+  } else { alert("Tu navegador no soporta compartir nativo."); }
+}
+
+// ==== CALCULAR VALOR TOTAL ====
+function calcular(){
+  beep(600); vibrar();
+  calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
+
+  const bpass = Number(document.getElementById("bpass").value)||0;
+  const comunes = Number(document.getElementById("comunes").value)||0;
+  const raras = Number(document.getElementById("raras").value)||0;
+  const epicas = Number(document.getElementById("epicas").value)||0;
+  const miticas = Number(document.getElementById("miticas").value)||0;
+  const legendarias = Number(document.getElementById("legendarias").value)||0;
+  const hipercarga = Number(document.getElementById("hipercarga").value)||0;
+  const maxeados = Number(document.getElementById("maxeados").value)||0;
+
+  const valores={"🎟️ Brawl Pass":bpass*10,"🩵 Comunes":comunes*2,"💚 Raras":raras*5,"💜 Épicas":epicas*10,"❤️ Míticas":miticas*12,"🌟 Legendarias":legendarias*15,"⚡ Hipercarga":hipercarga*20,"🔥 Maxeados":maxeados*50};
+  const total = Object.values(valores).reduce((a,b)=>a+b,0);
+
+  const resultadoEl = document.getElementById("resultado");
+  let start = parseInt(resultadoEl.innerText.replace(/\D/g,''))||0;
+  const end = total;
+  const duration = 800;
+  const t0 = performance.now();
+  function stepAnim(t){
+    const p = Math.min((t-t0)/duration,1);
+    resultadoEl.innerText = "Valor total: "+Math.floor(start + (end-start)*p)+" 🪙";
+    if(p<1) requestAnimationFrame(stepAnim);
   }
-  function animateCounter(id, value){
-    const el = document.getElementById(id);
-    let start = parseInt(el.innerText)||0;
-    const end = Number(value)||0;
-    const duration = 800;
-    const t0 = performance.now();
-    function step(t){
-      const p = Math.min((t-t0)/duration,1);
-      el.innerText = Math.floor(start + (end-start)*p);
-      if(p<1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
+  requestAnimationFrame(stepAnim);
 
-  /* ===== BOTONES ===== */
-  calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); spinRouletteSmooth(); });
-  clearBtn.addEventListener('click', limpiar);
-  shareBtn.addEventListener('click', share);
-  spinBtn.addEventListener('click', () => { beep(520); vibrar(80); spinRouletteSmooth(); });
-  infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
-  infoClose.addEventListener('click', ()=> infoModal.style.display='none');
-  infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
-  shareBtn.classList.add('pulse');
-  /* ===== BRAWLERS ===== */
-  const allBrawlers = [
-    "elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea",
-    "8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo",
-    "bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck",
-    "clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx",
-    "frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong",
-    "janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis",
-    "ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade",
-    "shelly","sprout","squeak","stu","surge","tick","trunk","willow"
-  ];
-  const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
-  let chart;
+  // Puedes añadir gráfico Chart.js si lo deseas aquí...
+}
 
-  /* ===== Pre-carga segura de imágenes ===== */
-  const brawlerCache = {};
-  let loadedBrawlers = [];
+// ==== LIMPIAR FORMULARIO ====
+function limpiar(){
+  beep(300); vibrar();
+  clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
+  document.getElementById("calcForm").reset();
+  document.getElementById("resultado").innerText="Valor total: 0 🪙";
+  brawlerImg.className = ""; // reinicia glow
+}
 
-  function preloadBrawlers(){
-    allBrawlers.forEach(name => {
-      const img = new Image();
-      img.src = baseURL + name + ".png";
-      img.onload = () => {
-        brawlerCache[name] = img;
-        loadedBrawlers.push(name);
-      };
-      img.onerror = () => {
-        // Si falla, usar una imagen repetida de las ya cargadas
-        if(loadedBrawlers.length > 0){
-          const fallback = loadedBrawlers[Math.floor(Math.random() * loadedBrawlers.length)];
-          brawlerCache[name] = brawlerCache[fallback];
-          loadedBrawlers.push(name);
-        }
-      };
-    });
-  }
-  preloadBrawlers();
-
-  /* ===== CALCULAR ===== */
-  function calcular(){
-    beep(600); vibrar();
-    calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
-
-    const bpass = Number(document.getElementById("bpass").value)||0;
-    const comunes = Number(document.getElementById("comunes").value)||0;
-    const raras = Number(document.getElementById("raras").value)||0;
-    const epicas = Number(document.getElementById("epicas").value)||0;
-    const miticas = Number(document.getElementById("miticas").value)||0;
-    const legendarias = Number(document.getElementById("legendarias").value)||0;
-    const hipercarga = Number(document.getElementById("hipercarga").value)||0;
-    const maxeados = Number(document.getElementById("maxeados").value)||0;
-
-    const valores = {
-      "🎟️ Brawl Pass": bpass*10,
-      "🩵 Comunes": comunes*2,
-      "💚 Raras": raras*5,
-      "💜 Épicas": epicas*10,
-      "❤️ Míticas": miticas*12,
-      "🌟 Legendarias": legendarias*15,
-      "⚡ Hipercarga": hipercarga*20,
-      "🔥 Maxeados": maxeados*50
-    };
-    const total = Object.values(valores).reduce((a,b)=>a+b,0);
-
-    const resultadoEl = document.getElementById("resultado");
-    let start = parseInt(resultadoEl.innerText.replace(/\D/g,''))||0;
-    const end = total;
-    const duration = 800;
-    const t0 = performance.now();
-    function step(t){
-      const p = Math.min((t-t0)/duration,1);
-      resultadoEl.innerText = "Valor total: "+Math.floor(start + (end-start)*p)+" 🪙";
-      if(p<1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-
-    const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
-    const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
-    if(chart) chart.destroy();
-    chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
-
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-    document.getElementById('centerDiamond').style.display="block";
-    document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
-    }
-  /* ===== LIMPIAR ===== */
-  function limpiar(){
-    beep(300); vibrar();
-    clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
-    document.getElementById("calcForm").reset();
-    document.getElementById("resultado").innerText="Valor total: 0 🪙";
-    if(chart) chart.destroy();
-    brawlerImg.className = ""; // reinicia glow
-  }
-
-  /* ===== COMPARTIR ===== */
-  async function share(){
-    beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
-    const url = window.location.href;
-    const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-    if(navigator.share){
-      try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
-      catch(err){console.log(err);}
-    } else { alert("Tu navegador no soporta compartir nativo."); }
-  }
-
-  /* ===== BRAWLER DEL DÍA ===== */
-  function getDailyIndex(max){
-    const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
-    localStorage.setItem('uid', uid);
-    const today = new Date().toISOString().slice(0,10);
-    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-    if(saved.date===today && Number.isInteger(saved.index)) return saved.index;
-    const idx = Math.floor(Math.random()*max);
-    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
-    return idx;
-  }
-
-  /* ===== SPIN SUAVE 10s + FRENADO 6 BRAWLERS + GLOW DINÁMICO ===== */
-  function spinRouletteSmooth(){
-    const numBrawlers = loadedBrawlers.length;
-    const finalIndex = getDailyIndex(numBrawlers);
-
-    const totalDuration = 10000;       // 10s totales
-    const slowDuration  = 2000;        // últimos 2s: frenado visible
-    const fastDuration  = totalDuration - slowDuration;
-
-    const finalSlowSteps = Math.min(6, numBrawlers); // 6 brawlers lentos
-
-    // Secuencia final de frenado que termina en finalIndex
-    const slowSequence = [];
-    for(let i = finalSlowSteps-1; i >= 0; i--){
-      slowSequence.push((finalIndex - i + numBrawlers) % numBrawlers);
-    }
-
-    let currentIndex = 0;
-    let step = 0;
-    const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-    const t0 = performance.now();
-
-    function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
-
-    function fastPhase(){
-      const now = performance.now();
-      const elapsed = now - t0;
-
-      if(elapsed >= fastDuration){
-        startSlowPhase(0);
-        return;
-      }
-
-      // Selección aleatoria entre brawlers cargados para que no se repita siempre la misma ruleta
-      const name = loadedBrawlers[Math.floor(Math.random()*loadedBrawlers.length)];
-      brawlerImg.src = brawlerCache[name].src;
-      brawlerImg.className = glowClasses[step % glowClasses.length];
-
-      currentIndex++;
-      step++;
-
-      const p = Math.min(elapsed / fastDuration, 1);
-      const delay = 35 + (140 - 35) * easeOutCubic(p); // 35ms → 140ms
-      setTimeout(fastPhase, delay);
-    }
-
-    function startSlowPhase(idx){
-      if(idx >= slowSequence.length){
-        // Resultado final
-        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-        brawlerImg.className = "glow-green"; // último brawler en verde
-        confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-        return;
-      }
-
-      const name = loadedBrawlers[slowSequence[idx] % loadedBrawlers.length];
-      brawlerImg.src = brawlerCache[name].src;
-      // Glow dinámico alternado en los 6 últimos pasos
-      brawlerImg.className = glowClasses[idx % glowClasses.length];
-
-      const stepDelay = slowDuration / finalSlowSteps;
-      setTimeout(()=>startSlowPhase(idx+1), stepDelay);
-    }
-
-    fastPhase();
-      }
   /* ===== INICIALIZACIÓN ===== */
-  (function init(){
-    cargarMetricas();
-    incrementarVisita();
-
-    // Filtrar brawlers que se cargaron correctamente
-    window.loadedBrawlers = allBrawlers.filter(name => brawlerCache[name].complete);
-
-    // Mostrar brawler inicial
-    const dailyIdx = getDailyIndex(allBrawlers.length);
-    brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
-    brawlerImg.className = "glow-green"; // glow verde del día
-  })();
-});
+  cargarMetricas();
+  incrementarVisita();
+  // Mostrar brawler inicial del día
+  const dailyIdx = getDailyIndex(allBrawlers.length);
+  brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
+  brawlerImg.className = "finalGlow";
+}); // DOMContentLoaded
 </script>
 </body>
 </html>
+
+
