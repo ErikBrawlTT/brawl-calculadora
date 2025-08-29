@@ -159,6 +159,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   async function incrementarVisita(){
+    /* ===== VOTOS (LIKE / DISLIKE) ===== */
+  function getUserVote() {
+    return localStorage.getItem("userVote"); // "like" | "dislike" | null
+  }
+
+  function setUserVote(vote) {
+    localStorage.setItem("userVote", vote);
+  }
+
+  async function votar(vote) {
+    const current = getUserVote();
+
+    // Si ya votó lo mismo, no hacer nada
+    if (current === vote) return;
+
+    try {
+      if (vote === "like") {
+        // Si tenía dislike, primero restamos dislike
+        if (current === "dislike") {
+          await supabase.rpc("decrement_dislikes", { pid: PAGE_ID });
+        }
+        await supabase.rpc("increment_likes", { pid: PAGE_ID });
+      } else if (vote === "dislike") {
+        // Si tenía like, primero restamos like
+        if (current === "like") {
+          await supabase.rpc("decrement_likes", { pid: PAGE_ID });
+        }
+        await supabase.rpc("increment_dislikes", { pid: PAGE_ID });
+      }
+
+      // Guardar nuevo voto en localStorage
+      setUserVote(vote);
+
+      // Refrescar métricas en pantalla
+      await cargarMetricas();
+
+    } catch (e) {
+      console.error("Error al votar:", e);
+    }
+  }
+
+  // Eventos en los contadores (clicables)
+  document.getElementById("likes-counter").addEventListener("click", () => {
+    beep(600);
+    vibrar(80);
+    votar("like");
+  });
+
+  document.getElementById("dislikes-counter").addEventListener("click", () => {
+    beep(200);
+    vibrar(80);
+    votar("dislike");
+  });
+
+  /* ===== INICIALIZAR VOTO GUARDADO ===== */
+  const savedVote = getUserVote();
+  if (savedVote === "like") {
+    console.log("El usuario ya dio LIKE");
+  } else if (savedVote === "dislike") {
+    console.log("El usuario ya dio DISLIKE");
+    }
     try{
       await supabase.rpc('increment_visitas',{pid: PAGE_ID});
       await cargarMetricas();
