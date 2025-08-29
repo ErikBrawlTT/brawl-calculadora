@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
-  /* ===== Pre-carga de imágenes para que ruleta funcione de inmediato ===== */
+  /* ===== Pre-carga de imágenes ===== */
   const brawlerCache = {};
   allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
 
@@ -261,65 +261,68 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
     return idx;
   }
-/* ===== SPIN SUAVE CON FRENADO ===== */
-function spinRouletteSmooth(){
-  const finalIndex = getDailyIndex(allBrawlers.length);
-  const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-  const totalDuration = 6000; // 6 segundos en total
-  const startTime = performance.now();
-  let lastGlow = -1;
 
-  function easeOutQuint(x) {
-    return 1 - Math.pow(1 - x, 5);
+  /* ===== EASING ===== */
+  function easeOutQuint(x) { return 1 - Math.pow(1 - x, 5); }
+
+  /* ===== SPIN RUETA REALISTA ===== */
+  function spinRouletteSmooth() {
+    const finalIndex = getDailyIndex(allBrawlers.length);
+    const glowClasses = ["segmentGlowBlue", "segmentGlowRed", "segmentGlowOrange", "segmentGlowGreen"];
+    const totalDuration = 6000; // 6s
+    const slowDownStart = 4000; // empieza frenado a los 4s
+    const startTime = performance.now();
+    let lastGlow = -1;
+
+    // Limpiar glow previo
+    brawlerImg.classList.remove("finalGlow");
+    brawlerImg.classList.remove(...glowClasses);
+
+    function animate() {
+      const now = performance.now();
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / totalDuration, 1);
+      const easedProgress = easeOutQuint(t);
+
+      // índice actual
+      const totalSpins = 6;
+      const totalSteps = totalSpins * allBrawlers.length + finalIndex;
+      const currentStep = Math.floor(easedProgress * totalSteps) % allBrawlers.length;
+      brawlerImg.src = brawlerCache[allBrawlers[currentStep]].src;
+
+      // Glow dinámico durante frenado
+      if (elapsed >= slowDownStart) {
+        const phase = Math.floor(((elapsed - slowDownStart) / (totalDuration - slowDownStart)) * glowClasses.length);
+        if (phase !== lastGlow && phase < glowClasses.length) {
+          brawlerImg.classList.remove(...glowClasses);
+          brawlerImg.classList.add(glowClasses[phase]);
+          lastGlow = phase;
+        }
   }
-
-  function animate(){
-    const now = performance.now();
-    const elapsed = now - startTime;
-    const t = Math.min(elapsed / totalDuration, 1);
-
-    // Easing suave: rápido al inicio, lento al final
-    const easedProgress = easeOutQuint(t);
-
-    // Número de vueltas completas antes de parar
-    const totalSpins = 6; 
-    const index = Math.floor(easedProgress * totalSpins * allBrawlers.length) % allBrawlers.length;
-    brawlerImg.src = brawlerCache[allBrawlers[index]].src;
-
-    // Glow en los últimos 15% del giro
-    const remaining = 1 - easedProgress;
-    if (remaining < 0.15) {
-      const step = Math.floor((0.15 - remaining) / 0.0375); // 4 fases de glow
-      if (step !== lastGlow && step < 4) {
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Glow final verde fijo
         brawlerImg.classList.remove(...glowClasses);
-        brawlerImg.classList.add(glowClasses[step]);
-        lastGlow = step;
+        brawlerImg.classList.add("finalGlow");
+        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
+
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
       }
     }
 
-    if (t < 1) {
-      requestAnimationFrame(animate);
-    } else {
-      // Resultado final con glow verde
-      brawlerImg.classList.remove(...glowClasses);
-      brawlerImg.classList.add("glow-green");
-      brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-
-      confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-    }
+    animate();
   }
 
-  animate();
-      }
   /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
   incrementarVisita();
-  // Mostrar brawler inicial
+
+  // Mostrar brawler inicial del día
   const dailyIdx = getDailyIndex(allBrawlers.length);
   brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
   brawlerImg.className = "finalGlow";
-
 });
-</script>
+  </script>
 </body>
-            </html>
+</html>
