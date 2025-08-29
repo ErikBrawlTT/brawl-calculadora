@@ -156,7 +156,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 </div>
 </div>
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
@@ -247,16 +247,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
-  /* ===== Pre-carga de imágenes para ruleta fluida ===== */
+  /* ===== Pre-carga de imágenes completa ===== */
   const brawlerCache = {};
-  function precargarBrawlers() {
+  let brawlersReady = false;
+  function precargarBrawlers(onComplete){
+    let cargadas = 0;
+    const total = allBrawlers.length;
     allBrawlers.forEach(name => {
       const img = new Image();
       img.src = baseURL + name + ".png";
+      img.onload = () => {
+        cargadas++;
+        if(cargadas === total){
+          brawlersReady = true;
+          if(typeof onComplete === "function") onComplete();
+        }
+      };
       brawlerCache[name] = img;
     });
   }
-  precargarBrawlers();
+  precargarBrawlers(() => console.log("✅ Todas las imágenes cargadas"));
 
   /* ===== CALCULAR ===== */
   function calcular(){
@@ -338,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function getDailyIndex(max){
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
-    const today = new Date().toISOString().slice(0,10);
+    const today = new Date().toISOString().slice(0,10); // solo fecha
     const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
     if(saved.date===today && Number.isInteger(saved.index)) return saved.index;
     const idx = Math.floor(Math.random()*max);
@@ -346,22 +356,27 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-  /* ===== RULETA FLUIDA 5-7 SEG ===== */
-  function spinRouletteSmooth() {
+  /* ===== SPIN SUAVE CON FRENADA ===== */
+  function spinRouletteSmooth(){
+    if(!brawlersReady) {
+      alert("⏳ Las imágenes aún se están cargando. Espera unos segundos.");
+      return;
+    }
     const finalIndex = getDailyIndex(allBrawlers.length);
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-    const totalFrames = 300; // duración ~6 seg
-    const totalLoops = 8;    // vueltas completas
+    const totalFrames = 320; // aprox 6-7s
+    const totalLoops = 9;    // vueltas completas
     let frame = 0;
 
-    function easing(t){ return 1 - Math.pow(1 - t, 3); }
+    function easing(t){ return 1 - Math.pow(1 - t, 5); } // quintic easing para frenada suave
 
-    function animate() {
+    function animate(){
       const t = frame / totalFrames;
       const eased = easing(t);
+
       let idx = Math.floor(eased * allBrawlers.length * totalLoops) % allBrawlers.length;
 
-      if (t > 0.85){
+      if(t > 0.85){
         const glowStep = Math.floor((t - 0.85) / 0.0375);
         brawlerImg.classList.remove(...glowClasses);
         brawlerImg.classList.add(glowClasses[Math.min(glowStep, 3)]);
@@ -388,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
   (async ()=>{
     await incrementarVisita();
     await cargarMetricas();
-    // Ruleta solo al pulsar botones
+    // La ruleta solo gira al pulsar botones
   })();
 });
   </script>
