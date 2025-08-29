@@ -262,43 +262,60 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ===== SPIN SUAVE CON FRENADO Y GLOW LENTO ===== */
   function spinRouletteSmooth(){
     if(!brawlersReady) {
-      alert("⏳ Las imágenes aún se están cargando. Espera unos segundos.");
-      return;
+        alert("⏳ Las imágenes aún se están cargando. Espera unos segundos.");
+        return;
     }
+
     const finalIndex = getDailyIndex(allBrawlers.length);
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-    const totalFrames = 200; // duración del giro completo
-    const totalLoops = 8;    // vueltas completas
-    let frame = 0;
+    const totalBrawlers = allBrawlers.length;
 
-    function easing(t){ return 1 - Math.pow(1 - t, 5); } // frenado suave
+    // Fase 1: Giro rápido
+    let fastFrames = 40; // frames rápidos iniciales
+    let currentIdx = 0;
 
-    function animate(){
-      const t = frame / totalFrames;
-      const eased = easing(t);
-      let idx = Math.floor(eased * allBrawlers.length * totalLoops) % allBrawlers.length;
-
-      // Glow solo en la última fase
-      if(t > 0.8){
-        const glowPhase = Math.floor((t-0.8)/0.05);
-        brawlerImg.classList.remove(...glowClasses);
-        brawlerImg.classList.add(glowClasses[Math.min(glowPhase, 3)]);
-      } else {
-        brawlerImg.classList.remove(...glowClasses);
-      }
-
-      brawlerImg.src = brawlerCache[allBrawlers[idx]].src;
-
-      frame++;
-      if(frame <= totalFrames){
-        requestAnimationFrame(animate);
-      } else {
-        brawlerImg.classList.remove(...glowClasses);
-        brawlerImg.classList.add(glowClasses[3]); // Glow final verde
-        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-      }
+    function fastSpin(){
+        currentIdx = (currentIdx + 1) % totalBrawlers;
+        brawlerImg.src = brawlerCache[allBrawlers[currentIdx]].src;
+        fastFrames--;
+        if(fastFrames > 0){
+            requestAnimationFrame(fastSpin);
+        } else {
+            slowDownPhase();
+        }
     }
-    animate();
+
+    // Fase 2: Frenado con glow
+    function slowDownPhase(){
+        const lastSteps = 4; // últimos 4 pasos con glow
+        const stepTime = 3000; // ms por glow
+        const startIdx = (currentIdx + 1) % totalBrawlers;
+
+        let step = 0;
+
+        function nextStep(){
+            if(step < lastSteps){
+                const idx = (startIdx + step) % totalBrawlers;
+                brawlerImg.src = brawlerCache[allBrawlers[idx]].src;
+
+                // Glow correspondiente
+                brawlerImg.classList.remove(...glowClasses);
+                brawlerImg.classList.add(glowClasses[step]);
+
+                step++;
+                setTimeout(nextStep, stepTime);
+            } else {
+                // Paso final: Brawler del día
+                brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
+                brawlerImg.classList.remove(...glowClasses);
+                brawlerImg.classList.add(glowClasses[3]); // Glow final
+            }
+        }
+
+        nextStep();
+    }
+
+    fastSpin();
   }
   /* ===== EVENT LISTENERS ===== */
   document.addEventListener('DOMContentLoaded', () => {
