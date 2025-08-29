@@ -156,7 +156,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 </div>
 </div>
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
@@ -165,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
   );
   const PAGE_ID = 'pagina1';
 
-  /* ===== ELEMENTOS ===== */
   const calcBtn = document.getElementById('calcBtn');
   const clearBtn = document.getElementById('clearBtn');
   const shareBtn = document.getElementById('shareBtn');
@@ -175,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoClose = document.getElementById('infoClose');
   const brawlerImg = document.getElementById('brawlerImg');
 
-  /* ===== UTILIDADES ===== */
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
           o = ctx.createOscillator(),
@@ -190,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
-  /* ===== CONTADORES METRICAS ===== */
   async function cargarMetricas(){
     const { data, error } = await supabase
       .from('metrics')
@@ -223,17 +220,16 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(step);
   }
 
-  /* ===== BOTONES ===== */
-  calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); spinRouletteSmooth(); });
+  /* BOTONES */
+  calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); spinRouletteFrenado(); });
   clearBtn.addEventListener('click', limpiar);
   shareBtn.addEventListener('click', share);
-  spinBtn.addEventListener('click', () => { beep(520); vibrar(80); spinRouletteSmooth(); });
+  spinBtn.addEventListener('click', () => { beep(520); vibrar(80); spinRouletteFrenado(); });
   infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
   infoClose.addEventListener('click', ()=> infoModal.style.display='none');
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
 
-  /* ===== BRAWLERS ===== */
   const allBrawlers = [
     "elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea",
     "8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie",
@@ -247,20 +243,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
-  /* ===== Pre-carga de imágenes completa ===== */
+  /* PRE-CARGA IMÁGENES */
   const brawlerCache = {};
   let brawlersReady = false;
   function precargarBrawlers(onComplete){
     let cargadas = 0;
-    const total = allBrawlers.length;
     allBrawlers.forEach(name => {
       const img = new Image();
       img.src = baseURL + name + ".png";
       img.onload = () => {
         cargadas++;
-        if(cargadas === total){
+        if(cargadas === allBrawlers.length){
           brawlersReady = true;
-          if(typeof onComplete === "function") onComplete();
+          if(onComplete) onComplete();
         }
       };
       brawlerCache[name] = img;
@@ -268,11 +263,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   precargarBrawlers(() => console.log("✅ Todas las imágenes cargadas"));
 
-  /* ===== CALCULAR ===== */
+  /* CALCULAR */
   function calcular(){
     beep(600); vibrar();
     calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
-
     const bpass = Number(document.getElementById("bpass").value)||0;
     const comunes = Number(document.getElementById("comunes").value)||0;
     const raras = Number(document.getElementById("raras").value)||0;
@@ -281,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const legendarias = Number(document.getElementById("legendarias").value)||0;
     const hipercarga = Number(document.getElementById("hipercarga").value)||0;
     const maxeados = Number(document.getElementById("maxeados").value)||0;
-
     const valores={
       "🎟️ Brawl Pass":bpass*10,
       "🩵 Comunes":comunes*2,
@@ -292,9 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
       "⚡ Hipercarga":hipercarga*20,
       "🔥 Maxeados":maxeados*50
     };
-
     const total = Object.values(valores).reduce((a,b)=>a+b,0);
-
     const resultadoEl = document.getElementById("resultado");
     let start = parseInt(resultadoEl.innerText.replace(/\D/g,''))||0;
     const end = total;
@@ -306,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if(p<1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
-
     const data = {
       labels:Object.keys(valores),
       datasets:[{
@@ -318,13 +308,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const config = { type:'doughnut', data:data, options:{ cutout:"70%", plugins:{legend:{display:true,position:'bottom'}} }};
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
-
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
   }
 
-  /* ===== LIMPIAR ===== */
   function limpiar(){
     beep(300); vibrar();
     clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
@@ -333,7 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(chart) chart.destroy();
   }
 
-  /* ===== COMPARTIR ===== */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
@@ -344,11 +331,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else { alert("Tu navegador no soporta compartir nativo."); }
   }
 
-  /* ===== BRAWLER DEL DIA ===== */
   function getDailyIndex(max){
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
-    const today = new Date().toISOString().slice(0,10); // solo fecha
+    const today = new Date().toISOString().slice(0,10);
     const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
     if(saved.date===today && Number.isInteger(saved.index)) return saved.index;
     const idx = Math.floor(Math.random()*max);
@@ -356,28 +342,30 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-  /* ===== SPIN SUAVE CON FRENADA ===== */
-  function spinRouletteSmooth(){
-    if(!brawlersReady) {
-      alert("⏳ Las imágenes aún se están cargando. Espera unos segundos.");
-      return;
-    }
+  /* RUEDA CON FRENADO VISUAL */
+  function spinRouletteFrenado(){
+    if(!brawlersReady) return alert("⏳ Las imágenes aún se están cargando.");
+
     const finalIndex = getDailyIndex(allBrawlers.length);
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-    const totalFrames = 320; // aprox 6-7s
-    const totalLoops = 9;    // vueltas completas
+    const totalFrames = 320; // aprox 7s
+    const spinFastFrames = 250; // primeros 5s
+    const spinSlowFrames = totalFrames - spinFastFrames; // últimos 2s
     let frame = 0;
 
-    function easing(t){ return 1 - Math.pow(1 - t, 5); } // quintic easing para frenada suave
-
     function animate(){
-      const t = frame / totalFrames;
-      const eased = easing(t);
+      let idx;
+      if(frame < spinFastFrames){
+        idx = Math.floor(Math.random() * allBrawlers.length);
+      } else {
+        const t = (frame - spinFastFrames) / spinSlowFrames;const eased = 1 - Math.pow(1 - t, 5); // easing quint para frenado
+        const slowIndex = Math.floor(eased * allBrawlers.length);
+        idx = (slowIndex + finalIndex) % allBrawlers.length;
+      }
 
-      let idx = Math.floor(eased * allBrawlers.length * totalLoops) % allBrawlers.length;
-
-      if(t > 0.85){
-        const glowStep = Math.floor((t - 0.85) / 0.0375);
+      // Glow progresivo últimos frames
+      if(frame >= spinFastFrames){
+        const glowStep = Math.floor((frame - spinFastFrames) / (spinSlowFrames/4));
         brawlerImg.classList.remove(...glowClasses);
         brawlerImg.classList.add(glowClasses[Math.min(glowStep, 3)]);
       } else {
@@ -390,8 +378,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if(frame <= totalFrames){
         requestAnimationFrame(animate);
       } else {
+        // Ajuste final
         brawlerImg.classList.remove(...glowClasses);
-        brawlerImg.classList.add(glowClasses[3]);
+        brawlerImg.classList.add(glowClasses[3]); // glow verde final
         brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
       }
     }
