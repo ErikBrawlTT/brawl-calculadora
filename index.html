@@ -260,16 +260,17 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
     return idx;
   }
-/* ===== SPIN SUAVE CON FRENADO PROLONGADO PARA LOS ÚLTIMOS 8–10 BRAWLERS ===== */
+
+  
+/* ===== SPIN SUAVE MEJORADO: MÁS BRAWLERS EN FRENADO ===== */
 function spinRouletteSmooth(){
   const finalIndex = getDailyIndex(allBrawlers.length);
   const numBrawlers = allBrawlers.length;
 
-  // Ajuste dinámico
-  const totalSteps = numBrawlers * 6; // total de pasos
-  const finalSlowSteps = Math.min(10, numBrawlers); // últimos 8–10 pasos más lentos
+  const totalSteps = numBrawlers * 4; // menos vueltas totales, giro rápido inicial
+  const finalSlowSteps = Math.min(8, numBrawlers); // más brawlers visibles durante frenado
   const minSpeed = 50;  // inicio rápido
-  const maxSpeed = 650; // velocidad máxima al final
+  const maxSpeed = 500; // velocidad máxima al final
   let currentIndex = 0;
   let step = 0;
 
@@ -277,15 +278,7 @@ function spinRouletteSmooth(){
     const brawlerName = allBrawlers[currentIndex % numBrawlers];
     brawlerImg.src = brawlerCache[brawlerName].src;
 
-    // Glow adaptativo: más intenso cuanto más lento
-    let glowIntensity;
-    if(step <= totalSteps - finalSlowSteps){
-      glowIntensity = 0.2 + Math.pow(step / (totalSteps - finalSlowSteps), 2) * 0.5;
-    } else {
-      const slowStep = step - (totalSteps - finalSlowSteps);
-      glowIntensity = 0.7 + Math.pow(slowStep / finalSlowSteps, 2) * 0.3;
-    }
-
+    // Glow adaptativo: más intenso al disminuir velocidad
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
     if(step <= totalSteps - finalSlowSteps){
       brawlerImg.className = glowClasses[step % glowClasses.length];
@@ -297,18 +290,17 @@ function spinRouletteSmooth(){
     step++;
 
     if(step <= totalSteps){
-      // Velocidad con desaceleración prolongada
+      // Calcular velocidad: rápida al inicio, prolongada al final
       let speed;
       if(step <= totalSteps - finalSlowSteps){
-        speed = minSpeed + (maxSpeed / 4) * Math.pow(step / (totalSteps - finalSlowSteps), 2.5);
+        speed = minSpeed + (maxSpeed / 3) * Math.pow(step / (totalSteps - finalSlowSteps), 2);
       } else {
         const slowStep = step - (totalSteps - finalSlowSteps);
-        // Easing más marcado para los últimos 8–10 pasos
-        speed = (maxSpeed / 4) + (maxSpeed - maxSpeed / 4) * Math.pow(slowStep / finalSlowSteps, 3.2);
+        speed = (maxSpeed / 3) + (maxSpeed - maxSpeed / 3) * Math.pow(slowStep / finalSlowSteps, 2.5);
       }
       setTimeout(nextStep, speed);
     } else {
-      // Resultado final
+      // Resultado final definitivo
       brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
       brawlerImg.className = "finalGlow";
       confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
@@ -317,7 +309,7 @@ function spinRouletteSmooth(){
 
   nextStep();
   }
-
+  
 /* ===== INICIALIZACIÓN ===== */
 cargarMetricas();
 incrementarVisita();
