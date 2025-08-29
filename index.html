@@ -117,7 +117,10 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
-  const supabase = createClient('https://ttkneykkrkbajymzsgcr.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE');
+  const supabase = createClient(
+    'https://ttkneykkrkbajymzsgcr.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
+  );
   const PAGE_ID = 'pagina1';
 
   /* ===== ELEMENTOS ===== */
