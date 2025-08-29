@@ -187,6 +187,29 @@ document.addEventListener('DOMContentLoaded', () => {
   infoClose.addEventListener('click', ()=> infoModal.style.display='none');
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
+  
+  /* ===== BOTONES DE LIKE / DISLIKE ===== */
+  const likesCounter = document.getElementById('likes-counter');
+  const dislikesCounter = document.getElementById('dislikes-counter');
+
+  likesCounter.addEventListener('click', async () => {
+    try {
+      await supabase.rpc('increment_likes', { pid: PAGE_ID });
+      const { data, error } = await supabase.from('metrics').select('likes').eq('page_id', PAGE_ID).single();
+      if (!error && data) animateCounter('likes-counter', data.likes);
+      beep(600); vibrar();
+    } catch(e) { console.error(e); }
+  });
+
+  dislikesCounter.addEventListener('click', async () => {
+    try {
+      await supabase.rpc('increment_dislikes', { pid: PAGE_ID });
+      const { data, error } = await supabase.from('metrics').select('dislikes').eq('page_id', PAGE_ID).single();
+      if (!error && data) animateCounter('dislikes-counter', data.dislikes);
+      beep(400); vibrar();
+    } catch(e) { console.error(e); }
+  });
+
   /* ===== BRAWLERS (lista amplia) ===== */
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
@@ -359,28 +382,6 @@ function spinRouletteSmooth(){
   const dailyIdx = getDailyIndex(allBrawlers.length);
   brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
   brawlerImg.className = "finalGlow";
-
-  /* ===== BOTONES DE LIKE / DISLIKE ===== */
-  const likesCounter = document.getElementById('likes-counter');
-  const dislikesCounter = document.getElementById('dislikes-counter');
-
-  likesCounter.addEventListener('click', async () => {
-    try {
-      await supabase.rpc('increment_likes', { pid: PAGE_ID });
-      const { data, error } = await supabase.from('metrics').select('likes').eq('page_id', PAGE_ID).single();
-      if (!error && data) animateCounter('likes-counter', data.likes);
-      beep(600); vibrar();
-    } catch(e) { console.error(e); }
-  });
-
-  dislikesCounter.addEventListener('click', async () => {
-    try {
-      await supabase.rpc('increment_dislikes', { pid: PAGE_ID });
-      const { data, error } = await supabase.from('metrics').select('dislikes').eq('page_id', PAGE_ID).single();
-      if (!error && data) animateCounter('dislikes-counter', data.dislikes);
-      beep(400); vibrar();
-    } catch(e) { console.error(e); }
-  });
 
 }); // DOMContentLoaded
 </script>
