@@ -260,40 +260,43 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
     return idx;
   }
-/* ===== SPIN SUAVE CON FRENADO PROLONGADO (7s) ===== */
+/* ===== SPIN SUAVE CON 6 BRAWLERS FRENANDO ===== */
 function spinRouletteSmooth(){
   const finalIndex = getDailyIndex(allBrawlers.length);
-  const totalDuration = 5000; // duración total en ms
-  const finalSlowBrawlers = 6; // últimos 6 brawlers desacelerando
-  const steps = allBrawlers.length + finalSlowBrawlers; // al menos 1 vuelta completa + frenado
-  let currentStep = 0;
+  const numBrawlers = allBrawlers.length;
+
+  const totalSteps = numBrawlers * 4;          // número de pasos (ajusta vueltas totales)
+  const finalSlowSteps = 6;                    // últimos 6 brawlers visibles en frenado
+  const minSpeed = 50;                         // velocidad al inicio (rápido)
+  const maxSpeed = 600;                        // velocidad máxima al frenar
   let currentIndex = 0;
+  let step = 0;
 
   function nextStep(){
-    const brawlerName = allBrawlers[currentIndex % allBrawlers.length];
+    const brawlerName = allBrawlers[currentIndex % numBrawlers];
     brawlerImg.src = brawlerCache[brawlerName].src;
 
     // Glow adaptativo
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-    if(currentStep < steps - finalSlowBrawlers){
-      brawlerImg.className = glowClasses[currentStep % glowClasses.length];
+    if(step <= totalSteps - finalSlowSteps){
+      brawlerImg.className = glowClasses[step % glowClasses.length];
     } else {
       brawlerImg.className = "finalGlow";
     }
 
-    currentStep++;
     currentIndex++;
+    step++;
 
-    if(currentStep <= steps){
-      // Calcular velocidad progresiva para 7s total
+    if(step <= totalSteps){
+      // Velocidad con frenado suave
       let speed;
-      if(currentStep <= steps - finalSlowBrawlers){
-        // Velocidad inicial rápida
-        speed = 50 + ((totalDuration - 1000)/ (steps - finalSlowBrawlers)) * currentStep;
+      if(step <= totalSteps - finalSlowSteps){
+        // Inicio rápido → progresivamente más lento
+        speed = minSpeed + (maxSpeed / 4) * Math.pow(step / (totalSteps - finalSlowSteps), 2.2);
       } else {
-        // Frenado prolongado últimos 6 brawlers
-        const slowStep = currentStep - (steps - finalSlowBrawlers);
-        speed = 150 + Math.pow(slowStep / finalSlowBrawlers, 2) * 400;
+        // Últimos 6 pasos con frenado más marcado
+        const slowStep = step - (totalSteps - finalSlowSteps);
+        speed = (maxSpeed / 4) + (maxSpeed - maxSpeed / 4) * Math.pow(slowStep / finalSlowSteps, 2);
       }
       setTimeout(nextStep, speed);
     } else {
@@ -305,8 +308,8 @@ function spinRouletteSmooth(){
   }
 
   nextStep();
-  
-  }
+                           
+}
   
   /* ===== INICIALIZACIÓN ===== */
 cargarMetricas();
