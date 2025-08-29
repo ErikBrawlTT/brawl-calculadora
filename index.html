@@ -265,40 +265,50 @@ document.addEventListener('DOMContentLoaded', () => {
 function spinRouletteSmooth(){
   const finalIndex = getDailyIndex(allBrawlers.length);
   const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-  const totalFrames = 150; // menos frames = más lento
-  let frame = 0;
-
-  // Easing exponencial para frenado suave
-  function easing(t){ return 1 - Math.pow(1 - t, 3); }
+  const totalDuration = 6000; // 6 segundos en total
+  const slowDownDuration = 2000; // últimos 2s para frenar
+  const startTime = performance.now();
+  let lastGlow = -1;
 
   function animate(){
-    const t = frame / totalFrames;
-    const eased = easing(t); // frenado progresivo
-    const loops = 6; // cantidad de vueltas antes de frenar
-    const index = Math.floor(eased * loops * allBrawlers.length) % allBrawlers.length;
-    const brawlerName = allBrawlers[index];
-    brawlerImg.src = brawlerCache[brawlerName].src;
+    const now = performance.now();
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / totalDuration, 1);
 
-    frame++;
-    if(frame <= totalFrames){
+    // Fase 1: rápida (0–4s), Fase 2: frenado (últimos 2s)
+    let progress;
+    if(elapsed < totalDuration - slowDownDuration){
+      // Lineal en la parte rápida
+      progress = elapsed / (totalDuration - slowDownDuration);
+    } else {
+      // Desaceleración suave en los últimos 2s
+      const slowElapsed = elapsed - (totalDuration - slowDownDuration);
+      const slowT = slowElapsed / slowDownDuration;
+      progress = 1 - Math.pow(1 - slowT, 3); // easing cúbico
+    }
+
+    // Calcular índice actual
+    const totalSpins = 8; // vueltas completas antes de parar
+    const index = Math.floor(progress * totalSpins * allBrawlers.length) % allBrawlers.length;
+    brawlerImg.src = brawlerCache[allBrawlers[index]].src;
+
+    // Glow SOLO en los últimos 4 brawlers antes de parar
+    if(elapsed >= totalDuration - slowDownDuration){
+      const step = Math.floor((elapsed - (totalDuration - slowDownDuration)) / (slowDownDuration / 4));
+      if(step !== lastGlow && step < 4){
+        brawlerImg.classList.remove(...glowClasses);
+        brawlerImg.classList.add(glowClasses[step]);
+        lastGlow = step;
+      }
+    }
+
+    if(elapsed < totalDuration){
       requestAnimationFrame(animate);
     } else {
-      // Resultado final
+      // Resultado final con glow fijo
+      brawlerImg.classList.remove(...glowClasses);
+      brawlerImg.classList.add("glow-green");
       brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-      brawlerImg.className = "finalGlow";
-
-      // Glow alterno cada 3 segundos
-      let glowStep = 0;
-      const interval = setInterval(()=>{
-        brawlerImg.className = glowClasses[glowStep % glowClasses.length];
-        glowStep++;
-      }, 3000);
-
-      // Detener glow después de 4 ciclos (~12s)
-      setTimeout(()=>{
-        clearInterval(interval);
-        brawlerImg.className = "finalGlow";
-      }, 12000);
 
       confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
     }
@@ -306,7 +316,6 @@ function spinRouletteSmooth(){
 
   animate();
   }
-
   /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
   incrementarVisita();
