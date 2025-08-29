@@ -244,15 +244,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== LIMPIAR ===== */
-  function limpiar(){
-    beep(300); vibrar();
-    clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
+function limpiar(){
+    beep(300); 
+    vibrar();
+    clearBtn.classList.add('flash'); 
+    setTimeout(()=>clearBtn.classList.remove('flash'),200);
+
+    // Reset formulario y resultado
     document.getElementById("calcForm").reset();
     document.getElementById("resultado").innerText="Valor total: 0 🪙";
-    if(chart) chart.destroy();
-    brawlerImg.className = ""; // reinicia glow
-  }
 
+    // Destruir gráfico si existía
+    if(chart) chart.destroy();
+
+    // Reiniciar ruleta con un Brawler visible
+    const dailyIdx = getDailyIndex(allBrawlers.length); // Para mantener un brawler aleatorio del día
+    brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
+    brawlerImg.className = "finalGlow"; // Glow sutil para que no se vea apagado
+
+    // Scroll hacia arriba al formulario
+    document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
+}
   /* ===== COMPARTIR ===== */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
