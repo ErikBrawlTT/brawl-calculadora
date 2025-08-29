@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ===== SPIN SUAVE CON FRENADO PROLONGADO (7s) ===== */
 function spinRouletteSmooth(){
   const finalIndex = getDailyIndex(allBrawlers.length);
-  const totalDuration = 7000; // duración total en ms
+  const totalDuration = 5000; // duración total en ms
   const finalSlowBrawlers = 6; // últimos 6 brawlers desacelerando
   const steps = allBrawlers.length + finalSlowBrawlers; // al menos 1 vuelta completa + frenado
   let currentStep = 0;
