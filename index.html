@@ -114,7 +114,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 </div>
 
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
@@ -189,7 +189,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== Pre-carga de imágenes ===== */
   const brawlerCache = {};
-  allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
+  allBrawlers.forEach(name => { 
+      const img = new Image(); 
+      img.src = baseURL+name+".png"; 
+      brawlerCache[name]=img; 
+  });
 
   /* ===== CALCULAR ===== */
   function calcular(){
@@ -250,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else { alert("Tu navegador no soporta compartir nativo."); }
   }
 
-  /* ===== BRAWLER DEL DIA ===== */
+  /* ===== BRAWLER DEL DÍA ===== */
   function getDailyIndex(max){
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
@@ -263,18 +267,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== EASING ===== */
-  function easeOutQuint(x) { return 1 - Math.pow(1 - x, 5); }
+  function easeOutQuad(t) { return t*(2-t); }
 
-  /* ===== SPIN RUETA REALISTA ===== */
+  /* ===== SPIN RUEDA REALISTA ===== */
   function spinRouletteSmooth() {
     const finalIndex = getDailyIndex(allBrawlers.length);
     const glowClasses = ["segmentGlowBlue", "segmentGlowRed", "segmentGlowOrange", "segmentGlowGreen"];
-    const totalDuration = 6000; // 6s
+    const totalDuration = 6000; // 6 segundos
     const slowDownStart = 4000; // empieza frenado a los 4s
     const startTime = performance.now();
     let lastGlow = -1;
 
-    // Limpiar glow previo
     brawlerImg.classList.remove("finalGlow");
     brawlerImg.classList.remove(...glowClasses);
 
@@ -282,15 +285,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const now = performance.now();
       const elapsed = now - startTime;
       const t = Math.min(elapsed / totalDuration, 1);
-      const easedProgress = easeOutQuint(t);
 
-      // índice actual
+      let eased;
+      if (elapsed < slowDownStart) {
+        eased = elapsed / slowDownStart * 0.8; // fase rápida
+      } else {
+        const slowT = (elapsed - slowDownStart) / (totalDuration - slowDownStart);
+        eased = 0.8 + 0.2*easeOutQuad(slowT); // desaceleración suave
+      }
+
       const totalSpins = 6;
       const totalSteps = totalSpins * allBrawlers.length + finalIndex;
-      const currentStep = Math.floor(easedProgress * totalSteps) % allBrawlers.length;
+      const currentStep = Math.floor(eased * totalSteps) % allBrawlers.length;
       brawlerImg.src = brawlerCache[allBrawlers[currentStep]].src;
 
-      // Glow dinámico durante frenado
+      // Glow dinámico últimos 2s
       if (elapsed >= slowDownStart) {
         const phase = Math.floor(((elapsed - slowDownStart) / (totalDuration - slowDownStart)) * glowClasses.length);
         if (phase !== lastGlow && phase < glowClasses.length) {
@@ -298,15 +307,13 @@ document.addEventListener('DOMContentLoaded', () => {
           brawlerImg.classList.add(glowClasses[phase]);
           lastGlow = phase;
         }
-  }
-      if (t < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Glow final verde fijo
+      }
+
+      if (t < 1) requestAnimationFrame(animate);
+      else {
         brawlerImg.classList.remove(...glowClasses);
         brawlerImg.classList.add("finalGlow");
         brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-
         confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
       }
     }
@@ -318,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarMetricas();
   incrementarVisita();
 
-  // Mostrar brawler inicial del día
+  // Mostrar brawler inicial
   const dailyIdx = getDailyIndex(allBrawlers.length);
   brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
   brawlerImg.className = "finalGlow";
