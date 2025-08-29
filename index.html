@@ -261,24 +261,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-  
-/* ===== SPIN SUAVE MEJORADO: MÁS BRAWLERS EN FRENADO ===== */
+/* ===== SPIN SUAVE OPTIMIZADO PARA 91 BRAWLERS ===== */
 function spinRouletteSmooth(){
   const finalIndex = getDailyIndex(allBrawlers.length);
   const numBrawlers = allBrawlers.length;
 
-  const totalSteps = numBrawlers * 4; // menos vueltas totales, giro rápido inicial
-  const finalSlowSteps = Math.min(8, numBrawlers); // más brawlers visibles durante frenado
-  const minSpeed = 50;  // inicio rápido
-  const maxSpeed = 500; // velocidad máxima al final
-  let currentIndex = 0;
+  const totalSteps = 120;             // pasos fijos para evitar vueltas interminables
+  const finalSlowSteps = Math.min(8, numBrawlers); // últimos 6–8 brawlers con frenado marcado
+  const minSpeed = 50;  // velocidad inicial rápida
+  const maxSpeed = 500; // velocidad máxima durante el frenado
   let step = 0;
 
   function nextStep(){
-    const brawlerName = allBrawlers[currentIndex % numBrawlers];
+    // Elegir brawler actual proporcional al paso
+    const index = Math.floor((step / totalSteps) * numBrawlers) % numBrawlers;
+    const brawlerName = allBrawlers[index];
     brawlerImg.src = brawlerCache[brawlerName].src;
 
-    // Glow adaptativo: más intenso al disminuir velocidad
+    // Glow adaptativo: más intenso al reducir velocidad
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
     if(step <= totalSteps - finalSlowSteps){
       brawlerImg.className = glowClasses[step % glowClasses.length];
@@ -286,17 +286,15 @@ function spinRouletteSmooth(){
       brawlerImg.className = "finalGlow";
     }
 
-    currentIndex++;
     step++;
-
     if(step <= totalSteps){
-      // Calcular velocidad: rápida al inicio, prolongada al final
+      // Velocidad: rápida al inicio, desaceleración marcada al final
       let speed;
       if(step <= totalSteps - finalSlowSteps){
         speed = minSpeed + (maxSpeed / 3) * Math.pow(step / (totalSteps - finalSlowSteps), 2);
       } else {
         const slowStep = step - (totalSteps - finalSlowSteps);
-        speed = (maxSpeed / 3) + (maxSpeed - maxSpeed / 3) * Math.pow(slowStep / finalSlowSteps, 2.5);
+        speed = (maxSpeed / 3) + (maxSpeed - maxSpeed / 3) * Math.pow(slowStep / finalSlowSteps, 4);
       }
       setTimeout(nextStep, speed);
     } else {
@@ -308,6 +306,7 @@ function spinRouletteSmooth(){
   }
 
   nextStep();
+  
   }
   
 /* ===== INICIALIZACIÓN ===== */
