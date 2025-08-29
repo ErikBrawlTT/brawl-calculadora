@@ -133,8 +133,9 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>- 🎲 Interactúa: ¡Gira y juega! Este es tu Brawler del día, aparecerá dentro de un glow🟢! Vuelve mañana, será otro🎯.</p>
       <p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
     </div>
-  </div>
-  <script type="module">
+    <div id="motivaciones"></div>
+
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -144,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
   );
   const PAGE_ID = 'pagina1';
 
-  /* ELEMENTOS */
   const calcBtn = document.getElementById('calcBtn');
   const clearBtn = document.getElementById('clearBtn');
   const shareBtn = document.getElementById('shareBtn');
@@ -155,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const brawlerImg = document.getElementById('brawlerImg');
   const formContainer = document.querySelector('.container');
 
-  /* UTILIDADES */
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
           o = ctx.createOscillator(),
@@ -170,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
-  /* METRICAS */
   async function cargarMetricas(){
     const { data, error } = await supabase
       .from('metrics')
@@ -203,7 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(step);
   }
 
-  /* BOTONES */
   calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); spinRoulette(); });
   clearBtn.addEventListener('click', limpiar);
   shareBtn.addEventListener('click', share);
@@ -213,7 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
 
-  /* BRAWLERS */
   const allBrawlers = [
     "elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea",
     "8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie",
@@ -224,7 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
-  /* CALCULO */
   function calcular(){
     beep(600); vibrar();
     calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
@@ -250,7 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const total = Object.values(valores).reduce((a,b)=>a+b,0);
-
     const resultadoEl = document.getElementById("resultado");
     let start = parseInt(resultadoEl.innerText.replace(/\D/g,''))||0;
     const end = total;
@@ -280,7 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
   }
 
-  /* LIMPIAR */
   function limpiar(){
     beep(300); vibrar();
     clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
@@ -289,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(chart) chart.destroy();
   }
 
-  /* COMPARTIR */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
@@ -300,7 +292,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else { alert("Tu navegador no soporta compartir nativo."); }
   }
 
-  /* RUEDA CON GLOW */
   function getDailyIndex(max){
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
@@ -341,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /* MENSAJES MOTIVADORES DE FONDO */
+  // ================= MENSAJES MOTIVADORES FLOTANTES =================
   const mensajes = [
     "¡Sube copas con el brawler del día!",
     "¡Completa tus desafíos diarios!",
@@ -355,43 +346,42 @@ document.addEventListener('DOMContentLoaded', () => {
     "¡Diviértete mientras subes de nivel!"
   ];
 
-  const fondoMensajes = document.createElement('div');
+  const fondoMensajes = document.getElementById('motivaciones');
   fondoMensajes.style.position = 'absolute';
   fondoMensajes.style.inset = '0';
   fondoMensajes.style.pointerEvents = 'none';
   fondoMensajes.style.overflow = 'hidden';
   fondoMensajes.style.zIndex = '0';
-  formContainer.appendChild(fondoMensajes);
 
-  mensajes.forEach((msg,i)=>{
+  mensajes.forEach(msg => {
     const span = document.createElement('span');
     span.innerText = msg;
     span.style.position = 'absolute';
     span.style.whiteSpace = 'nowrap';
     span.style.color = 'rgba(255,255,255,0.3)';
-    span.style.fontSize = '1.5rem';
+    span.style.fontSize = `${1.2 + Math.random()*0.8}rem`;
     span.style.fontFamily = "'Bangers', cursive";
-    span.style.top = `${10 + Math.random()*70}%`;
-    span.style.left = '100%';
-    span.style.animation = `scrollMsg ${20 + Math.random()*10}s linear ${i*2}s infinite`;
+    span.style.top = `${Math.random()*90}%`;
+    span.style.left = `${Math.random()*90}%`;
+    span.style.animation = `flotar ${3 + Math.random()*3}s ease-in-out infinite alternate`;
     fondoMensajes.appendChild(span);
   });
 
   const styleTag = document.createElement('style');
   styleTag.innerHTML = `
-    @keyframes scrollMsg {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-120%); }
+    @keyframes flotar {
+      0% { transform: translateY(0px); opacity: 0.3; }
+      50% { transform: translateY(-10px); opacity: 0.5; }
+      100% { transform: translateY(5px); opacity: 0.3; }
     }
   `;
   document.head.appendChild(styleTag);
 
-  /* INICIALIZACION */
   (async ()=>{
     await incrementarVisita();
     await cargarMetricas();
   })();
 });
-  </script>
+</script>
 </body>
 </html>
