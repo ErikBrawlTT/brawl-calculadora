@@ -156,7 +156,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 </div>
 </div>
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
@@ -165,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
   );
   const PAGE_ID = 'pagina1';
 
-  /* ===== ELEMENTOS ===== */
   const calcBtn = document.getElementById('calcBtn');
   const clearBtn = document.getElementById('clearBtn');
   const shareBtn = document.getElementById('shareBtn');
@@ -175,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoClose = document.getElementById('infoClose');
   const brawlerImg = document.getElementById('brawlerImg');
 
-  /* ===== UTILIDADES ===== */
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
           o = ctx.createOscillator(),
@@ -190,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
-  /* ===== CONTADORES METRICAS ===== */
   async function cargarMetricas(){
     const { data, error } = await supabase
       .from('metrics')
@@ -223,31 +220,17 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(step);
   }
 
-  /* ===== BOTONES ===== */
-  calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); spinRoulette(); });
-  clearBtn.addEventListener('click', limpiar);
-  shareBtn.addEventListener('click', share);
-  spinBtn.addEventListener('click', () => { beep(520); vibrar(80); spinRoulette(); });
-  infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
-  infoClose.addEventListener('click', ()=> infoModal.style.display='none');
-  infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
-  shareBtn.classList.add('pulse');
-
-  /* ===== BRAWLERS RUEDA ===== */
-  const allBrawlers = [
-    "elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea",
+  const allBrawlers = [ "elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea",
     "8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie",
     "brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy",
     "colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank",
     "gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie",
     "max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper",
     "poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu",
-    "surge","tick","trunk","willow"
-  ];
+    "surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
-  /* ===== CALCULAR ===== */
   function calcular(){
     beep(600); vibrar();
     calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
@@ -297,13 +280,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const config = { type:'doughnut', data:data, options:{ cutout:"70%", plugins:{legend:{display:true,position:'bottom'}} }};
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
-
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-    document.getElementById('centerDiamond').style.display="block";
-    document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
   }
 
-  /* ===== LIMPIAR ===== */
   function limpiar(){
     beep(300); vibrar();
     clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
@@ -312,7 +290,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(chart) chart.destroy();
   }
 
-  /* ===== COMPARTIR ===== */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
@@ -323,11 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else { alert("Tu navegador no soporta compartir nativo."); }
   }
 
-  /* ===== RUEDA BRAWLER PROFESIONAL ===== */
   function getDailyIndex(max){
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
-    const today = new Date().toISOString().slice(0,10); // solo fecha
+    const today = new Date().toISOString().slice(0,10);
     const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
     if(saved.date===today && Number.isInteger(saved.index)) return saved.index;
     const idx = Math.floor(Math.random()*max);
@@ -335,45 +311,72 @@ document.addEventListener('DOMContentLoaded', () => {
     return idx;
   }
 
-  function spinRoulette(){
-    const stepsFast = 46;
-    const stepsSlow = 4;
-    const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
+  function spinRouletteFinal() {
     const finalIndex = getDailyIndex(allBrawlers.length);
-    let delay = 0;
+    const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
+    const duration = 4500;
+    const totalSpins = 5;
+    const startTime = performance.now();
 
-    // Limpiar glow previo
-    brawlerImg.classList.remove(...glowClasses);
+    function easing(t){ return 1 - Math.pow(1 - t, 3); }
 
-    // 46 pasos rápidos sin glow
-    for(let i=0;i<stepsFast;i++){
-      setTimeout(()=>{
-        const idx = Math.floor(Math.random()*allBrawlers.length);
-        brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
-      }, delay);
-      delay += 500; // velocidad rápida
-    }
+    function animate(now){
+      const elapsed = now - startTime;
+      let t = Math.min(elapsed / duration, 1);
+      const eased = easing(t);
 
-    // Últimos 4 pasos con glow progresivo
-    for(let i=0;i<stepsSlow;i++){
-      setTimeout(()=>{
-        const idx = (i===stepsSlow-1) ? finalIndex : Math.floor(Math.random()*allBrawlers.length);
-        brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+      const totalItems = allBrawlers.length * totalSpins;
+      let idx = Math.floor(eased * totalItems) % allBrawlers.length;
 
+      if(t > 0.95){
+        idx = finalIndex;
+        const glowStep = Math.floor((t - 0.95) / 0.0125);
         brawlerImg.classList.remove(...glowClasses);
-        brawlerImg.classList.add(glowClasses[i]);
-      }, delay);
-      delay += 700 + i*200; // pasos más lentos
+        brawlerImg.classList.add(glowClasses[Math.min(glowStep, 3)]);
+      } else {
+        brawlerImg.classList.remove(...glowClasses);
+      }
+
+      brawlerImg.src = baseURL + allBrawlers[idx] + ".png";
+
+      if(t < 1) requestAnimationFrame(animate);
     }
+
+    requestAnimationFrame(animate);
   }
 
-  /* ===== INICIALIZACIÓN ===== */
-  (async ()=>{
+  calcBtn.addEventListener('click', () => {
+    beep(520); vibrar(80);
+    calcular();
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    document.getElementById('centerDiamond').style.display = "block";
+    spinRouletteFinal();
+    document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
+  });
+
+  spinBtn.addEventListener('click', () => {
+    beep(520); vibrar(80);
+    spinRouletteFinal();
+  });
+
+  clearBtn.addEventListener('click', limpiar);
+  shareBtn.addEventListener('click', share);
+  infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
+  infoClose.addEventListener('click', ()=> infoModal.style.display='none');
+  infoModal.addEventListener('click', e => {
+    if (e.target === infoModal) infoModal.style.display = 'none';
+  });
+
+  // Animación del botón de compartir
+  shareBtn.classList.add('pulse');
+
+  // Inicialización
+  (async () => {
     await incrementarVisita();
     await cargarMetricas();
     // No girar automáticamente, solo al pulsar botones
   })();
 });
-</script>
+  </script>
 </body>
 </html>
