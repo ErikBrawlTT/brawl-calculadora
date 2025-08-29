@@ -12,6 +12,7 @@
 body { margin: 0; font-family: 'Bangers', cursive; background: url('Personajes-Brawl-Stars.webp') no-repeat center center fixed; background-size: cover; color: white; text-align: center; position: relative; }
 body::after { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); z-index: 0; }
 .container { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+/* ==== TITULO ==== */
 h1 { font-size: 3rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Bangers', cursive; color: #FFD700; text-shadow: -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 2px 0 black; }
 h1 .diamond { font-family: 'Bangers', cursive; font-size: 3rem; color: #32CD32; text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 6px #32CD32,0 0 12px #00FF00,0 0 18px #00FF7F; animation: glow 1.5s infinite alternate; }
 @keyframes glow { 0% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; } 50% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 8px #32CD32,0 0 16px #00FF00,0 0 24px #00FF7F; } 100% { text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #32CD32,0 0 8px #00FF00,0 0 12px #00FF7F; } }
@@ -31,23 +32,39 @@ button.flash { box-shadow: 0 0 20px #fff,0 0 30px #fff,0 0 40px #fff; transition
 #spinBtn{ margin-top:10px; padding:8px 16px; font-size:1.1rem; background: linear-gradient(90deg,#FFA500,#FF8C00); color:#000; box-shadow: 0 0 10px #FFA500,0 0 20px rgba(255,165,0,.5); border-radius: 12px; }
 #infoBtn{ position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); width:70px; height:70px; border-radius:50%; background: rgba(20,0,30,.25); border: 2px solid #B300FF; display:flex; align-items:center; justify-content:center; letter-spacing: 2px; color: #FFFFFF; font-size: 1.1rem; text-shadow: 0 0 6px #B300FF,0 0 12px #8000FF; box-shadow: 0 0 10px #B300FF,0 0 20px rgba(179,0,255,.35); cursor:pointer; z-index:2; animation: infoPulse 1.6s ease-in-out infinite; }
 @keyframes infoPulse{ 0% { box-shadow:0 0 8px #B300FF,0 0 16px rgba(179,0,255,.25); } 50% { box-shadow:0 0 14px #B300FF,0 0 28px rgba(179,0,255,.45); } 100% { box-shadow:0 0 8px #B300FF,0 0 16px rgba(179,0,255,.25); } }
+/* ==== METRICAS ==== */
 .metric-container { display: flex; justify-content: center; gap: 22px; margin-top: 18px; }
 .metric { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family:'Orbitron', sans-serif; font-size: 2rem; }
 .metric .box { background: rgba(0,0,0,0.7); padding: 8px 18px; border-radius: 12px; min-width: 70px; text-align: center; font-weight: 700; user-select: none; transition: all 0.2s ease; cursor:pointer; }
 .metric.visitas .box { border: 2px solid #00CFFF; color: #00CFFF; box-shadow:0 0 10px #00CFFF,0 0 20px #00CFFF;}
 .metric.likes .box { border: 2px solid #39ff14; color: #39ff14; box-shadow:0 0 10px #39ff14,0 0 20px #39ff14;}
 .metric.dislikes .box { border: 2px solid #FF073A; color: #FF073A; box-shadow:0 0 10px #FF073A,0 0 20px #FF073A;}
+/* ==== CANVAS Y BRAWLER ==== */
 canvas{ margin-top:15px; max-width:400px; position:relative; }
 #centerDiamond { position: absolute; top: 43%; left: 50%; transform: translate(-50%, -50%); display: block; }
 #centerDiamond img { width: 210px; height: 210px; border-radius: 50%; object-fit: contain; background: rgba(0,0,0,0.3); transition: all 0.4s ease; }
 #centerDiamond img.finalGlow { box-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 60px #fff; }
 #resultado { margin:10px 0; font-size:2rem; font-family:'Bangers'; color:#00FF00; text-shadow:0 0 8px #00FF00,0 0 15px #00FF00; }
+/* ==== MODAL INFO ==== */
 #infoModal{ position: fixed; inset: 0; background: rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index: 9999; }
 #infoModal .content{ background: #0f0b18; border: 2px solid #FFD700; box-shadow: 0 0 18px #FFD700,0 0 36px rgba(255,215,0,.4); border-radius: 16px; max-width: 560px; width: 90%; padding: 18px 18px 12px; text-align: left; font-family: 'Orbitron', sans-serif; color: #fff; }
 #infoModal .content h3{ margin: 0 0 8px; color: #FFD700; font-family: 'Bangers'; font-size: 1.8rem; }
 #infoModal .content p{ margin: 6px 0; line-height: 1.35; font-size: 1rem; }
 #infoClose{ float:right; font-size: 1.5rem; color: #FF4D4D; cursor:pointer; margin-left: 8px; }
 #infoClose:hover{ filter: brightness(1.2); }
+/* ==== GLOW SEGMENTOS RUEDA ==== */
+.segmentGlowBlue { box-shadow:0 0 15px 4px #00CFFF; }
+.segmentGlowRed { box-shadow:0 0 15px 4px #FF073A; }
+.segmentGlowOrange { box-shadow:0 0 15px 4px #FFA500; }
+.segmentGlowGreen { box-shadow:0 0 15px 4px #00FF00; }
+.glow-blue { box-shadow: 0 0 25px #00f, 0 0 50px #00f, 0 0 75px #00f, 0 0 100px #00CFFF; animation: glow-blue 3s infinite alternate; }
+.glow-red  { box-shadow: 0 0 20px #f00, 0 0 40px #f00, 0 0 60px #f00; animation: glow-red 3s infinite alternate; }
+.glow-orange { box-shadow: 0 0 20px #f90, 0 0 40px #f90, 0 0 60px #f90; animation: glow-orange 3s infinite alternate; }
+.glow-green { box-shadow: 0 0 20px #0f0, 0 0 40px #0f0, 0 0 60px #0f0; animation: glow-green 3s infinite alternate; }
+@keyframes glow-blue { 0% { box-shadow: 0 0 10px #00f, 0 0 20px #00CFFF; } 50% { box-shadow: 0 0 40px #00f, 0 0 80px #00CFFF; } 100% { box-shadow: 0 0 10px #00f, 0 0 20px #00CFFF; } }
+@keyframes glow-red { 0% { box-shadow: 0 0 10px #f00, 0 0 20px #f00; } 50% { box-shadow: 0 0 25px #f00, 0 0 45px #f00; } 100% { box-shadow: 0 0 10px #f00, 0 0 20px #f00; } }
+@keyframes glow-orange { 0% { box-shadow: 0 0 10px #f90, 0 0 20px #f90; } 50% { box-shadow: 0 0 25px #f90, 0 0 45px #f90; } 100% { box-shadow: 0 0 10px #f90, 0 0 20px #f90; } }
+@keyframes glow-green { 0% { box-shadow: 0 0 10px #0f0, 0 0 20px #0f0; } 50% { box-shadow: 0 0 25px #0f0, 0 0 45px #0f0; } 100% { box-shadow: 0 0 10px #0f0, 0 0 20px #0f0; } }
 </style>
 </head>
 <body>
@@ -79,7 +96,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 <div style="position:relative; display:inline-block;">
 <canvas id="myChart" width="400" height="400"></canvas>
 <div id="centerDiamond">
-<img id="brawlerImg" src="" alt="Brawler">
+<img id="brawlerImg" src="https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/elprimo.png" alt="Brawler">
 </div>
 </div>
 <div id="infoModal">
@@ -90,13 +107,14 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 <p>- 🎟️ Brawl Pass: Ingresa el total aprox. de los BrawlPass que has utilizado.</p>
 <p>- 🩵💚💜❤️🌟 Skins: Ingresa la cantidad de skins (en la tienda del juego en cada modalidad de skins te sale el total).</p>
 <p>- ⚡🔥 Brawlers maxeados: Sumando los Brawlers maxeados con sus hipercargas, sabrás el valor aproximado de tu cuenta.</p>
-<p>- 🎲 Interactua: ¡Gira y juega! Este es tu Brawler del dia, aparecerá dentro de un glow🟢! vuelve mañana será otro🎯.</p>
+<p>- 🎲 Interactua: ¡Gira y juega! Este es tu Brawler del dia,aparecera dentro de un glow🟢! vuelve mañana sera otro🎯.</p>
 <p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
 </div>
 </div>
-
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esmdocument.addEventListener('DOMContentLoaded', () => {
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
     'https://ttkneykkrkbajymzsgcr.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
@@ -152,25 +170,86 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     requestAnimationFrame(step);
   }
 
+  /* ===== BOTONES ===== */
+  calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); spinRouletteSmooth(); });
+  clearBtn.addEventListener('click', limpiar);
+  shareBtn.addEventListener('click', share);
+  spinBtn.addEventListener('click', () => { beep(520); vibrar(80); spinRouletteSmooth(); });
+  infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
+  infoClose.addEventListener('click', ()=> infoModal.style.display='none');
+  infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
+  shareBtn.classList.add('pulse');
+
   /* ===== BRAWLERS ===== */
-  const allBrawlers = [
-    "elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea",
-    "8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo",
-    "bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck",
-    "clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx",
-    "frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong",
-    "janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis",
-    "ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy",
-    "shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"
-  ];
+  const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
-  /* ===== Pre-carga de imágenes para que ruleta funcione de inmediato ===== */
+  /* ===== Pre-carga de imágenes ===== */
   const brawlerCache = {};
   allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
 
-  /* ===== FUNCION BRAWLER DEL DÍA ===== */
+  /* ===== CALCULAR ===== */
+  function calcular(){
+    beep(600); vibrar();
+    calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
+
+    const bpass = Number(document.getElementById("bpass").value)||0;
+    const comunes = Number(document.getElementById("comunes").value)||0;
+    const raras = Number(document.getElementById("raras").value)||0;
+    const epicas = Number(document.getElementById("epicas").value)||0;
+    const miticas = Number(document.getElementById("miticas").value)||0;
+    const legendarias = Number(document.getElementById("legendarias").value)||0;
+    const hipercarga = Number(document.getElementById("hipercarga").value)||0;
+    const maxeados = Number(document.getElementById("maxeados").value)||0;
+
+    const valores={"🎟️ Brawl Pass":bpass*10,"🩵 Comunes":comunes*2,"💚 Raras":raras*5,"💜 Épicas":epicas*10,"❤️ Míticas":miticas*12,"🌟 Legendarias":legendarias*15,"⚡ Hipercarga":hipercarga*20,"🔥 Maxeados":maxeados*50};
+    const total = Object.values(valores).reduce((a,b)=>a+b,0);
+
+    const resultadoEl = document.getElementById("resultado");
+    let start = parseInt(resultadoEl.innerText.replace(/\D/g,''))||0;
+    const end = total;
+    const duration = 800;
+    const t0 = performance.now();
+    function step(t){
+      const p = Math.min((t-t0)/duration,1);
+      resultadoEl.innerText = "Valor total: "+Math.floor(start + (end-start)*p)+" 🪙";
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+
+    const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
+    const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
+    if(chart) chart.destroy();
+    chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
+
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    document.getElementById('centerDiamond').style.display="block";
+    document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  /* ===== LIMPIAR ===== */
+  function limpiar(){
+    beep(300); vibrar();
+    clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
+    document.getElementById("calcForm").reset();
+    document.getElementById("resultado").innerText="Valor total: 0 🪙";
+    if(chart) chart.destroy();
+    brawlerImg.className = ""; // reinicia glow
+  }
+
+  /* ===== COMPARTIR ===== */
+  async function share(){
+    beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
+    const url = window.location.href;
+    const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
+    if(navigator.share){
+      try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
+      catch(err){console.log(err);}
+    } else { alert("Tu navegador no soporta compartir nativo."); }
+  }
+
+  /* ===== BRAWLER DEL DIA ===== */
   function getDailyIndex(max){
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
@@ -181,87 +260,63 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
     return idx;
   }
+/* ===== SPIN SUAVE CON FRENADO PROLONGADO (7s) ===== */
+function spinRouletteSmooth(){
+  const finalIndex = getDailyIndex(allBrawlers.length);
+  const totalDuration = 7000; // duración total en ms
+  const finalSlowBrawlers = 6; // últimos 6 brawlers desacelerando
+  const steps = allBrawlers.length + finalSlowBrawlers; // al menos 1 vuelta completa + frenado
+  let currentStep = 0;
+  let currentIndex = 0;
 
-  /* ===== INICIALIZACIÓN ===== */
-  cargarMetricas();
-  incrementarVisita();
-  const dailyIdx = getDailyIndex(allBrawlers.length);
-  brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
-  brawlerImg.className = "finalGlow";
-  /* ===== SPIN SUAVE CON DESACELERACIÓN REALISTA ===== */
-  function spinRouletteSmooth(){
-    const finalIndex = getDailyIndex(allBrawlers.length);
-    const numBrawlers = allBrawlers.length;
+  function nextStep(){
+    const brawlerName = allBrawlers[currentIndex % allBrawlers.length];
+    brawlerImg.src = brawlerCache[brawlerName].src;
 
-    const totalDuration = 7000; // Duración total 7 segundos
-    const fps = 60;
-    const totalFrames = Math.floor(totalDuration / (1000 / fps));
-    const finalSlowFrames = Math.floor(fps * 1.5); // últimos 1.5 segundos frenando
-    const initialFastFrames = totalFrames - finalSlowFrames;
-    let frame = 0;
+    // Glow adaptativo
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-
-    function easing(t){ return 1 - Math.pow(1 - t, 3); } // desaceleración suave
-
-    function animate(){
-      const t = frame / totalFrames;
-      let easedIndex;
-
-      if(frame < initialFastFrames){
-        // Parte rápida de la ruleta
-        easedIndex = Math.floor((frame / initialFastFrames) * numBrawlers * 2); // 2 vueltas
-      } else {
-        // Desaceleración prolongada
-        const slowFrame = frame - initialFastFrames;
-        const slowT = slowFrame / finalSlowFrames;
-        easedIndex = Math.floor(numBrawlers * 2 + easing(slowT) * (finalIndex - numBrawlers * 2));
-      }
-
-      const currentBrawler = allBrawlers[easedIndex % numBrawlers];
-      brawlerImg.src = brawlerCache[currentBrawler].src;
-
-      // Glow adaptativo
-      if(frame >= totalFrames - finalSlowFrames){
-        const glowStep = frame - (totalFrames - finalSlowFrames);
-        const intensity = 0.2 + (glowStep / finalSlowFrames) * 0.8;
-        brawlerImg.className = "finalGlow"; // mantiene glow intenso al final
-      } else {
-        brawlerImg.className = glowClasses[frame % glowClasses.length];
-      }
-
-      frame++;
-      if(frame <= totalFrames){
-        requestAnimationFrame(animate);
-      } else {
-        // Resultado final
-        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-        brawlerImg.className = "finalGlow";
-        confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-      }
+    if(currentStep < steps - finalSlowBrawlers){
+      brawlerImg.className = glowClasses[currentStep % glowClasses.length];
+    } else {
+      brawlerImg.className = "finalGlow";
     }
 
-    animate();
-  }
-  /* ===== BOTONES ===== */
-  calcBtn.addEventListener('click', () => { 
-    beep(520); 
-    vibrar(80); 
-    calcular(); 
-    spinRouletteSmooth(); 
-  });
-  clearBtn.addEventListener('click', limpiar);
-  shareBtn.addEventListener('click', share);
-  spinBtn.addEventListener('click', () => { 
-    beep(520); 
-    vibrar(80); 
-    spinRouletteSmooth(); 
-  });
-  infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
-  infoClose.addEventListener('click', ()=> infoModal.style.display='none');
-  infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
-  shareBtn.classList.add('pulse');
+    currentStep++;
+    currentIndex++;
 
-}); // Cierre de DOMContentLoaded
+    if(currentStep <= steps){
+      // Calcular velocidad progresiva para 7s total
+      let speed;
+      if(currentStep <= steps - finalSlowBrawlers){
+        // Velocidad inicial rápida
+        speed = 50 + ((totalDuration - 1000)/ (steps - finalSlowBrawlers)) * currentStep;
+      } else {
+        // Frenado prolongado últimos 6 brawlers
+        const slowStep = currentStep - (steps - finalSlowBrawlers);
+        speed = 150 + Math.pow(slowStep / finalSlowBrawlers, 2) * 400;
+      }
+      setTimeout(nextStep, speed);
+    } else {
+      // Resultado final
+      brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
+      brawlerImg.className = "finalGlow";
+      confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+    }
+  }
+
+  nextStep();
+  
+  }
+  
+  /* ===== INICIALIZACIÓN ===== */
+cargarMetricas();
+incrementarVisita();
+// mostrar brawler inicial
+const dailyIdx = getDailyIndex(allBrawlers.length);
+brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
+brawlerImg.className = "finalGlow";
+   });
 </script>
 </body>
 </html>
+  
