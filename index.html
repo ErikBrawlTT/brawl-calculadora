@@ -540,26 +540,45 @@ function prepareRouletteList() {
   }
 
   /* ===== INICIALIZACIÓN ===== */
-  // deshabilitamos spin hasta que prepareActiveBrawlers termine
-  if(spinBtn) spinBtn.disabled = true;
-  prepareActiveBrawlers(20).then(selected => {
-    // Si activeBrawlers está listo, muestra el daily brawler desde esa lista
-    const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
-    const dailyIdx = getDailyIndex(maxForDaily);
-    const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
-    safeSetBrawler(dailyName);
-  }).catch(e=>{
-    console.warn("prepareActiveBrawlers fallo: ", e);
-    // fallback: intenta mostrar un brawler del conjunto completo
-    const idx = getDailyIndex(allBrawlers.length);
-    const name = allBrawlers[idx];
-    safeSetBrawler(name);
-    if(spinBtn) spinBtn.disabled = false;
-  });
+// deshabilitamos spin hasta que prepareActiveBrawlers termine
+if(spinBtn) spinBtn.disabled = true;
 
-  // Cargamos métricas e incrementamos visita (puede ejecutarse en paralelo)
-  cargarMetricas();
-  incrementarVisita();
+prepareActiveBrawlers(20).then(selected => {
+  // Determinamos el brawler del día
+  const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
+  const dailyIdx = getDailyIndex(maxForDaily);
+  const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
+
+  // 1️⃣ Mostramos el brawler del día al cargar
+  safeSetBrawler(dailyName);
+
+  // 2️⃣ Elegimos un brawler inicial para la ruleta que NO sea el del día
+  if(activePrepared && activeBrawlers.length > 1){
+    const otherBrawlers = activeBrawlers.filter((b, i) => i !== dailyIdx);
+    const startIdx = Math.floor(Math.random() * otherBrawlers.length);
+    const startBrawler = otherBrawlers[startIdx];
+    // guardamos este brawler para la ruleta (puedes usarlo en spinRouletteSmooth)
+    brawlerImg.dataset.startBrawler = startBrawler;
+  } else {
+    // fallback: si solo hay 1 brawler, lo usamos igual
+    brawlerImg.dataset.startBrawler = dailyName;
+  }
+
+  // habilitamos el botón de spin
+  if(spinBtn) spinBtn.disabled = false;
+
+}).catch(e => {
+  console.warn("prepareActiveBrawlers fallo: ", e);
+  // fallback: intenta mostrar un brawler del conjunto completo
+  const idx = getDailyIndex(allBrawlers.length);
+  const name = allBrawlers[idx];
+  safeSetBrawler(name);
+  if(spinBtn) spinBtn.disabled = false;
+});
+
+// Cargamos métricas e incrementamos visita (puede ejecutarse en paralelo)
+cargarMetricas();
+incrementarVisita();
 });
 </script>
 </body>
