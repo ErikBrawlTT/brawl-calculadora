@@ -104,7 +104,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 y vuelve al juego a darle caña🏆.</p>
     </div>
   </div>
-  <script type="module">
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
 
-  // ===== UTILIDADES =====
+  // ===== UTILS =====
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
           o = ctx.createOscillator(),
@@ -173,7 +173,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   const brawlerCache = {};
   let chart;
 
-  // ===== BRAWLER DEL DÍA =====
+  // ===== FALLBACK DE IMAGEN =====
+  function preloadBrawler(name){
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => { brawlerCache[name] = img; resolve(); };
+      img.onerror = () => {
+        const fallback = new Image();
+        fallback.src = baseURL+"shelly.png";
+        fallback.onload = () => { brawlerCache[name] = fallback; resolve(); };
+        fallback.onerror = () => resolve();
+      };
+      img.src = baseURL + name + ".png";
+    });
+  }
+
+  async function preloadBrawlers(names){
+    await Promise.all(names.map(preloadBrawler));
+  }
+
+  function setBrawlerImage(name, glowClass=""){
+    const img = brawlerCache[name] || { src: baseURL+"shelly.png" };
+    brawlerImg.src = img.src;
+    brawlerImg.className = glowClass;
+  }
+
+  // ===== BRAWLER DEL DÍA Y 20 ALEATORIOS =====
   function getDailyIndex(max){
     const today = new Date().toISOString().slice(0,10);
     const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
@@ -193,38 +218,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function preloadEssentialBrawlers(){
     const selected = getDailyBrawlers();
-    const promises = selected.map(name => new Promise(resolve=>{
-      const img = new Image();
-      img.src = baseURL+name+".png";
-      img.onload = img.onerror = () => {
-        if(!img.complete || img.naturalWidth === 0){
-          const fallback = new Image();
-          fallback.src = baseURL+"shelly.png";
-          brawlerCache[name] = fallback;
-        } else {
-          brawlerCache[name] = img;
-        }
-        resolve();
-      };
-    }));
-    await Promise.all(promises);
-  }
-
-  function setBrawlerImageWithFallback(name, glowClass){
-    const img = brawlerCache[name];
-    if(img && img.complete && img.naturalWidth!==0){
-      brawlerImg.src = img.src;
-    } else {
-      brawlerImg.src = baseURL+"shelly.png";
-    }
-    brawlerImg.className = glowClass;
+    await preloadBrawlers(selected);
   }
 
   // ===== RULETA =====
   function spinRouletteSmooth(){
     const selected = getDailyBrawlers();
-    const finalBrawler = selected[0]; // Brawler del día
-    const rouletteBrawlers = selected.slice(1); // 20 aleatorios
+    const finalBrawler = selected[0];
+    const rouletteBrawlers = selected.slice(1);
     const shuffledFast = [...rouletteBrawlers].sort(()=>Math.random()-0.5);
 
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
@@ -253,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
       const name = shuffledFast[step % shuffledFast.length];
-      setBrawlerImageWithFallback(name, glowClasses[step % glowClasses.length]);
+      setBrawlerImage(name, glowClasses[step % glowClasses.length]);
       step++;
       const p = Math.min(elapsed / fastDuration, 1);
       const delay = 35 + (140 - 35) * easeOutCubic(p);
@@ -262,12 +263,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function startSlowPhase(idx){
       if(idx >= finalSlowSteps){
-        setBrawlerImageWithFallback(finalBrawler, "glow-green");
+        setBrawlerImage(finalBrawler, "glow-green");
         confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
         return;
       }
       const name = slowSequence[idx];
-      setBrawlerImageWithFallback(name, idx<finalSlowSteps-1?glowClasses[(step+idx)%glowClasses.length]:"glow-green");
+      setBrawlerImage(name, idx<finalSlowSteps-1?glowClasses[(step+idx)%glowClasses.length]:"glow-green");
       const stepDelay = slowDuration / finalSlowSteps;
       setTimeout(()=>startSlowPhase(idx+1), stepDelay);
     }
@@ -329,7 +330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(chart) chart.destroy();
 
     const dailyIdx = getDailyIndex(allBrawlers.length);
-    setBrawlerImageWithFallback(allBrawlers[dailyIdx], "finalGlow");
+    setBrawlerImage(allBrawlers[dailyIdx], "finalGlow");
     document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'});
   }
 
@@ -379,8 +380,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   cargarMetricas();
   incrementarVisita();
   const dailyIdx = getDailyIndex(allBrawlers.length);
-  setBrawlerImageWithFallback(allBrawlers[dailyIdx], "finalGlow");
+  setBrawlerImage(allBrawlers[dailyIdx], "finalGlow");
 });
+
 </script>
 </body>
 </html>
