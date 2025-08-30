@@ -104,7 +104,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-  <script type="module">
+        <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
   );
   const PAGE_ID = 'pagina1';
+
   /* ===== ELEMENTOS ===== */
   const calcBtn = document.getElementById('calcBtn');
   const clearBtn = document.getElementById('clearBtn');
@@ -126,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const visitasCounter = document.getElementById('visitas-counter');
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
+
   /* ===== UTILIDADES ===== */
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
@@ -135,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15);
   }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
+
   /* ===== CONTADORES METRICAS ===== */
   async function cargarMetricas(){
     const { data, error } = await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id', PAGE_ID).single();
@@ -144,14 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
       animateCounter('dislikes-counter', data.dislikes);
     }
   }
-
   async function incrementarVisita(){
     try{
       await supabase.rpc('increment_visitas',{pid: PAGE_ID});
       await cargarMetricas();
     }catch(e){ console.error(e); }
   }
-
   function animateCounter(id, value){
     const el = document.getElementById(id);
     let start = parseInt(el.innerText)||0;
@@ -164,35 +165,35 @@ document.addEventListener('DOMContentLoaded', () => {
       if(p<1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
-}
+  }
+
   /* ===== BOTONES ===== */
   calcBtn.addEventListener('click', () => { 
     beep(520); vibrar(80); 
     calcular(); 
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); 
   });
-
   clearBtn.addEventListener('click', () => { 
     limpiar(); 
     document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
   });
-
   shareBtn.addEventListener('click', share);
   spinBtn.addEventListener('click', () => { 
     beep(520); vibrar(80); 
     if(!spinBtn.disabled) spinRouletteSmooth(); 
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); 
   });
-
   infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
   infoClose.addEventListener('click', ()=> infoModal.style.display='none');
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
+
   /* ===== BRAWLERS ===== */
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
+  /* precarga global */
   const brawlerCache = {};
   allBrawlers.forEach(name => { 
     const img = new Image(); 
@@ -211,6 +212,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return copy.slice(0, Math.min(count, copy.length));
   }
+
+  /* ===== DAILY (por nombre, estable por día) ===== */
+  function getOrCreateDailyName(){
+    const today = new Date().toISOString().slice(0,10);
+    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
+    if(saved.date === today && saved.name) return saved.name;
+    // elige de todo el conjunto (así la curiosidad puede venir de cualquier brawler)
+    const idx = Math.floor(Math.random()*allBrawlers.length);
+    const name = allBrawlers[idx];
+    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name}));
+    return name;
+  }
+
+  /* ===== PREPARAR 20 BRAWLERS ACTIVOS (precarga/timeout) ===== */
   function prepareActiveBrawlers(count = 20, timeoutMs = 8000){
     return new Promise(resolve => {
       const selected = pickRandomUnique(allBrawlers, count);
@@ -251,7 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
         resolve(activeBrawlers);
       });
     });
-    }
+  }
+
+  /* ===== FUNCIONES DE IMAGEN SEGURA (fallbacks) ===== */
   function getLoadedImagesFromList(list){
     return list
       .map(name => brawlerCache[name])
@@ -275,6 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     brawlerImg.className = fallbackClass;
   }
+
+  /* ===== CALCULAR ===== */
   function calcular(){
     beep(600); vibrar();
     calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
@@ -319,7 +338,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
-      }
+  }
+
+  /* ===== LIMPIAR ===== */
   function limpiar(){
     beep(300); 
     vibrar();
@@ -328,36 +349,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById("calcForm").reset();
     document.getElementById("resultado").innerText="Valor total: 0 🪙";
-
     if(chart) chart.destroy();
 
-    const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
-    const dailyIdx = getDailyIndex(maxForDaily);
-    const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
-    safeSetBrawler(dailyName);
+    // mostramos un brawler inicial distinto al daily para que la ruleta no empiece con el daily
+    const dailyName = getOrCreateDailyName();
+    let candidates = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
+    candidates = candidates.filter(n => n !== dailyName);
+    const start = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : dailyName;
+    safeSetBrawler(start);
     brawlerImg.className = "finalGlow";
 
     document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
-    }
-  function limpiar(){
-    beep(300); 
-    vibrar();
-    clearBtn.classList.add('flash'); 
-    setTimeout(()=>clearBtn.classList.remove('flash'),200);
+  }
 
-    document.getElementById("calcForm").reset();
-    document.getElementById("resultado").innerText="Valor total: 0 🪙";
-
-    if(chart) chart.destroy();
-
-    const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
-    const dailyIdx = getDailyIndex(maxForDaily);
-    const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
-    safeSetBrawler(dailyName);
-    brawlerImg.className = "finalGlow";
-
-    document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
-   }
+  /* ===== SHARE ===== */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
@@ -374,69 +379,56 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
-  function getUserVote() {
-    return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}');
-  }
 
-  function setUserVote(vote) {
-    localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote));
-  }
+  /* ===== VOTO ===== */
+  function getUserVote() { return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}'); }
+  function setUserVote(vote) { localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote)); }
 
   likesCounter.addEventListener('click', async () => {
     beep(400); vibrar();
     let vote = getUserVote();
-    if(vote.type === 'like'){
-      vote = {};
-      await supabase.rpc('decrement_likes',{pid: PAGE_ID});
-    } else {
-      if(vote.type === 'dislike'){
-        await supabase.rpc('decrement_dislikes',{pid: PAGE_ID});
-      }
-      vote = { type: 'like' };
-      await supabase.rpc('increment_likes',{pid: PAGE_ID});
-    }
-    setUserVote(vote);
-    cargarMetricas();
+    if(vote.type === 'like'){ vote = {}; await supabase.rpc('decrement_likes',{pid: PAGE_ID}); }
+    else { if(vote.type==='dislike') await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); vote={type:'like'}; await supabase.rpc('increment_likes',{pid: PAGE_ID}); }
+    setUserVote(vote); cargarMetricas();
   });
-
   dislikesCounter.addEventListener('click', async () => {
     beep(300); vibrar();
     let vote = getUserVote();
-    if(vote.type === 'dislike'){
-      vote = {};
-      await supabase.rpc('decrement_dislikes',{pid: PAGE_ID});
-    } else {
-      if(vote.type === 'like'){
-        await supabase.rpc('decrement_likes',{pid: PAGE_ID});
-      }
-      vote = { type: 'dislike' };
-      await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
-    }
-    setUserVote(vote);
-    cargarMetricas();
+    if(vote.type === 'dislike'){ vote = {}; await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); }
+    else { if(vote.type==='like') await supabase.rpc('decrement_likes',{pid: PAGE_ID}); vote={type:'dislike'}; await supabase.rpc('increment_dislikes',{pid: PAGE_ID}); }
+    setUserVote(vote); cargarMetricas();
   });
-  function getDailyIndex(max){
-    if(!max || max <= 0) return 0;
-    const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
-    localStorage.setItem('uid', uid);
-    const today = new Date().toISOString().slice(0,10);
-    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-    if(saved.date===today && Number.isInteger(saved.index) && saved.index < max) return saved.index;
-    const idx = Math.floor(Math.random()*max);
-    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
-    return idx;
-    }
+
+  /* ===== RULETA (termina en el daily, no empieza con él) ===== */
   function spinRouletteSmooth() {
-    const brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
+    let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
+    const dailyName = getOrCreateDailyName();
+
+    // aseguramos que el daily esté presente en la lista (si no, lo insertamos)
+    if(!brawlersList.includes(dailyName)){
+      const replaceIdx = Math.floor(Math.random()*brawlersList.length);
+      brawlersList[replaceIdx] = dailyName;
+    }
+
     const numBrawlers = brawlersList.length;
-    const finalIndex = getDailyIndex(numBrawlers);
+    const finalIndex = brawlersList.indexOf(dailyName); // así la ruleta termina en el daily
     const totalDuration = 10000;
     const slowDuration = 2000;
     const fastDuration = totalDuration - slowDuration;
     const finalSlowSteps = Math.min(6, numBrawlers);
 
+    // índices
     const indices = Array.from({ length: numBrawlers }, (_, i) => i);
     const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
+
+    // aseguramos que la primera posición rápida NO sea el daily (evita empezar con él)
+    if(brawlersList[shuffledFast[0]] === dailyName){
+      const swapIdx = shuffledFast.findIndex(i => brawlersList[i] !== dailyName);
+      if(swapIdx > 0){
+        [shuffledFast[0], shuffledFast[swapIdx]] = [shuffledFast[swapIdx], shuffledFast[0]];
+      }
+    }
+
     const temp = indices.filter(i => i !== finalIndex);
     const slowSequence = [];
     for (let i = 0; i < finalSlowSteps - 1; i++) {
@@ -501,10 +493,11 @@ document.addEventListener('DOMContentLoaded', () => {
             slowStep++;
           }
           if(slowStep >= finalSlowSteps){
+            // Reveal final (daily)
             const finalName = brawlersList[finalIndex];
             safeSetBrawler(finalName, "glow-green finalGlow");
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-            return;
+            return; // terminada
           }
         }
       }
@@ -513,24 +506,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     requestAnimationFrame(animate);
-    }
+  }
+
+  /* ===== INICIALIZACIÓN ===== */
   if(spinBtn) spinBtn.disabled = true;
-  prepareActiveBrawlers(20).then(selected => {
-    const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
-    const dailyIdx = getDailyIndex(maxForDaily);
-    const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
-    safeSetBrawler(dailyName);
+  prepareActiveBrawlers(20).then(() => {
+    // Obtener daily estable
+    const dailyName = getOrCreateDailyName();
+
+    // Si el daily no está en activeBrawlers, lo insertamos para garantizar su presencia y precarga
+    if(!activeBrawlers.includes(dailyName)){
+      const idx = Math.floor(Math.random()*activeBrawlers.length);
+      activeBrawlers[idx] = dailyName;
+      // forzamos inicio de carga si hacía falta
+      if(!brawlerCache[dailyName]){
+        const n = new Image();
+        n.src = baseURL + dailyName + ".png";
+        brawlerCache[dailyName] = n;
+      } else {
+        brawlerCache[dailyName].src = baseURL + dailyName + ".png";
+      }
+    }
+
+    // Mostramos un Brawler inicial que NO sea el daily (evita sensación de empezar y terminar igual)
+    const nonDaily = activeBrawlers.filter(n => n !== dailyName);
+    const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;
+    safeSetBrawler(startName);
+
+    if(spinBtn) spinBtn.disabled = false;
   }).catch(e=>{
     console.warn("prepareActiveBrawlers fallo: ", e);
-    const idx = getDailyIndex(allBrawlers.length);
-    const name = allBrawlers[idx];
-    safeSetBrawler(name);
+    const dailyName = getOrCreateDailyName();
+    safeSetBrawler(dailyName);
     if(spinBtn) spinBtn.disabled = false;
   });
 
+  // métricas en paralelo
   cargarMetricas();
   incrementarVisita();
-  });
-</script>
+});
+ </script>
 </body>
 </html>
