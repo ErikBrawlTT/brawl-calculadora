@@ -105,12 +105,12 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
     </div>
   </div>
 <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
     'https://ttkneykkrkbajymzsgcr.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
+    'TU_API_KEY_AQUI'
   );
   const PAGE_ID = 'pagina1';
 
@@ -129,13 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dislikesCounter = document.getElementById('dislikes-counter');
 
   /* ===== UTILIDADES ===== */
-  function beep(freq){
-    const ctx = new (AudioContext||webkitAudioContext)(),
-          o = ctx.createOscillator(),
-          g = ctx.createGain();
-    o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination);
-    g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15);
-  }
+  function beep(freq){ const ctx = new (AudioContext||webkitAudioContext)(), o = ctx.createOscillator(), g = ctx.createGain(); o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15); }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
   /* ===== CONTADORES METRICAS ===== */
@@ -147,46 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
       animateCounter('dislikes-counter', data.dislikes);
     }
   }
-  async function incrementarVisita(){
-    try{
-      await supabase.rpc('increment_visitas',{pid: PAGE_ID});
-      await cargarMetricas();
-    }catch(e){ console.error(e); }
-  }
-  function animateCounter(id, value){
-    const el = document.getElementById(id);
-    let start = parseInt(el.innerText)||0;
-    const end = Number(value)||0;
-    const duration = 800;
-    const t0 = performance.now();
-    function step(t){
-      const p = Math.min((t-t0)/duration,1);
-      el.innerText = Math.floor(start + (end-start)*p);
-      if(p<1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  /* ===== BOTONES ===== */
-  calcBtn.addEventListener('click', () => { 
-    beep(520); vibrar(80); 
-    calcular(); 
-    document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); 
-  });
-  clearBtn.addEventListener('click', () => { 
-    limpiar(); 
-    document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
-  });
-  shareBtn.addEventListener('click', share);
-  spinBtn.addEventListener('click', () => { 
-    beep(520); vibrar(80); 
-    spinRouletteSmooth(); 
-    document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); 
-  });
-  infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
-  infoClose.addEventListener('click', ()=> infoModal.style.display='none');
-  infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
-  shareBtn.classList.add('pulse');
+  async function incrementarVisita(){ try{ await supabase.rpc('increment_visitas',{pid: PAGE_ID}); await cargarMetricas(); }catch(e){ console.error(e); } }
+  function animateCounter(id, value){ const el = document.getElementById(id); let start = parseInt(el.innerText)||0; const end = Number(value)||0; const duration = 800; const t0 = performance.now(); function step(t){ const p = Math.min((t-t0)/duration,1); el.innerText = Math.floor(start + (end-start)*p); if(p<1) requestAnimationFrame(step); } requestAnimationFrame(step); }
 
   /* ===== BRAWLERS ===== */
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
@@ -195,6 +151,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const brawlerCache = {};
   allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
+
+  /* ===== FUNCION PARA ASIGNAR IMAGEN CON FALLBACK ===== */
+  function setBrawlerImageWithFallback(name, glowClass="") {
+    brawlerImg.className = glowClass;
+    brawlerImg.src = brawlerCache[name].src;
+    brawlerImg.onerror = () => {
+      for (const fallbackName in brawlerCache) {
+        const fbImg = brawlerCache[fallbackName];
+        if(fbImg.complete && fbImg.naturalWidth > 0){
+          brawlerImg.src = fbImg.src;
+          brawlerImg.className = glowClass;
+          break;
+        }
+      }
+    };
+  }
 
   /* ===== CALCULAR ===== */
   function calcular(){
@@ -244,27 +216,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== LIMPIAR ===== */
-function limpiar(){
-    beep(300); 
-    vibrar();
-    clearBtn.classList.add('flash'); 
-    setTimeout(()=>clearBtn.classList.remove('flash'),200);
-
-    // Reset formulario y resultado
+  function limpiar(){
+    beep(300); vibrar();
+    clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
     document.getElementById("calcForm").reset();
     document.getElementById("resultado").innerText="Valor total: 0 🪙";
-
-    // Destruir gráfico si existía
     if(chart) chart.destroy();
+    const dailyIdx = getDailyIndex(allBrawlers.length);
+    setBrawlerImageWithFallback(allBrawlers[dailyIdx], "finalGlow");
+  }
 
-    // Reiniciar ruleta con un Brawler visible
-    const dailyIdx = getDailyIndex(allBrawlers.length); // Para mantener un brawler aleatorio del día
-    brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
-    brawlerImg.className = "finalGlow"; // Glow sutil para que no se vea apagado
-
-    // Scroll hacia arriba al formulario
-    document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
-}
   /* ===== COMPARTIR ===== */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
@@ -275,49 +236,6 @@ function limpiar(){
       catch(err){console.log(err);}
     } else { alert("Tu navegador no soporta compartir nativo."); }
   }
-
-  /* ===== VOTO ÚNICO POR USUARIO (like/dislike) ===== */
-  function getUserVote() {
-    return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}');
-  }
-
-  function setUserVote(vote) {
-    localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote));
-  }
-
-  likesCounter.addEventListener('click', async () => {
-    beep(400); vibrar();
-    let vote = getUserVote();
-    if(vote.type === 'like'){
-      vote = {};
-      await supabase.rpc('decrement_likes',{pid: PAGE_ID});
-    } else {
-      if(vote.type === 'dislike'){
-        await supabase.rpc('decrement_dislikes',{pid: PAGE_ID});
-      }
-      vote = { type: 'like' };
-      await supabase.rpc('increment_likes',{pid: PAGE_ID});
-    }
-    setUserVote(vote);
-    cargarMetricas();
-  });
-
-  dislikesCounter.addEventListener('click', async () => {
-    beep(300); vibrar();
-    let vote = getUserVote();
-    if(vote.type === 'dislike'){
-      vote = {};
-      await supabase.rpc('decrement_dislikes',{pid: PAGE_ID});
-    } else {
-      if(vote.type === 'like'){
-        await supabase.rpc('decrement_likes',{pid: PAGE_ID});
-      }
-      vote = { type: 'dislike' };
-      await supabase.rpc('increment_dislikes',{pid: PAGE_ID});
-    }
-    setUserVote(vote);
-    cargarMetricas();
-  });
 
   /* ===== BRAWLER DEL DIA ===== */
   function getDailyIndex(max){
@@ -339,14 +257,15 @@ function limpiar(){
     const slowDuration  = 2000;
     const fastDuration  = totalDuration - slowDuration;
     const finalSlowSteps = Math.min(6, numBrawlers);
+
     const indices = Array.from({length: numBrawlers}, (_, i) => i);
     const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
     const slowSequence = [];
     const temp = [...indices].filter(i => i !== finalIndex);
     for(let i=0; i<finalSlowSteps-1; i++){
-      const idx = Math.floor(Math.random()*temp.length);
-      slowSequence.push(temp[idx]);
-      temp.splice(idx,1);
+        const idx = Math.floor(Math.random()*temp.length);
+        slowSequence.push(temp[idx]);
+        temp.splice(idx,1);
     }
     slowSequence.push(finalIndex);
 
@@ -356,65 +275,74 @@ function limpiar(){
     function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
 
     function fastPhase(){
-      const now = performance.now();
-      const elapsed = now - t0;
-      if(elapsed >= fastDuration){
-        startSlowPhase(0);
-        return;
-      }
-      const name = allBrawlers[shuffledFast[step % shuffledFast.length]];
-      brawlerImg.src = brawlerCache[name].src;
-      brawlerImg.className = glowClasses[step % glowClasses.length];
-      step++;
-      const p = Math.min(elapsed / fastDuration, 1);
-      const delay = 35 + (140 - 35) * easeOutCubic(p);
-      setTimeout(fastPhase, delay);
+        const now = performance.now();
+        const elapsed = now - t0;
+        if(elapsed >= fastDuration){
+            startSlowPhase(0);
+            return;
+        }
+        const name = allBrawlers[shuffledFast[step % shuffledFast.length]];
+        setBrawlerImageWithFallback(name, glowClasses[step % glowClasses.length]);
+        step++;
+        const p = Math.min(elapsed / fastDuration, 1);
+        const delay = 35 + (140 - 35) * easeOutCubic(p);
+        setTimeout(fastPhase, delay);
     }
 
     function startSlowPhase(idx){
-      if(idx >= finalSlowSteps){
-        brawlerImg.src = brawlerCache[allBrawlers[finalIndex]].src;
-        brawlerImg.className = "glow-green";
-        confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-        return;
-      }
-      const name = allBrawlers[slowSequence[idx]];
-      brawlerImg.src = brawlerCache[name].src;
-      brawlerImg.className = idx < finalSlowSteps-1 ? glowClasses[(step + idx) % glowClasses.length] : "glow-green";
-      const stepDelay = slowDuration / finalSlowSteps;
-      setTimeout(()=>startSlowPhase(idx+1), stepDelay);
+        if(idx >= finalSlowSteps){
+            setBrawlerImageWithFallback(allBrawlers[finalIndex], "glow-green");
+            confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+            return;
+        }
+        const name = allBrawlers[slowSequence[idx]];
+        const glowClass = idx < finalSlowSteps-1 ? glowClasses[(step + idx) % glowClasses.length] : "glow-green";
+        setBrawlerImageWithFallback(name, glowClass);
+        const stepDelay = slowDuration / finalSlowSteps;
+        setTimeout(()=>startSlowPhase(idx+1), stepDelay);
     }
 
     fastPhase();
   }
 
+  /* ===== BOTONES ===== */
+  calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); });
+  clearBtn.addEventListener('click', () => { limpiar(); document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); });
+  shareBtn.addEventListener('click', share);
+  spinBtn.addEventListener('click', () => { beep(520); vibrar(80); spinRouletteSmooth(); document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); });
+  infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
+  infoClose.addEventListener('click', ()=> infoModal.style.display='none');
+  infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
+  shareBtn.classList.add('pulse');
+
+  /* ===== VOTO ÚNICO POR USUARIO (like/dislike) ===== */
+  function getUserVote() { return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}'); }
+  function setUserVote(vote) { localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote)); }
+
+  likesCounter.addEventListener('click', async () => {
+    beep(400); vibrar();
+    let vote = getUserVote();
+    if(vote.type === 'like'){ vote = {}; await supabase.rpc('decrement_likes',{pid: PAGE_ID}); } 
+    else { if(vote.type === 'dislike'){ await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); } vote = { type: 'like' }; await supabase.rpc('increment_likes',{pid: PAGE_ID}); }
+    setUserVote(vote);
+    cargarMetricas();
+  });
+
+  dislikesCounter.addEventListener('click', async () => {
+    beep(300); vibrar();
+    let vote = getUserVote();
+    if(vote.type === 'dislike'){ vote = {}; await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); } 
+    else { if(vote.type === 'like'){ await supabase.rpc('decrement_likes',{pid: PAGE_ID}); } vote = { type: 'dislike' }; await supabase.rpc('increment_dislikes',{pid: PAGE_ID}); }
+    setUserVote(vote);
+    cargarMetricas();
+  });
+
   /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
   incrementarVisita();
   const dailyIdx = getDailyIndex(allBrawlers.length);
-
-// Función para asignar imagen con fallback visual
-function setBrawlerImageWithFallback(name, glowClass="") {
-    const img = brawlerCache[name];
-    if(img.complete && img.naturalWidth > 0){
-        brawlerImg.src = img.src;
-    } else {
-        // fallback visual: buscar primera imagen que sí cargue
-        for(const fallbackName in brawlerCache){
-            const fbImg = brawlerCache[fallbackName];
-            if(fbImg.complete && fbImg.naturalWidth > 0){
-                brawlerImg.src = fbImg.src;
-                break;
-            }
-        }
-    }
-    brawlerImg.className = glowClass;
-}
-
-// Mostrar brawler del día al cargar la página, con fallback visual
-setBrawlerImageWithFallback(allBrawlers[dailyIdx], "finalGlow");
+  setBrawlerImageWithFallback(allBrawlers[dailyIdx], "finalGlow");
 });
 </script>
 </body>
 </html>
-  
