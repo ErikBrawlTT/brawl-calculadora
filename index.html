@@ -445,15 +445,41 @@ function prepareRouletteList() {
   return rouletteBrawlers;
     }
 
-  /* ===== RULETA (usa activeBrawlers si están listos) ===== */
-  function spinRouletteSmooth(){
-  const brawlersList = JSON.parse(brawlerImg.dataset.rouletteList);
-  const finalIndex = Number(brawlerImg.dataset.dailyIndex);
-  const slowDuration = 2000;
-  const fastDuration = totalDuration - slowDuration;
-  const finalSlowSteps = Math.min(6, numBrawlers);
+   randomImg = loadedAny[Math.floor(Math.random()*loadedAny.length)];
+   
+  /* ===== DAILY BRAWLER ===== */
+  function getDailyIndex(max){
+    // Para simplicidad: un índice fijo por día
+    const now = new Date();
+    const seed = now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate();
+    return seed % max;
+  }
 
-    // Secuencias de índices
+  function getDailyBrawler() {
+    const maxForDaily = (activePrepared && activeBrawlers.length > 0) ? activeBrawlers.length : allBrawlers.length;
+    const dailyIdx = getDailyIndex(maxForDaily);
+    return (activePrepared && activeBrawlers.length > 0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
+  }
+
+  function prepareRouletteList() {
+    const dailyName = getDailyBrawler(); 
+    let rouletteBrawlers = activeBrawlers.slice(); 
+    if (rouletteBrawlers[0] === dailyName && rouletteBrawlers.length > 1) {
+      const swapIdx = Math.floor(Math.random() * (rouletteBrawlers.length - 1)) + 1;
+      [rouletteBrawlers[0], rouletteBrawlers[swapIdx]] = [rouletteBrawlers[swapIdx], rouletteBrawlers[0]];
+    }
+    return rouletteBrawlers;
+  }
+
+  function spinRouletteSmooth() {
+    const brawlersList = prepareRouletteList();
+    const numBrawlers = brawlersList.length;
+    const finalIndex = getDailyIndex(numBrawlers);
+    const totalDuration = 10000;
+    const slowDuration = 2000;
+    const fastDuration = totalDuration - slowDuration;
+    const finalSlowSteps = Math.min(6, numBrawlers);
+
     const indices = Array.from({ length: numBrawlers }, (_, i) => i);
     const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
     const temp = indices.filter(i => i !== finalIndex);
@@ -468,118 +494,89 @@ function prepareRouletteList() {
     const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
     const startTime = performance.now();
 
-    // showImageSafe (sin bloquear, pero garantizando fallback si falla)
     function showImageSafe(name, glowClass) {
       const img = brawlerCache[name];
       const loadedActive = getLoadedImagesFromList(brawlersList);
       const loadedAny = Object.values(brawlerCache).filter(i => i && i.complete && i.naturalWidth>0);
-
       if(img && img.complete && img.naturalWidth>0){
         brawlerImg.src = img.src;
-      } else if(loadedActive.length > 0){
-        const randomImg = loadedActive[Math.floor(Math.random()*loadedActive.length)];
-        brawlerImg.src = randomImg.src;
-      } else if(loadedAny.length > 0){
-        const randomImg = loadedAny[Math.floor(Math.random()*loadedAny.length)];
-        brawlerImg.src = randomImg.src;
+      } else if(loadedActive.length>0){
+        brawlerImg.src = loadedActive[Math.floor(Math.random()*loadedActive.length)].src;
+      } else if(loadedAny.length>0){
+        brawlerImg.src = loadedAny[Math.floor(Math.random()*loadedAny.length)].src;
       } else {
         brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
       }
       brawlerImg.className = glowClass;
-      // no devolvemos promesas: la animación no espera la carga completa para mantener fluidez
     }
 
-    // Animación con requestAnimationFrame (fase rápida + lenta)
     let fastStep = 0;
     let slowStep = 0;
     let phase = "fast";
     let lastTime = performance.now();
-    const fastInterval = 60; // ms por frame rápido
+    const fastInterval = 60;
 
     function animate(currentTime){
       const elapsed = currentTime - startTime;
-
-      if(phase === "fast"){
-        if(elapsed >= fastDuration){
-          phase = "slow";
-          lastTime = currentTime;
-        } else if(currentTime - lastTime >= fastInterval){
+      if(phase==="fast"){
+        if(elapsed>=fastDuration){
+          phase="slow";
+          lastTime=currentTime;
+        } else if(currentTime-lastTime>=fastInterval){
           const name = brawlersList[shuffledFast[fastStep % shuffledFast.length]];
           const glow = glowClasses[fastStep % glowClasses.length];
           showImageSafe(name, glow);
-          fastStep++; lastTime = currentTime;
+          fastStep++; lastTime=currentTime;
         }
       }
-
-      if(phase === "slow"){
+      if(phase==="slow"){
         const slowElapsed = elapsed - fastDuration;
-        const stepDuration = slowDuration / finalSlowSteps;
-        if(slowElapsed >= stepDuration * slowStep){
+        const stepDuration = slowDuration/finalSlowSteps;
+        if(slowElapsed >= stepDuration*slowStep){
           if(slowStep < finalSlowSteps){
             const idx = slowSequence[slowStep];
             const name = brawlersList[idx];
-            const glow = slowStep < finalSlowSteps - 1 ? glowClasses[(fastStep + slowStep) % glowClasses.length] : "glow-green finalGlow";
+            const glow = slowStep<finalSlowSteps-1 ? glowClasses[(fastStep+slowStep)%glowClasses.length] : "glow-green finalGlow";
             showImageSafe(name, glow);
             slowStep++;
           }
-          if(slowStep >= finalSlowSteps){
+          if(slowStep>=finalSlowSteps){
             const finalName = brawlersList[finalIndex];
-            safeSetBrawler(finalName, "glow-green finalGlow");
-            confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-            return; // animación completa
+            safeSetBrawler(finalName,"glow-green finalGlow");
+            confetti({particleCount:150, spread:90, origin:{y:0.5}});
+            return;
           }
         }
       }
-
       requestAnimationFrame(animate);
     }
-
     requestAnimationFrame(animate);
   }
 
   /* ===== INICIALIZACIÓN ===== */
-/* ===== INICIALIZACIÓN ===== */
-if(spinBtn) spinBtn.disabled = true;
+  if(spinBtn) spinBtn.disabled = true;
+  prepareActiveBrawlers(20).then(()=>{
+    const dailyName = getDailyBrawler();
+    safeSetBrawler(dailyName);
 
-prepareActiveBrawlers(20).then(selected => {
-  const maxForDaily = activeBrawlers.length;
-  const dailyIdx = getDailyIndex(maxForDaily);
-  const dailyName = activeBrawlers[dailyIdx];
+    if(activePrepared && activeBrawlers.length>1){
+      const otherBrawlers = activeBrawlers.filter(b => b!==dailyName);
+      const startBrawler = otherBrawlers[Math.floor(Math.random()*otherBrawlers.length)];
+      brawlerImg.dataset.startBrawler = startBrawler;
+    } else {
+      brawlerImg.dataset.startBrawler = dailyName;
+    }
+    if(spinBtn) spinBtn.disabled = false;
+  }).catch(e=>{
+    console.warn("prepareActiveBrawlers fallo:",e);
+    const idx = getDailyIndex(allBrawlers.length);
+    safeSetBrawler(allBrawlers[idx]);
+    if(spinBtn) spinBtn.disabled = false;
+  });
 
-  // 1️⃣ Mostramos el brawler del día
-  safeSetBrawler(dailyName);
+  cargarMetricas();
+  incrementarVisita();
 
-  // 2️⃣ Elegimos un brawler inicial distinto para la ruleta
-  let startBrawler;
-  if(activeBrawlers.length > 1){
-    const others = activeBrawlers.filter((b,i) => i!==dailyIdx);
-    startBrawler = others[Math.floor(Math.random()*others.length)];
-  } else startBrawler = dailyName;
-
-  // 3️⃣ Guardamos este inicio para la ruleta
-  brawlerImg.dataset.startBrawler = startBrawler;
-
-  // 4️⃣ Preparamos lista de ruleta: aseguramos que first no sea daily y que daily sea final
-  const rouletteBrawlers = activeBrawlers.slice();
-  if(rouletteBrawlers[0] === dailyName && rouletteBrawlers.length>1){
-    const swapIdx = rouletteBrawlers.indexOf(startBrawler);
-    [rouletteBrawlers[0], rouletteBrawlers[swapIdx]] = [rouletteBrawlers[swapIdx], rouletteBrawlers[0]];
-  }
-
-  // Guardamos la lista para usarla en spin
-  brawlerImg.dataset.rouletteList = JSON.stringify(rouletteBrawlers);
-  brawlerImg.dataset.dailyIndex = dailyIdx;
-
-  // Habilitamos spin
-  if(spinBtn) spinBtn.disabled = false;
-}).catch(e=>{
-  console.warn("prepareActiveBrawlers fallo: ", e);
-  const idx = getDailyIndex(allBrawlers.length);
-  safeSetBrawler(allBrawlers[idx]);
-  if(spinBtn) spinBtn.disabled = false;
-});
-cargarMetricas();
-incrementarVisita();
 });
 </script>
 </body>
