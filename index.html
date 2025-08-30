@@ -104,7 +104,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-    <script type="module">
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -180,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
   shareBtn.addEventListener('click', share);
   spinBtn.addEventListener('click', () => { 
     beep(520); vibrar(80); 
-    // si el botón está habilitado, lanza la ruleta
     if(!spinBtn.disabled) spinRouletteSmooth(); 
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); 
   });
@@ -194,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
-  /* --- Nota: mantengo tu brawlerCache original (con todas las imágenes) para no quitar nada del script --- */
   const brawlerCache = {};
   allBrawlers.forEach(name => { 
     const img = new Image(); 
@@ -202,8 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     brawlerCache[name]=img; 
   });
 
-  /* ===== NUEVO: seleccionamos 20 brawlers aleatorios "activos" y esperamos a que carguen (si pueden) ===== */
-  let activeBrawlers = []; // nombres de los 20 escogidos (los que usará la ruleta)
+  let activeBrawlers = [];
   let activePrepared = false;
 
   function pickRandomUnique(arr, count){
@@ -216,16 +213,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function prepareActiveBrawlers(count = 20, timeoutMs = 8000){
-    // Devuelve una promesa que resuelve cuando la selección/precarga ha terminado (o ha pasado timeout)
     return new Promise(resolve => {
       const selected = pickRandomUnique(allBrawlers, count);
-      activeBrawlers = selected.slice(); // inicializa la lista activa
-      // Si ya existen Image() en brawlerCache para esos nombres, esperamos a que se hayan cargado
+      activeBrawlers = selected.slice();
       const promises = activeBrawlers.map(name => {
         return new Promise(res => {
           const img = brawlerCache[name];
           if(!img){
-            // si por alguna razón no existe en cache, crea uno y espera carga
             const newImg = new Image();
             newImg.src = baseURL + name + ".png";
             brawlerCache[name] = newImg;
@@ -233,8 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
             newImg.onerror = () => res({name, ok:false});
           } else {
             if(img.complete && img.naturalWidth>0) return res({name, ok:true});
-            // si no está completa, agregamos handlers
-            const t = setTimeout(()=> res({name, ok: false}), timeoutMs); // timeout por seguridad
+            const t = setTimeout(()=> res({name, ok: false}), timeoutMs);
             img.onload = () => { clearTimeout(t); res({name, ok:true}); };
             img.onerror = () => { clearTimeout(t); res({name, ok:false}); };
           }
@@ -242,29 +235,25 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       Promise.all(promises).then(results => {
-        // Filtramos los que realmente cargaron correctamente
         const ok = results.filter(r => r.ok).map(r => r.name);
         if(ok.length > 0){
-          activeBrawlers = ok; // usamos solo los que cargaron
+          activeBrawlers = ok;
         } else {
-          // si nada cargó, como fallback, usamos el subset de allBrawlers que sí esten cargadas en brawlerCache
           const loadedAny = Object.keys(brawlerCache).filter(n => {
             const im = brawlerCache[n];
             return im && im.complete && im.naturalWidth>0;
           });
           if(loadedAny.length>0) activeBrawlers = pickRandomUnique(loadedAny, Math.min(count, loadedAny.length));
-          else activeBrawlers = pickRandomUnique(allBrawlers, Math.min(count, allBrawlers.length)); // último recurso
+          else activeBrawlers = pickRandomUnique(allBrawlers, Math.min(count, allBrawlers.length));
         }
 
         activePrepared = true;
-        // Habilitar botón spin
         if(spinBtn) spinBtn.disabled = false;
         resolve(activeBrawlers);
       });
     });
   }
 
-  /* ===== FUNCIONES DE IMAGEN SEGURO (fallback si falla) ===== */
   function getLoadedImagesFromList(list){
     return list
       .map(name => brawlerCache[name])
@@ -272,7 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function safeSetBrawler(name, fallbackClass="finalGlow"){
-    // intenta pintar name; si no está disponible, elige otra ya cargada de activeBrawlers; si tampoco, de todo brawlerCache; si no, placeholder
     const img = brawlerCache[name];
     const loadedActive = getLoadedImagesFromList(activeBrawlers);
     const loadedAny = Object.values(brawlerCache).filter(i=>i && i.complete && i.naturalWidth>0);
@@ -285,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const choice = loadedAny[Math.floor(Math.random()*loadedAny.length)];
       brawlerImg.src = choice.src;
     } else {
-      // último recurso: placeholder
       brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
     }
     brawlerImg.className = fallbackClass;
@@ -345,21 +332,17 @@ document.addEventListener('DOMContentLoaded', () => {
     clearBtn.classList.add('flash'); 
     setTimeout(()=>clearBtn.classList.remove('flash'),200);
 
-    // Reset formulario y resultado
     document.getElementById("calcForm").reset();
     document.getElementById("resultado").innerText="Valor total: 0 🪙";
 
-    // Destruir gráfico si existía
     if(chart) chart.destroy();
 
-    // Reiniciar ruleta con un Brawler visible
     const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
-    const dailyIdx = getDailyIndex(maxForDaily); // Para mantener un brawler aleatorio del día
+    const dailyIdx = getDailyIndex(maxForDaily);
     const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
     safeSetBrawler(dailyName);
-    brawlerImg.className = "finalGlow"; // Glow sutil para que no se vea apagado
+    brawlerImg.className = "finalGlow";
 
-    // Scroll hacia arriba al formulario
     document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
   }
 
@@ -376,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
         await navigator.clipboard.writeText(url);
         alert("Enlace copiado al portapapeles ✅");
       }catch(e){
-        // fallback más primitivo
         prompt("Copia este enlace:", url);
       }
     }
@@ -394,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
   likesCounter.addEventListener('click', async () => {
     beep(400); vibrar();
     let vote = getUserVote();
-    if(vote.type === 'like'){
+    if(vote.type ==='like'){
       vote = {};
       await supabase.rpc('decrement_likes',{pid: PAGE_ID});
     } else {
@@ -442,13 +424,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function spinRouletteSmooth() {
     const brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
     const numBrawlers = brawlersList.length;
-    const finalIndex = getDailyIndex(numBrawlers);
+    const finalIndex = Math.floor(Math.random()*numBrawlers); // ya no depende del daily
     const totalDuration = 10000;
     const slowDuration = 2000;
     const fastDuration = totalDuration - slowDuration;
     const finalSlowSteps = Math.min(6, numBrawlers);
 
-    // Secuencias de índices
     const indices = Array.from({ length: numBrawlers }, (_, i) => i);
     const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
     const temp = indices.filter(i => i !== finalIndex);
@@ -463,7 +444,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
     const startTime = performance.now();
 
-    // showImageSafe (sin bloquear, pero garantizando fallback si falla)
     function showImageSafe(name, glowClass) {
       const img = brawlerCache[name];
       const loadedActive = getLoadedImagesFromList(brawlersList);
@@ -481,15 +461,13 @@ document.addEventListener('DOMContentLoaded', () => {
         brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
       }
       brawlerImg.className = glowClass;
-      // no devolvemos promesas: la animación no espera la carga completa para mantener fluidez
     }
 
-    // Animación con requestAnimationFrame (fase rápida + lenta)
     let fastStep = 0;
     let slowStep = 0;
     let phase = "fast";
     let lastTime = performance.now();
-    const fastInterval = 60; // ms por frame rápido
+    const fastInterval = 60;
 
     function animate(currentTime){
       const elapsed = currentTime - startTime;
@@ -521,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalName = brawlersList[finalIndex];
             safeSetBrawler(finalName, "glow-green finalGlow");
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-            return; // animación completa
+            return;
           }
         }
       }
@@ -533,24 +511,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== INICIALIZACIÓN ===== */
-  // deshabilitamos spin hasta que prepareActiveBrawlers termine
   if(spinBtn) spinBtn.disabled = true;
   prepareActiveBrawlers(20).then(selected => {
-    // Si activeBrawlers está listo, muestra el daily brawler desde esa lista
     const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
     const dailyIdx = getDailyIndex(maxForDaily);
     const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
-    safeSetBrawler(dailyName);
+    safeSetBrawler(dailyName); // inicial diario
   }).catch(e=>{
     console.warn("prepareActiveBrawlers fallo: ", e);
-    // fallback: intenta mostrar un brawler del conjunto completo
     const idx = getDailyIndex(allBrawlers.length);
     const name = allBrawlers[idx];
     safeSetBrawler(name);
     if(spinBtn) spinBtn.disabled = false;
   });
 
-  // Cargamos métricas e incrementamos visita (puede ejecutarse en paralelo)
   cargarMetricas();
   incrementarVisita();
 });
