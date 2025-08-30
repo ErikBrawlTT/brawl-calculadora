@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
 
-  // ===== UTILS =====
+  // ===== UTILIDADES =====
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
           o = ctx.createOscillator(),
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const brawlerCache = {};
   let chart;
 
-  // === BRAWLER DEL DÍA Y 20 RANDOM ===
+  // ===== BRAWLER DEL DÍA =====
   function getDailyIndex(max){
     const today = new Date().toISOString().slice(0,10);
     const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
@@ -196,24 +196,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     const promises = selected.map(name => new Promise(resolve=>{
       const img = new Image();
       img.src = baseURL+name+".png";
-      img.onload = img.onerror = ()=>resolve(img);
-      brawlerCache[name] = img;
+      img.onload = img.onerror = () => {
+        if(!img.complete || img.naturalWidth === 0){
+          const fallback = new Image();
+          fallback.src = baseURL+"shelly.png";
+          brawlerCache[name] = fallback;
+        } else {
+          brawlerCache[name] = img;
+        }
+        resolve();
+      };
     }));
     await Promise.all(promises);
   }
 
   function setBrawlerImageWithFallback(name, glowClass){
-    const img = brawlerCache[name] || new Image();
-    img.src = img.src || baseURL+"shelly.png"; // fallback
-    brawlerImg.src = img.src;
+    const img = brawlerCache[name];
+    if(img && img.complete && img.naturalWidth!==0){
+      brawlerImg.src = img.src;
+    } else {
+      brawlerImg.src = baseURL+"shelly.png";
+    }
     brawlerImg.className = glowClass;
   }
 
   // ===== RULETA =====
   function spinRouletteSmooth(){
     const selected = getDailyBrawlers();
-    const finalBrawler = selected[0]; // Brawler del Día
-    const rouletteBrawlers = selected.slice(1); // los 20 aleatorios
+    const finalBrawler = selected[0]; // Brawler del día
+    const rouletteBrawlers = selected.slice(1); // 20 aleatorios
     const shuffledFast = [...rouletteBrawlers].sort(()=>Math.random()-0.5);
 
     const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
@@ -370,7 +381,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dailyIdx = getDailyIndex(allBrawlers.length);
   setBrawlerImageWithFallback(allBrawlers[dailyIdx], "finalGlow");
 });
-  
 </script>
 </body>
 </html>
