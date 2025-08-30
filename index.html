@@ -392,8 +392,28 @@ function limpiar(){
   cargarMetricas();
   incrementarVisita();
   const dailyIdx = getDailyIndex(allBrawlers.length);
-  brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
-  brawlerImg.className = "finalGlow";
+  const dailyIdx = getDailyIndex(allBrawlers.length);
+
+// Función para asignar imagen con fallback visual
+function setBrawlerImageWithFallback(name, glowClass="") {
+    const img = brawlerCache[name];
+    if(img.complete && img.naturalWidth > 0){
+        brawlerImg.src = img.src;
+    } else {
+        // fallback visual: buscar primera imagen que sí cargue
+        for(const fallbackName in brawlerCache){
+            const fbImg = brawlerCache[fallbackName];
+            if(fbImg.complete && fbImg.naturalWidth > 0){
+                brawlerImg.src = fbImg.src;
+                break;
+            }
+        }
+    }
+    brawlerImg.className = glowClass;
+}
+
+// Mostrar brawler del día al cargar la página, con fallback visual
+setBrawlerImageWithFallback(allBrawlers[dailyIdx], "finalGlow");
 });
 </script>
 </body>
