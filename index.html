@@ -74,18 +74,30 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
     <label>🔥 Maxeados: <input type="number" id="maxeados" value="0"></label>
     <button type="button" id="infoBtn">INFO</button>
   </form>
-  <div id="resultado">Valor total: 0 🪙</div>
+
+  <!-- Botones calcular y limpiar arriba -->
   <div class="buttons">
     <button id="calcBtn">Calcular</button>
     <button id="clearBtn">Limpiar</button>
   </div>
+
+  <!-- Botón compartir -->
   <button id="shareBtn">📤 Compartir</button>
+
+  <!-- Valor total entre compartir y girar brawler -->
+  <div id="resultado">Valor total: 0 🪙</div>
+
+  <!-- Botón girar brawler -->
   <button id="spinBtn">🎲 Girar Brawler</button>
+
+  <!-- Métricas -->
   <div class="metric-container">
     <div class="metric visitas"><span class="icon">👀</span><div class="box" id="visitas-counter">0</div></div>
     <div class="metric likes"><span class="icon">👍</span><div class="box" id="likes-counter">0</div></div>
     <div class="metric dislikes"><span class="icon">👎</span><div class="box" id="dislikes-counter">0</div></div>
   </div>
+
+  <!-- Gráfico y brawler -->
   <div style="position:relative; display:inline-block;">
     <canvas id="myChart" width="400" height="400"></canvas>
     <div id="centerDiamond">
