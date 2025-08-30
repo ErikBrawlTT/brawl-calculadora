@@ -332,7 +332,7 @@ function limpiar(){
   }
 
   /* ===== RULETA ===== */
-function spinRouletteSmooth() {
+          function spinRouletteSmooth() {
   const numBrawlers = allBrawlers.length;
   const finalIndex = getDailyIndex(numBrawlers);
   const totalDuration = 10000;
@@ -432,25 +432,6 @@ function spinRouletteSmooth() {
 
   requestAnimationFrame(animate);
 }
-
-  async function startSlowPhase(idx) {
-    if (idx >= finalSlowSteps) {
-      const finalName = allBrawlers[finalIndex];
-      brawlerImg.onload = () => brawlerImg.className = "glow-green finalGlow";
-      brawlerImg.src = brawlerCache[finalName].src;
-      confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-      return;
-    }
-
-    const name = allBrawlers[slowSequence[idx]];
-    const glow = idx < finalSlowSteps - 1 ? glowClasses[idx % glowClasses.length] : "glow-green";
-    await showImage(name, glow);
-    setTimeout(() => startSlowPhase(idx + 1), slowDuration / finalSlowSteps);
-  }
-
-  animateRoulette();
-   
- }
 
   /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
