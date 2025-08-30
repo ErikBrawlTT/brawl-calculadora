@@ -332,68 +332,96 @@ function limpiar(){
   }
 
   /* ===== RULETA ===== */
-  function spinRouletteSmooth(){
+ function spinRouletteSmooth() {
   const numBrawlers = allBrawlers.length;
   const finalIndex = getDailyIndex(numBrawlers);
-  const totalDuration = 10000;
-  const slowDuration  = 2000;
-  const fastDuration  = totalDuration - slowDuration;
+  const totalDuration = 10000; // duración total de la animación
+  const slowDuration = 2000;   // duración fase lenta
+  const fastDuration = totalDuration - slowDuration;
   const finalSlowSteps = Math.min(6, numBrawlers);
 
   // Secuencias
-  const indices = Array.from({length:numBrawlers}, (_,i)=>i);
-  const shuffledFast = [...indices].sort(() => Math.random()-0.5);
+  const indices = Array.from({length: numBrawlers}, (_, i) => i);
+  const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
   const temp = indices.filter(i => i !== finalIndex);
   const slowSequence = [];
-  for(let i=0;i<finalSlowSteps-1;i++){
-    const idx = Math.floor(Math.random()*temp.length);
+  for (let i = 0; i < finalSlowSteps - 1; i++) {
+    const idx = Math.floor(Math.random() * temp.length);
     slowSequence.push(temp[idx]);
-    temp.splice(idx,1);
+    temp.splice(idx, 1);
   }
   slowSequence.push(finalIndex);
 
-  const glowClasses = ["glow-blue","glow-red","glow-orange","glow-green"];
-  const t0 = performance.now();
-  let step = 0;
+  const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
+  const startTime = performance.now();
 
-  function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
-
-  function fastPhase(){
-    const now = performance.now();
-    const elapsed = now - t0;
-    if(elapsed >= fastDuration){
-      startSlowPhase(0);
-      return;
-    }
-    const name = allBrawlers[shuffledFast[step % shuffledFast.length]];
-    brawlerImg.onload = null; // Evitar conflictos
-    brawlerImg.src = brawlerCache[name].src;
-    brawlerImg.className = glowClasses[step % glowClasses.length];
-    step++;
-    const p = Math.min(elapsed / fastDuration, 1);
-    const delay = 35 + (140 - 35) * easeOutCubic(p);
-    setTimeout(fastPhase, delay);
+  function easeOutCubic(x) {
+    return 1 - Math.pow(1 - x, 3);
   }
 
-  function startSlowPhase(idx){
-    if(idx >= finalSlowSteps){
+  // Función que asegura que la imagen esté completamente cargada
+  function showImage(name, glowClass) {
+    return new Promise(resolve => {
+      const img = brawlerCache[name];
+      if (!img.complete) {
+        img.onload = () => {
+          brawlerImg.src = img.src;
+          brawlerImg.className = glowClass;
+          resolve();
+        };
+      } else {
+        brawlerImg.src = img.src;
+        brawlerImg.className = glowClass;
+        resolve();
+      }
+    });
+  }
+
+  async function animateRoulette() {
+    // Fase rápida usando requestAnimationFrame
+    let fastStep = 0;
+    let lastTime = performance.now();
+
+    function fastLoop(currentTime) {
+      const elapsed = currentTime - startTime;
+      if (elapsed >= fastDuration) {
+        startSlowPhase(0);
+        return;
+      }
+
+      if (currentTime - lastTime >= 60) { // cada 60ms aprox
+        const name = allBrawlers[shuffledFast[fastStep % shuffledFast.length]];
+        const glow = glowClasses[fastStep % glowClasses.length];
+        brawlerImg.src = brawlerCache[name].src;
+        brawlerImg.className = glow;
+        fastStep++;
+        lastTime = currentTime;
+      }
+
+      requestAnimationFrame(fastLoop);
+    }
+
+    requestAnimationFrame(fastLoop);
+  }
+
+  async function startSlowPhase(idx) {
+    if (idx >= finalSlowSteps) {
       const finalName = allBrawlers[finalIndex];
       brawlerImg.onload = () => brawlerImg.className = "glow-green finalGlow";
       brawlerImg.src = brawlerCache[finalName].src;
       confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
       return;
     }
+
     const name = allBrawlers[slowSequence[idx]];
-    brawlerImg.onload = null;
-    brawlerImg.src = brawlerCache[name].src;
-    brawlerImg.className = idx < finalSlowSteps-1 ? glowClasses[(step + idx) % glowClasses.length] : "glow-green";
-    const stepDelay = slowDuration / finalSlowSteps;
-    setTimeout(()=>startSlowPhase(idx+1), stepDelay);
+    const glow = idx < finalSlowSteps - 1 ? glowClasses[idx % glowClasses.length] : "glow-green";
+    await showImage(name, glow);
+    setTimeout(() => startSlowPhase(idx + 1), slowDuration / finalSlowSteps);
   }
 
-  fastPhase();
-
-  }
+  animateRoulette();
+   
+ }
 
   /* ===== INICIALIZACIÓN ===== */
   cargarMetricas();
