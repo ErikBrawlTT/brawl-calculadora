@@ -540,17 +540,24 @@ function prepareRouletteList() {
   }
 
   /* ===== INICIALIZACIÓN ===== */
-  if(spinBtn) spinBtn.disabled=true;
-  prepareActiveBrawlers(20).then(selected=>{
-    const dailyName = getDailyBrawler();
+  // deshabilitamos spin hasta que prepareActiveBrawlers termine
+  if(spinBtn) spinBtn.disabled = true;
+  prepareActiveBrawlers(20).then(selected => {
+    // Si activeBrawlers está listo, muestra el daily brawler desde esa lista
+    const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
+    const dailyIdx = getDailyIndex(maxForDaily);
+    const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
     safeSetBrawler(dailyName);
   }).catch(e=>{
-    console.warn(e);
-    const idx=getDailyIndex(allBrawlers.length);
-    safeSetBrawler(allBrawlers[idx]);
-    if(spinBtn) spinBtn.disabled=false;
+    console.warn("prepareActiveBrawlers fallo: ", e);
+    // fallback: intenta mostrar un brawler del conjunto completo
+    const idx = getDailyIndex(allBrawlers.length);
+    const name = allBrawlers[idx];
+    safeSetBrawler(name);
+    if(spinBtn) spinBtn.disabled = false;
   });
 
+  // Cargamos métricas e incrementamos visita (puede ejecutarse en paralelo)
   cargarMetricas();
   incrementarVisita();
 });
