@@ -327,25 +327,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== LIMPIAR ===== */
   function limpiar(){
-    beep(300); 
-    vibrar();
-    clearBtn.classList.add('flash'); 
-    setTimeout(()=>clearBtn.classList.remove('flash'),200);
+  beep(300); 
+  vibrar();
+  clearBtn.classList.add('flash'); 
+  setTimeout(()=>clearBtn.classList.remove('flash'),200);
 
-    document.getElementById("calcForm").reset();
-    document.getElementById("resultado").innerText="Valor total: 0 🪙";
+  // Reset formulario y resultado
+  document.getElementById("calcForm").reset();
+  document.getElementById("resultado").innerText="Valor total: 0 🪙";
 
-    if(chart) chart.destroy();
+  // Destruir gráfico si existía
+  if(chart) chart.destroy();
 
-    const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
-    const dailyIdx = getDailyIndex(maxForDaily);
-    const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
-    safeSetBrawler(dailyName);
-    brawlerImg.className = "finalGlow";
+  // Reiniciar ruleta con un Brawler visible distinto al daily
+  const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
+  const dailyIdx = getDailyIndex(maxForDaily); // índice del daily
+  let candidates = (activePrepared && activeBrawlers.length>1) ? activeBrawlers.filter((b,i)=>i!==dailyIdx) : allBrawlers.slice();
+  const randomIdx = Math.floor(Math.random()*candidates.length);
+  const startBrawler = candidates[randomIdx];
 
-    document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
-  }
+  safeSetBrawler(startBrawler); // muestra el brawler de inicio para la ruleta
+  brawlerImg.className = "finalGlow"; // glow sutil
 
+  // Scroll hacia arriba al formulario
+  document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
+    }
   /* ===== COMPARTIR ===== */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
