@@ -425,22 +425,29 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarMetricas();
   });
 
-  /* ===== BRAWLER DEL DIA ===== */
-  function getDailyIndex(max){
-    if(!max || max <= 0) return 0;
-    const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
-    localStorage.setItem('uid', uid);
-    const today = new Date().toISOString().slice(0,10);
-    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-    if(saved.date===today && Number.isInteger(saved.index) && saved.index < max) return saved.index;
-    const idx = Math.floor(Math.random()*max);
-    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
-    return idx;
+/* ===== DAILY BRAWLER Y RULETA SIN QUE EMPIECE CON ÉL ===== */
+function getDailyBrawler() {
+  const maxForDaily = (activePrepared && activeBrawlers.length > 0) ? activeBrawlers.length : allBrawlers.length;
+  const dailyIdx = getDailyIndex(maxForDaily);
+  return (activePrepared && activeBrawlers.length > 0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
+}
+
+function prepareRouletteList() {
+  const dailyName = getDailyBrawler(); 
+  let rouletteBrawlers = activeBrawlers.slice(); // clonamos la lista
+
+  // Si el primer brawler es el daily, intercambiamos con otro aleatorio
+  if (rouletteBrawlers[0] === dailyName && rouletteBrawlers.length > 1) {
+    const swapIdx = Math.floor(Math.random() * (rouletteBrawlers.length - 1)) + 1;
+    [rouletteBrawlers[0], rouletteBrawlers[swapIdx]] = [rouletteBrawlers[swapIdx], rouletteBrawlers[0]];
   }
+
+  return rouletteBrawlers;
+    }
 
   /* ===== RULETA (usa activeBrawlers si están listos) ===== */
   function spinRouletteSmooth() {
-    const brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
+    const brawlersList = prepareRouletteList();
     const numBrawlers = brawlersList.length;
     const finalIndex = getDailyIndex(numBrawlers);
     const totalDuration = 10000;
@@ -533,24 +540,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== INICIALIZACIÓN ===== */
-  // deshabilitamos spin hasta que prepareActiveBrawlers termine
-  if(spinBtn) spinBtn.disabled = true;
-  prepareActiveBrawlers(20).then(selected => {
-    // Si activeBrawlers está listo, muestra el daily brawler desde esa lista
-    const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
-    const dailyIdx = getDailyIndex(maxForDaily);
-    const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
+  if(spinBtn) spinBtn.disabled=true;
+  prepareActiveBrawlers(20).then(selected=>{
+    const dailyName = getDailyBrawler();
     safeSetBrawler(dailyName);
   }).catch(e=>{
-    console.warn("prepareActiveBrawlers fallo: ", e);
-    // fallback: intenta mostrar un brawler del conjunto completo
-    const idx = getDailyIndex(allBrawlers.length);
-    const name = allBrawlers[idx];
-    safeSetBrawler(name);
-    if(spinBtn) spinBtn.disabled = false;
+    console.warn(e);
+    const idx=getDailyIndex(allBrawlers.length);
+    safeSetBrawler(allBrawlers[idx]);
+    if(spinBtn) spinBtn.disabled=false;
   });
 
-  // Cargamos métricas e incrementamos visita (puede ejecutarse en paralelo)
   cargarMetricas();
   incrementarVisita();
 });
