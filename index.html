@@ -104,8 +104,8 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like, vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-<script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    <script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
   const supabase = createClient(
@@ -180,7 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
   shareBtn.addEventListener('click', share);
   spinBtn.addEventListener('click', () => { 
     beep(520); vibrar(80); 
-    spinRouletteSmooth(); 
+    // si el botón está habilitado, lanza la ruleta
+    if(!spinBtn.disabled) spinRouletteSmooth(); 
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); 
   });
   infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
@@ -193,8 +194,102 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
+  /* --- Nota: mantengo tu brawlerCache original (con todas las imágenes) para no quitar nada del script --- */
   const brawlerCache = {};
-  allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
+  allBrawlers.forEach(name => { 
+    const img = new Image(); 
+    img.src = baseURL+name+".png"; 
+    brawlerCache[name]=img; 
+  });
+
+  /* ===== NUEVO: seleccionamos 20 brawlers aleatorios "activos" y esperamos a que carguen (si pueden) ===== */
+  let activeBrawlers = []; // nombres de los 20 escogidos (los que usará la ruleta)
+  let activePrepared = false;
+
+  function pickRandomUnique(arr, count){
+    const copy = [...arr];
+    for(let i = copy.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy.slice(0, Math.min(count, copy.length));
+  }
+
+  function prepareActiveBrawlers(count = 20, timeoutMs = 8000){
+    // Devuelve una promesa que resuelve cuando la selección/precarga ha terminado (o ha pasado timeout)
+    return new Promise(resolve => {
+      const selected = pickRandomUnique(allBrawlers, count);
+      activeBrawlers = selected.slice(); // inicializa la lista activa
+      // Si ya existen Image() en brawlerCache para esos nombres, esperamos a que se hayan cargado
+      const promises = activeBrawlers.map(name => {
+        return new Promise(res => {
+          const img = brawlerCache[name];
+          if(!img){
+            // si por alguna razón no existe en cache, crea uno y espera carga
+            const newImg = new Image();
+            newImg.src = baseURL + name + ".png";
+            brawlerCache[name] = newImg;
+            newImg.onload = () => res({name, ok:true});
+            newImg.onerror = () => res({name, ok:false});
+          } else {
+            if(img.complete && img.naturalWidth>0) return res({name, ok:true});
+            // si no está completa, agregamos handlers
+            const t = setTimeout(()=> res({name, ok: false}), timeoutMs); // timeout por seguridad
+            img.onload = () => { clearTimeout(t); res({name, ok:true}); };
+            img.onerror = () => { clearTimeout(t); res({name, ok:false}); };
+          }
+        });
+      });
+
+      Promise.all(promises).then(results => {
+        // Filtramos los que realmente cargaron correctamente
+        const ok = results.filter(r => r.ok).map(r => r.name);
+        if(ok.length > 0){
+          activeBrawlers = ok; // usamos solo los que cargaron
+        } else {
+          // si nada cargó, como fallback, usamos el subset de allBrawlers que sí esten cargadas en brawlerCache
+          const loadedAny = Object.keys(brawlerCache).filter(n => {
+            const im = brawlerCache[n];
+            return im && im.complete && im.naturalWidth>0;
+          });
+          if(loadedAny.length>0) activeBrawlers = pickRandomUnique(loadedAny, Math.min(count, loadedAny.length));
+          else activeBrawlers = pickRandomUnique(allBrawlers, Math.min(count, allBrawlers.length)); // último recurso
+        }
+
+        activePrepared = true;
+        // Habilitar botón spin
+        if(spinBtn) spinBtn.disabled = false;
+        resolve(activeBrawlers);
+      });
+    });
+  }
+
+  /* ===== FUNCIONES DE IMAGEN SEGURO (fallback si falla) ===== */
+  function getLoadedImagesFromList(list){
+    return list
+      .map(name => brawlerCache[name])
+      .filter(img => img && img.complete && img.naturalWidth>0);
+  }
+
+  function safeSetBrawler(name, fallbackClass="finalGlow"){
+    // intenta pintar name; si no está disponible, elige otra ya cargada de activeBrawlers; si tampoco, de todo brawlerCache; si no, placeholder
+    const img = brawlerCache[name];
+    const loadedActive = getLoadedImagesFromList(activeBrawlers);
+    const loadedAny = Object.values(brawlerCache).filter(i=>i && i.complete && i.naturalWidth>0);
+    if(img && img.complete && img.naturalWidth>0){
+      brawlerImg.src = img.src;
+    } else if(loadedActive.length > 0){
+      const choice = loadedActive[Math.floor(Math.random()*loadedActive.length)];
+      brawlerImg.src = choice.src;
+    } else if(loadedAny.length > 0){
+      const choice = loadedAny[Math.floor(Math.random()*loadedAny.length)];
+      brawlerImg.src = choice.src;
+    } else {
+      // último recurso: placeholder
+      brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
+    }
+    brawlerImg.className = fallbackClass;
+  }
 
   /* ===== CALCULAR ===== */
   function calcular(){
@@ -244,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== LIMPIAR ===== */
-function limpiar(){
+  function limpiar(){
     beep(300); 
     vibrar();
     clearBtn.classList.add('flash'); 
@@ -258,13 +353,16 @@ function limpiar(){
     if(chart) chart.destroy();
 
     // Reiniciar ruleta con un Brawler visible
-    const dailyIdx = getDailyIndex(allBrawlers.length); // Para mantener un brawler aleatorio del día
-    brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
+    const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
+    const dailyIdx = getDailyIndex(maxForDaily); // Para mantener un brawler aleatorio del día
+    const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
+    safeSetBrawler(dailyName);
     brawlerImg.className = "finalGlow"; // Glow sutil para que no se vea apagado
 
     // Scroll hacia arriba al formulario
     document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
-}
+  }
+
   /* ===== COMPARTIR ===== */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
@@ -273,7 +371,15 @@ function limpiar(){
     if(navigator.share){
       try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
       catch(err){console.log(err);}
-    } else { alert("Tu navegador no soporta compartir nativo."); }
+    } else {
+      try{
+        await navigator.clipboard.writeText(url);
+        alert("Enlace copiado al portapapeles ✅");
+      }catch(e){
+        // fallback más primitivo
+        prompt("Copia este enlace:", url);
+      }
+    }
   }
 
   /* ===== VOTO ÚNICO POR USUARIO (like/dislike) ===== */
@@ -321,127 +427,133 @@ function limpiar(){
 
   /* ===== BRAWLER DEL DIA ===== */
   function getDailyIndex(max){
+    if(!max || max <= 0) return 0;
     const uid = localStorage.getItem('uid')||Math.random().toString(36).slice(2,10);
     localStorage.setItem('uid', uid);
     const today = new Date().toISOString().slice(0,10);
     const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-    if(saved.date===today && Number.isInteger(saved.index)) return saved.index;
+    if(saved.date===today && Number.isInteger(saved.index) && saved.index < max) return saved.index;
     const idx = Math.floor(Math.random()*max);
     localStorage.setItem('dailyBrawler', JSON.stringify({date: today, index: idx}));
     return idx;
   }
 
-  /* ===== RULETA ===== */
-          function spinRouletteSmooth() {
-  const numBrawlers = allBrawlers.length;
-  const finalIndex = getDailyIndex(numBrawlers);
-  const totalDuration = 10000;
-  const slowDuration = 2000;
-  const fastDuration = totalDuration - slowDuration;
-  const finalSlowSteps = Math.min(6, numBrawlers);
+  /* ===== RULETA (usa activeBrawlers si están listos) ===== */
+  function spinRouletteSmooth() {
+    const brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
+    const numBrawlers = brawlersList.length;
+    const finalIndex = getDailyIndex(numBrawlers);
+    const totalDuration = 10000;
+    const slowDuration = 2000;
+    const fastDuration = totalDuration - slowDuration;
+    const finalSlowSteps = Math.min(6, numBrawlers);
 
-  // Secuencias de índices
-  const indices = Array.from({ length: numBrawlers }, (_, i) => i);
-  const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
-  const temp = indices.filter(i => i !== finalIndex);
-  const slowSequence = [];
-  for (let i = 0; i < finalSlowSteps - 1; i++) {
-    const idx = Math.floor(Math.random() * temp.length);
-    slowSequence.push(temp[idx]);
-    temp.splice(idx, 1);
-  }
-  slowSequence.push(finalIndex);
+    // Secuencias de índices
+    const indices = Array.from({ length: numBrawlers }, (_, i) => i);
+    const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
+    const temp = indices.filter(i => i !== finalIndex);
+    const slowSequence = [];
+    for (let i = 0; i < finalSlowSteps - 1; i++) {
+      const idx = Math.floor(Math.random() * temp.length);
+      slowSequence.push(temp[idx]);
+      temp.splice(idx, 1);
+    }
+    slowSequence.push(finalIndex);
 
-  const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
-  const startTime = performance.now();
+    const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
+    const startTime = performance.now();
 
-  // Función que muestra imagen y usa otra al azar si falla
-  function showImageSafe(name, glowClass) {
-    return new Promise(resolve => {
+    // showImageSafe (sin bloquear, pero garantizando fallback si falla)
+    function showImageSafe(name, glowClass) {
       const img = brawlerCache[name];
-      const loadedImages = Object.values(brawlerCache).filter(i => i.complete);
+      const loadedActive = getLoadedImagesFromList(brawlersList);
+      const loadedAny = Object.values(brawlerCache).filter(i => i && i.complete && i.naturalWidth>0);
 
-      img.onload = () => {
+      if(img && img.complete && img.naturalWidth>0){
         brawlerImg.src = img.src;
-        brawlerImg.className = glowClass;
-        resolve();
-      };
-
-      img.onerror = () => {
-        if (loadedImages.length > 0) {
-          const randomImg = loadedImages[Math.floor(Math.random() * loadedImages.length)];
-          brawlerImg.src = randomImg.src;
-          brawlerImg.className = glowClass;
-        }
-        resolve();
-      };
-
-      // Forzar carga
-      brawlerImg.src = img.src;
-      brawlerImg.className = glowClass;
-    });
-  }
-
-  // Fase rápida y lenta combinadas con requestAnimationFrame
-  let fastStep = 0;
-  let slowStep = 0;
-  let phase = "fast"; // "fast" o "slow"
-  let lastTime = performance.now();
-  const fastInterval = 60; // ms por frame rápido
-
-  function animate(currentTime) {
-    const elapsed = currentTime - startTime;
-
-    if (phase === "fast") {
-      if (elapsed >= fastDuration) {
-        phase = "slow";
-        lastTime = currentTime;
-      } else if (currentTime - lastTime >= fastInterval) {
-        const name = allBrawlers[shuffledFast[fastStep % shuffledFast.length]];
-        const glow = glowClasses[fastStep % glowClasses.length];
-        showImageSafe(name, glow);
-        fastStep++;
-        lastTime = currentTime;
+      } else if(loadedActive.length > 0){
+        const randomImg = loadedActive[Math.floor(Math.random()*loadedActive.length)];
+        brawlerImg.src = randomImg.src;
+      } else if(loadedAny.length > 0){
+        const randomImg = loadedAny[Math.floor(Math.random()*loadedAny.length)];
+        brawlerImg.src = randomImg.src;
+      } else {
+        brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
       }
+      brawlerImg.className = glowClass;
+      // no devolvemos promesas: la animación no espera la carga completa para mantener fluidez
     }
 
-    if (phase === "slow") {
-      const slowElapsed = elapsed - fastDuration;
-      const totalSlowTime = slowDuration;
-      const stepDuration = totalSlowTime / finalSlowSteps;
-      if (slowElapsed >= stepDuration * slowStep) {
-        if (slowStep < finalSlowSteps) {
-          const idx = slowSequence[slowStep];
-          const name = allBrawlers[idx];
-          const glow = slowStep < finalSlowSteps - 1 ? glowClasses[(fastStep + slowStep) % glowClasses.length] : "glow-green finalGlow";
+    // Animación con requestAnimationFrame (fase rápida + lenta)
+    let fastStep = 0;
+    let slowStep = 0;
+    let phase = "fast";
+    let lastTime = performance.now();
+    const fastInterval = 60; // ms por frame rápido
+
+    function animate(currentTime){
+      const elapsed = currentTime - startTime;
+
+      if(phase === "fast"){
+        if(elapsed >= fastDuration){
+          phase = "slow";
+          lastTime = currentTime;
+        } else if(currentTime - lastTime >= fastInterval){
+          const name = brawlersList[shuffledFast[fastStep % shuffledFast.length]];
+          const glow = glowClasses[fastStep % glowClasses.length];
           showImageSafe(name, glow);
-          slowStep++;
-        }
-        if (slowStep >= finalSlowSteps) {
-          const finalName = allBrawlers[finalIndex];
-          brawlerImg.onload = () => brawlerImg.className = "glow-green finalGlow";
-          brawlerImg.src = brawlerCache[finalName].src;
-          confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-          return; // animación completa
+          fastStep++; lastTime = currentTime;
         }
       }
+
+      if(phase === "slow"){
+        const slowElapsed = elapsed - fastDuration;
+        const stepDuration = slowDuration / finalSlowSteps;
+        if(slowElapsed >= stepDuration * slowStep){
+          if(slowStep < finalSlowSteps){
+            const idx = slowSequence[slowStep];
+            const name = brawlersList[idx];
+            const glow = slowStep < finalSlowSteps - 1 ? glowClasses[(fastStep + slowStep) % glowClasses.length] : "glow-green finalGlow";
+            showImageSafe(name, glow);
+            slowStep++;
+          }
+          if(slowStep >= finalSlowSteps){
+            const finalName = brawlersList[finalIndex];
+            safeSetBrawler(finalName, "glow-green finalGlow");
+            confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+            return; // animación completa
+          }
+        }
+      }
+
+      requestAnimationFrame(animate);
     }
 
     requestAnimationFrame(animate);
   }
 
-  requestAnimationFrame(animate);
-}
-
   /* ===== INICIALIZACIÓN ===== */
-  cargarMetricas();
-  incrementarVisita();
-  const dailyIdx = getDailyIndex(allBrawlers.length);
-  brawlerImg.src = brawlerCache[allBrawlers[dailyIdx]].src;
-  brawlerImg.className = "finalGlow";
+  // deshabilitamos spin hasta que prepareActiveBrawlers termine
+  if(spinBtn) spinBtn.disabled = true;
+  prepareActiveBrawlers(20).then(selected => {
+    // Si activeBrawlers está listo, muestra el daily brawler desde esa lista
+    const maxForDaily = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.length : allBrawlers.length;
+    const dailyIdx = getDailyIndex(maxForDaily);
+    const dailyName = (activePrepared && activeBrawlers.length>0) ? activeBrawlers[dailyIdx] : allBrawlers[dailyIdx];
+    safeSetBrawler(dailyName);
+  }).catch(e=>{
+    console.warn("prepareActiveBrawlers fallo: ", e);
+    // fallback: intenta mostrar un brawler del conjunto completo
+    const idx = getDailyIndex(allBrawlers.length);
+    const name = allBrawlers[idx];
+    safeSetBrawler(name);
+    if(spinBtn) spinBtn.disabled = false;
   });
 
+  // Cargamos métricas e incrementamos visita (puede ejecutarse en paralelo)
+  cargarMetricas();
+  incrementarVisita();
+});
 </script>
 </body>
 </html>
-  
