@@ -561,8 +561,9 @@ document.addEventListener('DOMContentLoaded', () => {
   <!-- Script TikTok Browser: al final del body -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  function isTikTokBrowser() {
-    return /tiktok/i.test(navigator.userAgent);
+function isTikTokBrowser() {
+  const ua = navigator.userAgent || "";
+  return /tiktok/i.test(ua) || /musical_ly/i.test(ua);
   }
 
   function getMobileOS() {
