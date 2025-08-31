@@ -561,9 +561,9 @@ document.addEventListener('DOMContentLoaded', () => {
   <!-- Script TikTok Browser: al final del body -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-function isTikTokBrowser() {
-  const ua = navigator.userAgent || "";
-  return /tiktok/i.test(ua) || /musical_ly/i.test(ua);
+  function isTikTokBrowser() {
+    const ua = navigator.userAgent || "";
+    return /tiktok/i.test(ua) || /musical_ly/i.test(ua);
   }
 
   function getMobileOS() {
@@ -573,7 +573,7 @@ function isTikTokBrowser() {
     return "unknown";
   }
 
-  if (isTikTokBrowser() && !localStorage.getItem('openedOutsideTikTok')) {
+  if (isTikTokBrowser()) {
     const os = getMobileOS();
     let instructions = "abre este enlace en tu navegador para disfrutar de todas las funciones";
     if (os === "iOS") instructions = "pulsa el botón de compartir y selecciona 'Abrir en Safari'";
@@ -609,12 +609,12 @@ function isTikTokBrowser() {
       align-items:center; gap:8px; transition:top 0.6s ease;
     `;
     banner.innerHTML = `
-      <div>👆 Para disfrutar de la calculadora completa, abre en navegador</div>
+      <div>👆 Para disfrutar de la calculadora completa, abre en navegador,titok bloquea la funcion de brawler del dia, para una mayor experienca</div>
       <div style="display:flex; gap:10px; margin-top:4px;">
-        <button id="openBrowserBtn" style="
+        <a href="https://brawl-calculadora.vercel.app" target="_blank" style="
           padding:6px 12px; font-family:'Bangers', cursive; font-size:0.95rem;
           border:none; border-radius:8px; cursor:pointer; background:#fff; color:#FFA500;
-          box-shadow:0 2px 6px rgba(0,0,0,0.2);">🌐 Abrir en navegador</button>
+          text-decoration:none; display:inline-block; box-shadow:0 2px 6px rgba(0,0,0,0.2);">🌐 Abrir en navegador</a>
         <button id="closeBannerBtn" style="
           padding:6px 12px; font-family:'Bangers', cursive; font-size:0.95rem;
           border:none; border-radius:8px; cursor:pointer; background:rgba(0,0,0,0.1); color:#000;">❌ Continuar aquí</button>
@@ -626,14 +626,7 @@ function isTikTokBrowser() {
     // Animación entrada banner
     requestAnimationFrame(() => { banner.style.top = '20px'; });
 
-    document.getElementById('openBrowserBtn').addEventListener('click', () => {
-      window.open(window.location.href, '_blank');
-      localStorage.setItem('openedOutsideTikTok', 'true');
-      banner.style.top = '-120px';
-      overlay.remove();
-      setTimeout(() => banner.remove(), 500);
-    });
-
+    // Cerrar todo si pulsa "Continuar aquí"
     document.getElementById('closeBannerBtn').addEventListener('click', () => {
       banner.style.top = '-120px';
       overlay.remove();
@@ -641,6 +634,6 @@ function isTikTokBrowser() {
     });
   }
 });
- </script>
-</body>
+</script>
+  </body>
 </html>
