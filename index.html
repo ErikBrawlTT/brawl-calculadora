@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let id = tryGetLocalStorage(KEY) || tryGetCookie(KEY);
     if(id) { trySetLocalStorage(KEY,id); return id; }
     const fp = getDeterministicFingerprint();
-    const generated = 'v-'+fp;
+    const generated = crypto.randomUUID(); // Usamos UUID ahora
     trySetLocalStorage(KEY, generated);
     trySetCookie(KEY, generated);
     return generated;
@@ -278,7 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(current===-1) await setUserVoteLocalAndServer(null);
     else await setUserVoteLocalAndServer('dislike');
   });
-
   // ===== BRAWLERS =====
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
@@ -313,8 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return name;
   }
 
-  function safeSetBrawler(name){ if(brawlerCache[name]) brawlerImg.src=brawlerCache[name].src; else brawlerImg.src="https://via.placeholder.com/210x210?text=Brawler"; }
- // ===== PREPARAR BRAWLERS =====
+  function safeSetBrawler(name){ 
+    if(brawlerCache[name]) brawlerImg.src=brawlerCache[name].src; 
+    else brawlerImg.src="https://via.placeholder.com/210x210?text=Brawler"; 
+  }
+
   function prepareActiveBrawlers(count=20, timeoutMs=8000){
     return new Promise(resolve=>{
       const selected = pickRandomUnique(allBrawlers,count);
@@ -395,7 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
   }
-
   // ===== LIMPIAR =====
   function limpiar(){
     beep(300); vibrar();
@@ -417,8 +418,11 @@ document.addEventListener('DOMContentLoaded', () => {
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
-    if(navigator.share){ try{await navigator.share({title:"Calculadora Brawl Stars",text:"Mira cuánto valen mis Brawlers en Brawl Stars!",url});}catch(err){console.log(err);} }
-    else { try{ await navigator.clipboard.writeText(url); alert("Enlace copiado ✅"); }catch(e){ prompt("Copia este enlace:", url);} }
+    if(navigator.share){ 
+      try{ await navigator.share({title:"Calculadora Brawl Stars",text:"Mira cuánto valen mis Brawlers en Brawl Stars!",url}); }catch(err){ console.log(err);} 
+    } else { 
+      try{ await navigator.clipboard.writeText(url); alert("Enlace copiado ✅"); }catch(e){ prompt("Copia este enlace:", url);} 
+    }
   }
 
   // ===== RULETA =====
@@ -528,6 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
   incrementarVisita();
 
 });
-</script> 
+</script>
 </body>
 </html>
+    
