@@ -116,7 +116,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>  
     </div>  
   </div>  
-        <script type="module">  
+     <script type="module">  
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';  
   
 document.addEventListener('DOMContentLoaded', () => {  
@@ -225,31 +225,17 @@ document.addEventListener('DOMContentLoaded', () => {
     return copy.slice(0, Math.min(count, copy.length));  
   }  
   
-  /* ===== DAILY (híbrido: usa localStorage si hay, si no, hash determinista por día) ===== */  
-  function stableDailyIndex(len){  
-    const today = new Date().toISOString().slice(0,10);  // mismo criterio que tu código original (UTC)  
-    const key = PAGE_ID + '|' + today + '|salt';         // semilla estable por página y día  
-    // FNV-1a 32-bit  
+  /* ===== DAILY determinista absoluto ===== */  
+  function getDailyName(){  
+    const today = new Date().toISOString().slice(0,10);  
+    const key = PAGE_ID + '|' + today + '|salt';  
     let h = 2166136261;  
-    for (let i = 0; i < key.length; i++){  
+    for (let i=0;i<key.length;i++){  
       h ^= key.charCodeAt(i);  
       h = Math.imul(h, 16777619);  
     }  
-    return (h >>> 0) % len;  
-  }  
-  function getOrCreateDailyName(){  
-    const today = new Date().toISOString().slice(0,10);  
-    // 1) Intento normal con localStorage  
-    try{  
-      const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');  
-      if(saved.date === today && saved.name) return saved.name;  
-    }catch(e){ /* TikTok WebView puede bloquear storage */ }  
-    // 2) Fallback determinista (no cambia al recargar)  
-    const idx = stableDailyIndex(allBrawlers.length);  
-    const name = allBrawlers[idx];  
-    // 3) Best-effort: guardar para navegadores que sí permitan storage  
-    try{ localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name})); }catch(e){}  
-    return name;  
+    const idx = (h >>> 0) % allBrawlers.length;  
+    return allBrawlers[idx];  
   }  
   
   /* ===== PREPARAR 20 BRAWLERS ACTIVOS (precarga/timeout) ===== */  
@@ -319,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }  
     brawlerImg.className = fallbackClass;  
   }  
-  
+
   /* ===== CALCULAR ===== */  
   function calcular(){  
     beep(600); vibrar();  
@@ -535,17 +521,13 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(animate);  
   }  
   
-  /* ===== INICIALIZACIÓN ===== */  
+    /* ===== INICIALIZACIÓN ===== */  
   if(spinBtn) spinBtn.disabled = true;  
   prepareActiveBrawlers(20).then(() => {  
-    // Obtener daily estable  
-    const dailyName = getOrCreateDailyName();  
-  
-    // Si el daily no está en activeBrawlers, lo insertamos para garantizar su presencia y precarga  
+    const dailyName = getDailyName();  
     if(!activeBrawlers.includes(dailyName)){  
       const idx = Math.floor(Math.random()*activeBrawlers.length);  
       activeBrawlers[idx] = dailyName;  
-      // forzamos inicio de carga si hacía falta  
       if(!brawlerCache[dailyName]){  
         const n = new Image();  
         n.src = baseURL + dailyName + ".png";  
@@ -554,24 +536,20 @@ document.addEventListener('DOMContentLoaded', () => {
         brawlerCache[dailyName].src = baseURL + dailyName + ".png";  
       }  
     }  
-  
-    // Mostramos un Brawler inicial que NO sea el daily (evita sensación de empezar y terminar igual)  
     const nonDaily = activeBrawlers.filter(n => n !== dailyName);  
     const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;  
     safeSetBrawler(startName);  
-  
     if(spinBtn) spinBtn.disabled = false;  
   }).catch(e=>{  
     console.warn("prepareActiveBrawlers fallo: ", e);  
-    const dailyName = getOrCreateDailyName();  
+    const dailyName = getDailyName();  
     safeSetBrawler(dailyName);  
     if(spinBtn) spinBtn.disabled = false;  
   });  
   
-  // métricas en paralelo  
   cargarMetricas();  
   incrementarVisita();  
 });  
- </script>  
+</script>   
 </body>  
 </html>
