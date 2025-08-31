@@ -116,7 +116,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>  
     </div>  
   </div>  
-  <script type="module">
+    <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -140,12 +140,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
 
-  const likeBtn = document.getElementById('likeBtn');
-  const dislikeBtn = document.getElementById('dislikeBtn');
+  // Opcionales (si los tienes en el HTML)
+  const likeBtn = document.getElementById('likeBtn') || likesCounter;
+  const dislikeBtn = document.getElementById('dislikeBtn') || dislikesCounter;
 
   /* ===== UTILIDADES ===== */
   function beep(freq){
-    const ctx = new (AudioContext||webkitAudioContext)(),
+    const ctx = new (window.AudioContext || window.webkitAudioContext)(),
           o = ctx.createOscillator(),
           g = ctx.createGain();
     o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination);
@@ -155,12 +156,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== CONTADORES METRICAS ===== */
   async function cargarMetricas(){
-    const { data, error } = await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id', PAGE_ID).single();
-    if (!error && data){
-      animateCounter('visitas-counter', data.visitas);
-      animateCounter('likes-counter', data.likes);
-      animateCounter('dislikes-counter', data.dislikes);
-    }
+    try{
+      const { data, error } = await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id', PAGE_ID).single();
+      if (!error && data){
+        animateCounter('visitas-counter', data.visitas);
+        animateCounter('likes-counter', data.likes);
+        animateCounter('dislikes-counter', data.dislikes);
+      }
+    }catch(e){ console.error("cargarMetricas:", e); }
   }
   async function incrementarVisita(){
     try{
@@ -170,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function animateCounter(id, value){
     const el = document.getElementById(id);
+    if(!el) return;
     let start = parseInt(el.innerText)||0;
     const end = Number(value)||0;
     const duration = 800;
@@ -182,27 +186,159 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(step);
   }
 
-  /* ===== VOTOS 1 POR USUARIO ===== */
-  function getUserVote() {
-    try {
-      return JSON.parse(localStorage.getItem(PAGE_ID+'|vote')||'null');
-    } catch(e){ return null; }
+  /* ===== VISITOR ID (persistente si es posible) ===== */
+  function trySetLocalStorage(key, value){
+    try{ localStorage.setItem(key, value); return true; }
+    catch(e){ return false; }
   }
-  async function setUserVote(vote) {
-    localStorage.setItem(PAGE_ID+'|vote', JSON.stringify(vote));
+  function tryGetLocalStorage(key){
+    try{ return localStorage.getItem(key); }
+    catch(e){ return null; }
+  }
+  function trySetCookie(name, value, days=365){
     try{
-      await supabase.from('votes').upsert({ page_id: PAGE_ID, vote });
-      await cargarMetricas();
-    }catch(e){ console.error(e); }
+      const d = new Date(); d.setTime(d.getTime() + (days*24*60*60*1000));
+      document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+      return true;
+    }catch(e){ return false; }
   }
-  function updateVoteButtonsUI() {
-    const vote = getUserVote();
-    likeBtn.disabled = vote==='like';
-    dislikeBtn.disabled = vote==='dislike';
+  function tryGetCookie(name){
+    try{
+      const v = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+      return v ? v.pop() : null;
+    }catch(e){ return null; }
   }
 
-  likeBtn.addEventListener('click', ()=>{ setUserVote('like'); updateVoteButtonsUI(); });
-  dislikeBtn.addEventListener('click', ()=>{ setUserVote('dislike'); updateVoteButtonsUI(); });
+  // FNV-1a hash -> hex
+  function fnv1aHex(str){
+    let h = 2166136261 >>> 0;
+    for(let i=0;i<str.length;i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    return (h>>>0).toString(16).padStart(8,'0');
+  }
+
+  function getDeterministicFingerprint(){
+    const parts = [
+      navigator.userAgent || '',
+      navigator.platform || '',
+      screen.width+'x'+screen.height,
+      Intl.DateTimeFormat().resolvedOptions().timeZone||'',
+      navigator.language||''
+    ].join('||');
+    return 'fp_'+fnv1aHex(parts);
+  }
+
+  function getVisitorId(){
+    // 1) try localStorage
+    const KEY = 'visitorId_v2';
+    let id = tryGetLocalStorage(KEY);
+    if(id) return id;
+
+    // 2) try cookie
+    id = tryGetCookie(KEY);
+    if(id) {
+      trySetLocalStorage(KEY, id); // try to mirror
+      return id;
+    }
+
+    // 3) generate stable fingerprint and try persist it
+    const fp = getDeterministicFingerprint();
+    // try to store deterministically (we want consistent id between reloads on same device)
+    const generated = 'v-'+fp;
+    trySetLocalStorage(KEY, generated);
+    trySetCookie(KEY, generated);
+    return generated;
+  }
+
+  const VISITOR_ID = getVisitorId();
+
+  /* ===== VOTOS 1 POR USUARIO (integrado con Supabase upsert_vote) ===== */
+  async function fetchUserVote(){
+    // intenta obtener voto desde Supabase (user_votes) por VISITOR_ID y PAGE_ID
+    try{
+      const { data, error } = await supabase.from('user_votes').select('vote').eq('user_id', VISITOR_ID).eq('page_id', PAGE_ID).single();
+      if(!error && data && typeof data.vote !== 'undefined') {
+        return Number(data.vote); // 1 or -1
+      }
+    }catch(e){
+      // Si consulta falla, ignoramos y usamos localStorage fallback
+      console.warn('fetchUserVote supabase error', e);
+    }
+    // fallback local
+    try{
+      const raw = tryGetLocalStorage(PAGE_ID+'|vote');
+      if(raw) {
+        const v = JSON.parse(raw);
+        return (v === 'like') ? 1 : (v === 'dislike' ? -1 : 0);
+      }
+    }catch(e){}
+    return 0;
+  }
+
+  async function upsertUserVoteToServer(v){
+    // v harus be 1 or -1 or 0(clear)
+    try{
+      // Prefer the upsert_vote RPC you created (uid TEXT, pid TEXT, v SMALLINT)
+      if(typeof v === 'number'){
+        await supabase.rpc('upsert_vote', { uid: VISITOR_ID, pid: PAGE_ID, v: v });
+        await cargarMetricas();
+        return true;
+      }
+    }catch(e){
+      console.warn('upsertUserVoteToServer failed', e);
+    }
+    return false;
+  }
+
+  async function setUserVoteLocalAndServer(choice){ // 'like' | 'dislike' | null(clear)
+    try{
+      if(choice === null){
+        trySetLocalStorage(PAGE_ID+'|vote', JSON.stringify(null));
+        // Not implemented server-side clear function in SQL; rely on upsert with 0? we won't handle clearing to 0 in server unless upsert_vote supports it.
+        // For safety, if user wants to clear, we send upsert 0 to server (if function handles)
+        await upsertUserVoteToServer(0);
+      } else {
+        trySetLocalStorage(PAGE_ID+'|vote', JSON.stringify(choice));
+        const v = (choice === 'like') ? 1 : -1;
+        await upsertUserVoteToServer(v);
+      }
+      await cargarMetricas();
+      updateVoteButtonsUI();
+    }catch(e){ console.error('setUserVoteLocalAndServer', e); }
+  }
+
+  function updateVoteButtonsUI(){
+    fetchUserVote().then(v => {
+      // v = 1 like, -1 dislike, 0 none
+      if(v === 1){
+        likeBtn.classList && likeBtn.classList.add && likeBtn.classList.add('active');
+        dislikeBtn.classList && dislikeBtn.classList.remove && dislikeBtn.classList.remove('active');
+      } else if(v === -1){
+        dislikeBtn.classList && dislikeBtn.classList.add && dislikeBtn.classList.add('active');
+        likeBtn.classList && likeBtn.classList.remove && likeBtn.classList.remove('active');
+      } else {
+        likeBtn.classList && likeBtn.classList.remove && likeBtn.classList.remove('active');
+        dislikeBtn.classList && dislikeBtn.classList.remove && dislikeBtn.classList.remove('active');
+      }
+    }).catch(()=>{ /* ignore */ });
+  }
+
+  // clicks para like/dislike (1 voto por usuario, puede rectificar)
+  likeBtn && likeBtn.addEventListener && likeBtn.addEventListener('click', async () => {
+    beep(420); vibrar(60);
+    // toggle: si ya estaba like -> quitar (set null), si no -> set like
+    const current = await fetchUserVote();
+    if(current === 1) await setUserVoteLocalAndServer(null);
+    else await setUserVoteLocalAndServer('like');
+  });
+  dislikeBtn && dislikeBtn.addEventListener && dislikeBtn.addEventListener('click', async () => {
+    beep(320); vibrar(60);
+    const current = await fetchUserVote();
+    if(current === -1) await setUserVoteLocalAndServer(null);
+    else await setUserVoteLocalAndServer('dislike');
+  });
 
   /* ===== BRAWLERS ===== */
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
@@ -228,27 +364,60 @@ document.addEventListener('DOMContentLoaded', () => {
     return copy.slice(0, Math.min(count, copy.length));
   }
 
-  /* ===== DAILY ===== */
-  function stableDailyIndex(len){
+  /* ===== DAILY: intentar en servidor -> si falla, fallback determinista por usuario ===== */
+
+  // Fallback determinista por usuario+fecha (si servidor no disponible)
+  function stableDailyIndexForUser(uid, len){
     const today = new Date().toISOString().slice(0,10);
-    const key = PAGE_ID + '|' + today + '|salt';
-    let h = 2166136261;
+    const key = uid + '|' + today + '|salt';
+    let h = 2166136261 >>> 0;
     for (let i = 0; i < key.length; i++){
       h ^= key.charCodeAt(i);
-      h = Math.imul(h, 16777619);
+      h = Math.imul(h, 16777619) >>> 0;
     }
     return (h >>> 0) % len;
   }
-  function getOrCreateDailyName(){
-    const today = new Date().toISOString().slice(0,10);
+
+  async function getOrCreateDailyNameForUser(){
+    // 1) Intenta usar RPC servidor get_or_set_user_daily_brawler(uid,pid)
     try{
-      const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-      if(saved.date===today && saved.name) return saved.name;
-    }catch(e){}
-    const idx = stableDailyIndex(allBrawlers.length);
-    const name = allBrawlers[idx];
-    try{ localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name})); }catch(e){}
-    return name;
+      // Si en tu DB existe una función tipo:
+      // get_or_set_user_daily_brawler(uid TEXT, pid TEXT) RETURNS TEXT
+      // ésta devolverá el nombre asignado al usuario (y lo creará si no existe).
+      const { data, error } = await supabase.rpc('get_or_set_user_daily_brawler', { uid: VISITOR_ID, pid: PAGE_ID });
+      if(!error && data){
+        // supabase.rpc returns data as value inside data (in some libs it's different). We handle both:
+        if(typeof data === 'string') return data;
+        if(Array.isArray(data) && data.length>0) return data[0];
+        if(data && data.value) return data.value;
+      }
+    }catch(e){
+      // Si la RPC no existe o falla, caemos al fallback
+      //console.warn('RPC get_or_set_user_daily_brawler failed:', e);
+    }
+
+    // 2) fallback local persistente: intentamos localStorage (si permite)
+    try{
+      const today = new Date().toISOString().slice(0,10);
+      const key = `dailyBrawler|${PAGE_ID}|${VISITOR_ID}`;
+      const saved = tryGetLocalStorage(key);
+      if(saved){
+        try{
+          const parsed = JSON.parse(saved);
+          if(parsed.date === today && parsed.name) return parsed.name;
+        }catch(e){}
+      }
+      // si no existe guardado, calculamos index determinista por user+date
+      const idx = stableDailyIndexForUser(VISITOR_ID, allBrawlers.length);
+      const name = allBrawlers[idx];
+      trySetLocalStorage(key, JSON.stringify({ date: today, name }));
+      trySetCookie(key, JSON.stringify({ date: today, name }), 7);
+      return name;
+    }catch(e){
+      // 3) como último recurso, usa un índice estable global por fecha
+      const idx2 = stableDailyIndexForUser('fallback_global', allBrawlers.length);
+      return allBrawlers[idx2];
+    }
   }
 
   /* ===== PREPARAR BRAWLERS ===== */
@@ -288,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ===== IMAGEN SEGURA ===== */
+  /* ===== FUNCIONES DE IMAGEN SEGURA ===== */
   function getLoadedImagesFromList(list){
     return list.map(name => brawlerCache[name]).filter(i=>i && i.complete && i.naturalWidth>0);
   }
@@ -358,162 +527,174 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("resultado").innerText="Valor total: 0 🪙";
     if(chart) chart.destroy();
 
-    const dailyName = getOrCreateDailyName();
-    let candidates = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
-    candidates = candidates.filter(n => n !== dailyName);
-    const start = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : dailyName;
-    safeSetBrawler(start);
-    brawlerImg.className = "finalGlow";
-    document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
+    // mostramos un brawler inicial distinto al daily para que la ruleta no empiece con el daily
+    getOrCreateDailyNameForUser().then(dailyName=>{
+      let candidates = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
+      candidates = candidates.filter(n => n !== dailyName);
+      const start = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : dailyName;
+      safeSetBrawler(start);
+      brawlerImg.className = "finalGlow";
+      document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'});
+    }).catch(e=>{
+      const start = allBrawlers[Math.floor(Math.random()*allBrawlers.length)];
+      safeSetBrawler(start);
+      brawlerImg.className = "finalGlow";
+    });
   }
 
   /* ===== SHARE ===== */
   async function share(){
     beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
-    const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
     if(navigator.share){
-      try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
+      try{await navigator.share({title:"Calculadora Brawl Stars",text:"Mira cuánto valen mis Brawlers en Brawl Stars!",url});}
       catch(err){console.log(err);}
     } else {
-      try{
-        await navigator.clipboard.writeText(url);
-        alert("Enlace copiado al portapapeles ✅");
-      }catch(e){
-        prompt("Copia este enlace:", url);
-      }
+      try{ await navigator.clipboard.writeText(url); alert("Enlace copiado al portapapeles ✅"); }
+      catch(e){ prompt("Copia este enlace:", url); }
     }
   }
 
   /* ===== RULETA ===== */
   function spinRouletteSmooth(){
-    let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
-    const dailyName = getOrCreateDailyName();
-    if(!brawlersList.includes(dailyName)){
-      const replaceIdx = Math.floor(Math.random()*brawlersList.length);
-      brawlersList[replaceIdx] = dailyName;
-    }
-    const nonDailyBrawlers = brawlersList.filter(n => n !== dailyName);
-    const startName = nonDailyBrawlers.length ? nonDailyBrawlers[Math.floor(Math.random()*nonDailyBrawlers.length)] : dailyName;
-    safeSetBrawler(startName);
-
-    const numBrawlers = brawlersList.length;
-    const finalIndex = brawlersList.indexOf(dailyName);
-    const totalDuration = 10000;
-    const slowDuration = 2000;
-    const fastDuration = totalDuration - slowDuration;
-    const finalSlowSteps = Math.min(6,numBrawlers);
-    const indices = Array.from({length:numBrawlers},(_,i)=>i);
-    const shuffledFast = [...indices].sort(()=>Math.random()-0.5);
-
-    if(brawlersList[shuffledFast[0]]===dailyName){
-      const swapIdx = shuffledFast.findIndex(i=>brawlersList[i]!==dailyName);
-      if(swapIdx>0) [shuffledFast[0],shuffledFast[swapIdx]]=[shuffledFast[swapIdx],shuffledFast[0]];
-    }
-
-    const temp = indices.filter(i=>i!==finalIndex);
-    const slowSequence = [];
-    for(let i=0;i<finalSlowSteps-1;i++){
-      const idx = Math.floor(Math.random()*temp.length);
-      slowSequence.push(temp[idx]);
-      temp.splice(idx,1);
-    }
-    slowSequence.push(finalIndex);
-
-    const glowClasses=["glow-blue","glow-red","glow-orange","glow-green"];
-    const startTime = performance.now();
-
-    function showImageSafe(name, glowClass){
-      const img = brawlerCache[name];
-      const loadedActive = getLoadedImagesFromList(brawlersList);
-      const loadedAny = Object.values(brawlerCache).filter(i=>i && i.complete && i.naturalWidth>0);
-      if(img && img.complete && img.naturalWidth>0) brawlerImg.src = img.src;
-      else if(loadedActive.length>0) brawlerImg.src = loadedActive[Math.floor(Math.random()*loadedActive.length)].src;
-      else if(loadedAny.length>0) brawlerImg.src = loadedAny[Math.floor(Math.random()*loadedAny.length)].src;
-      else brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
-      brawlerImg.className = glowClass;
-    }
-
-    let fastStep=0, slowStep=0, phase="fast", lastTime=performance.now();
-    const fastInterval=60;
-
-    function animate(currentTime){
-      const elapsed = currentTime - startTime;
-      if(phase==="fast"){
-        if(elapsed>=fastDuration){ phase="slow"; lastTime=currentTime; }
-        else if(currentTime-lastTime>=fastInterval){
-          const name=brawlersList[shuffledFast[fastStep % shuffledFast.length]];
-          const glow=glowClasses[fastStep % glowClasses.length];
-          showImageSafe(name, glow);
-          fastStep++; lastTime=currentTime;
-        }
+    // Preparar lista y daily (usando servidor si posible, si no fallback)
+    getOrCreateDailyNameForUser().then(dailyName => {
+      let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
+      if(!brawlersList.includes(dailyName)){
+        const replaceIdx = Math.floor(Math.random()*brawlersList.length);
+        brawlersList[replaceIdx] = dailyName;
       }
-      if(phase==="slow"){
-        const slowElapsed = elapsed-fastDuration;
-        const stepDuration = slowDuration/finalSlowSteps;
-        if(slowElapsed >= stepDuration*slowStep){
-          if(slowStep < finalSlowSteps){
-            const idx = slowSequence[slowStep];
-            const name = brawlersList[idx];
-            const glow = slowStep<finalSlowSteps-1 ? glowClasses[(fastStep+slowStep)%glowClasses.length] : "glow-green finalGlow";
+
+      // Elegimos inicio distinto al daily
+      const nonDailyBrawlers = brawlersList.filter(n => n !== dailyName);
+      const startName = nonDailyBrawlers.length ? nonDailyBrawlers[Math.floor(Math.random()*nonDailyBrawlers.length)] : dailyName;
+      safeSetBrawler(startName);
+
+      const numBrawlers = brawlersList.length;
+      const finalIndex = brawlersList.indexOf(dailyName);
+      const totalDuration = 10000;
+      const slowDuration = 2000;
+      const fastDuration = totalDuration - slowDuration;
+      const finalSlowSteps = Math.min(6,numBrawlers);
+      const indices = Array.from({length:numBrawlers},(_,i)=>i);
+      const shuffledFast = [...indices].sort(()=>Math.random()-0.5);
+
+      if(brawlersList[shuffledFast[0]]===dailyName){
+        const swapIdx = shuffledFast.findIndex(i=>brawlersList[i]!==dailyName);
+        if(swapIdx>0) [shuffledFast[0],shuffledFast[swapIdx]]=[shuffledFast[swapIdx],shuffledFast[0]];
+      }
+
+      const temp = indices.filter(i=>i!==finalIndex);
+      const slowSequence = [];
+      for(let i=0;i<finalSlowSteps-1;i++){
+        const idx = Math.floor(Math.random()*temp.length);
+        slowSequence.push(temp[idx]);
+        temp.splice(idx,1);
+      }
+      slowSequence.push(finalIndex);
+
+      const glowClasses=["glow-blue","glow-red","glow-orange","glow-green"];
+      const startTime = performance.now();
+
+      function showImageSafe(name, glowClass){
+        const img = brawlerCache[name];
+        const loadedActive = getLoadedImagesFromList(brawlersList);
+        const loadedAny = Object.values(brawlerCache).filter(i=>i && i.complete && i.naturalWidth>0);
+        if(img && img.complete && img.naturalWidth>0) brawlerImg.src = img.src;
+        else if(loadedActive.length>0) brawlerImg.src = loadedActive[Math.floor(Math.random()*loadedActive.length)].src;
+        else if(loadedAny.length>0) brawlerImg.src = loadedAny[Math.floor(Math.random()*loadedAny.length)].src;
+        else brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
+        brawlerImg.className = glowClass;
+      }
+
+      let fastStep=0, slowStep=0, phase="fast", lastTime=performance.now();
+      const fastInterval=60;
+
+      function animate(currentTime){
+        const elapsed = currentTime - startTime;
+        if(phase==="fast"){
+          if(elapsed>=fastDuration){ phase="slow"; lastTime=currentTime; }
+          else if(currentTime-lastTime>=fastInterval){
+            const name=brawlersList[shuffledFast[fastStep % shuffledFast.length]];
+            const glow=glowClasses[fastStep % glowClasses.length];
             showImageSafe(name, glow);
-            slowStep++;
-          }
-          if(slowStep >= finalSlowSteps){
-            safeSetBrawler(dailyName,"glow-green finalGlow");
-            confetti({particleCount:150, spread:90, origin:{y:0.5}});
-            return;
+            fastStep++; lastTime=currentTime;
           }
         }
+        if(phase==="slow"){
+          const slowElapsed = elapsed-fastDuration;
+          const stepDuration = slowDuration/finalSlowSteps;
+          if(slowElapsed >= stepDuration*slowStep){
+            if(slowStep < finalSlowSteps){
+              const idx = slowSequence[slowStep];
+              const name = brawlersList[idx];
+              const glow = slowStep<finalSlowSteps-1 ? glowClasses[(fastStep+slowStep)%glowClasses.length] : "glow-green finalGlow";
+              showImageSafe(name, glow);
+              slowStep++;
+            }
+            if(slowStep >= finalSlowSteps){
+              safeSetBrawler(dailyName,"glow-green finalGlow");
+              confetti({particleCount:150, spread:90, origin:{y:0.5}});
+              return;
+            }
+          }
+        }
+        requestAnimationFrame(animate);
       }
+
       requestAnimationFrame(animate);
-    }
-    requestAnimationFrame(animate);
+    }).catch(err=>{
+      console.warn('spinRoulette fallback error', err);
+      // fallback simple: run roulette with local deterministic daily
+      const dailyName = allBrawlers[stableDailyIndexForUser(VISITOR_ID, allBrawlers.length)];
+      // minimal fallback behaviour:
+      safeSetBrawler(dailyName, "glow-green finalGlow");
+    });
   }
 
-  /* ===== BOTONES ===== */
-  calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); });
-  clearBtn.addEventListener('click', () => { limpiar(); });
-  shareBtn.addEventListener('click', share);
-spinBtn.addEventListener('click', () => {
-    beep(520); vibrar(80);
-    if(!spinBtn.disabled) spinRouletteSmooth();
-});
-infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
-infoClose.addEventListener('click', ()=> infoModal.style.display='none');
-infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
-shareBtn.classList.add('pulse');
+  /* ===== BOTONES (attach events) ===== */
+  calcBtn && calcBtn.addEventListener && calcBtn.addEventListener('click', () => { beep(520); vibrar(80); calcular(); document.getElementById('myChart') && document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); });
+  clearBtn && clearBtn.addEventListener && clearBtn.addEventListener('click', () => { limpiar(); document.getElementById('calcForm') && document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); });
+  shareBtn && shareBtn.addEventListener && shareBtn.addEventListener('click', share);
+  spinBtn && spinBtn.addEventListener && spinBtn.addEventListener('click', () => { beep(520); vibrar(80); if(!spinBtn.disabled) spinRouletteSmooth(); document.getElementById('myChart') && document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); });
+  infoBtn && infoBtn.addEventListener && infoBtn.addEventListener('click', ()=> infoModal.style.display='flex');
+  infoClose && infoClose.addEventListener && infoClose.addEventListener('click', ()=> infoModal.style.display='none');
+  infoModal && infoModal.addEventListener && infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
+  shareBtn && shareBtn.classList && shareBtn.classList.add('pulse');
 
-/* ===== INICIALIZACIÓN ===== */
-if(spinBtn) spinBtn.disabled = true;
-prepareActiveBrawlers(20).then(()=>{
-    const dailyName = getOrCreateDailyName();
+  /* ===== INICIALIZACIÓN ===== */
+  if(spinBtn) spinBtn.disabled = true;
+  prepareActiveBrawlers(20).then(async () => {
+    // cargar daily del servidor o fallback por usuario:
+    const dailyName = await getOrCreateDailyNameForUser();
+    // si no está en activeBrawlers, lo insertamos para garantizar su presencia y precarga
     if(!activeBrawlers.includes(dailyName)){
-        const idx = Math.floor(Math.random()*activeBrawlers.length);
-        activeBrawlers[idx] = dailyName;
-        if(!brawlerCache[dailyName]){
-            const n = new Image();
-            n.src = baseURL + dailyName + ".png";
-            brawlerCache[dailyName] = n;
-        } else {
-            brawlerCache[dailyName].src = baseURL + dailyName + ".png";
-        }
+      const idx = Math.floor(Math.random()*activeBrawlers.length);
+      activeBrawlers[idx] = dailyName;
+      if(!brawlerCache[dailyName]){
+        const n = new Image();
+        n.src = baseURL + dailyName + ".png";
+        brawlerCache[dailyName] = n;
+      } else {
+        brawlerCache[dailyName].src = baseURL + dailyName + ".png";
+      }
     }
     const nonDaily = activeBrawlers.filter(n => n !== dailyName);
     const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;
     safeSetBrawler(startName);
     if(spinBtn) spinBtn.disabled = false;
-}).catch(e=>{
+  }).catch(e=>{
     console.warn("prepareActiveBrawlers fallo: ",e);
-    const dailyName = getOrCreateDailyName();
-    safeSetBrawler(dailyName);
-    if(spinBtn) spinBtn.disabled = false;
-});
+    getOrCreateDailyNameForUser().then(dailyName=>{
+      safeSetBrawler(dailyName);
+      if(spinBtn) spinBtn.disabled = false;
+    }).catch(()=>{ safeSetBrawler(allBrawlers[0]); if(spinBtn) spinBtn.disabled = false; });
+  });
 
-/* ===== CARGAR METRICAS Y VOTOS ===== */
-cargarMetricas().then(updateVoteButtonsUI);
-incrementarVisita();
-updateVoteButtonsUI();
+  /* ===== CARGAR METRICAS Y VOTOS ===== */
+  cargarMetricas().then(()=> updateVoteButtonsUI());
+  incrementarVisita();
+
 });
 </script>
 </body>
