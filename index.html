@@ -298,17 +298,41 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('centerDiamond').style.display = "block";
 
     // ==== CLICK EN EL GRÁFICO PARA MOSTRAR LA MISIÓN SEGÚN COLOR ====
-    const chartCanvas = document.getElementById('myChart');
     chartCanvas.onclick = (e) => {
-      const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-      if (points.length) {
-        const dailyName = getOrCreateDailyName();
-        const missions = getMissionsForToday();
-        const dataIndex = points[0].index;
-        const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
-        const missionText = missions[dataIndex % missions.length].replace("{brawler}", dailyName);
+  if (!chart) return;
 
-        showMissionBubble(`📌 ${missionText}`, borderColor);
+  const rect = chartCanvas.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const clickY = e.clientY - rect.top;
+
+  const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+  if (!points.length) return;
+
+  const dataIndex = points[0].index;
+  const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
+
+  const dailyName = getOrCreateDailyName();
+  const missions = getMissionsForToday();
+  const missionText = missions[dataIndex % missions.length].replace("{brawler}", dailyName);
+
+  // posición de la burbuja con ajuste para no salirse del viewport
+  let bubbleX = rect.left + clickX + 10; // un poco a la derecha del clic
+  let bubbleY = rect.top + clickY + 10;  // un poco abajo del clic
+
+  const bubbleWidth = 200; // ancho estimado de la burbuja
+  const bubbleHeight = 60; // alto estimado
+  const padding = 10;
+
+  // ajustar para que no se salga del viewport horizontal
+  if (bubbleX + bubbleWidth + padding > window.innerWidth) {
+    bubbleX = window.innerWidth - bubbleWidth - padding;
+  }
+  // ajustar para que no se salga del viewport vertical
+  if (bubbleY + bubbleHeight + padding > window.innerHeight) {
+    bubbleY = window.innerHeight - bubbleHeight - padding;
+  }
+
+  showMissionBubble(`📌 ${missionText}`, borderColor, bubbleX, bubbleY);
       }
     };
   }
