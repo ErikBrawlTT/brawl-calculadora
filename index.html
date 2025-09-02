@@ -422,10 +422,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     _currentMissionEl = el;
   }
-  /* ===== CALCULAR + MISIÓN ===== */
+/* ===== CALCULAR ===== */
 function calcular(){
   beep(600); vibrar();
-  calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
+  calcBtn.classList.add('flash'); 
+  setTimeout(()=>calcBtn.classList.remove('flash'),200);
 
   const bpass = Number(document.getElementById("bpass").value)||0;
   const comunes = Number(document.getElementById("comunes").value)||0;
@@ -460,43 +461,51 @@ function calcular(){
   }
   requestAnimationFrame(step);
 
-  const data={labels:Object.keys(valores), datasets:[{data:Object.values(valores), backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"], borderWidth:2}]};
-  const config={type:'doughnut', data:data, options:{cutout:"70%", plugins:{legend:{display:true, position:'bottom'}}}};
+  const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
+  const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
   if(chart) chart.destroy();
   chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
-  // ==== NUEVO: mostrar misión al clicar un color ====
-  document.getElementById('myChart').addEventListener('click', (e) => {
+  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  document.getElementById('centerDiamond').style.display="block";
+
+  // ==== NUEVO: burbuja de misión sobre el segmento clicado ====
+  const dailyName = getOrCreateDailyName();
+  const chartCanvas = document.getElementById('myChart');
+
+  chartCanvas.onclick = (e) => {
     const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
     if(points.length){
-      const datasetIndex = points[0].datasetIndex;
       const dataIndex = points[0].index;
-      const label = chart.data.labels[dataIndex];
-      showMissionBubble(`¡Misión desbloqueada: ${label}!`);
-    }
-  });
+      const rect = chartCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-/* ===== FUNCIÓN GLOBAL PARA BURBUJA DE MISIÓN ===== */
-function showMissionBubble(text){
-  let bubble = document.getElementById('missionBubble');
-  if(!bubble){
-    bubble = document.createElement('div');
-    bubble.id = 'missionBubble';
-    bubble.style.cssText = `
-      position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-      background:rgba(0,0,0,0.8); color:#fff; padding:12px 20px; border-radius:12px;
-      font-size:1rem; z-index:99999; opacity:0; transition:opacity 0.4s, transform 0.4s;
-    `;
-    document.body.appendChild(bubble);
-  }
-  bubble.innerText = text;
-  bubble.style.opacity = '1';
-  bubble.style.transform = 'translateX(-50%) translateY(0)';
-  setTimeout(()=>{
-    bubble.style.opacity = '0';
-    bubble.style.transform = 'translateX(-50%) translateY(20px)';
-  }, 3000);
-}
+      let bubble = document.getElementById('missionBubble');
+      if(!bubble){
+        bubble = document.createElement('div');
+        bubble.id = 'missionBubble';
+        bubble.style.position = 'absolute';
+        bubble.style.background = 'rgba(255,255,0,0.9)';
+        bubble.style.color = '#000';
+        bubble.style.padding = '6px 12px';
+        bubble.style.borderRadius = '8px';
+        bubble.style.fontWeight = 'bold';
+        bubble.style.pointerEvents = 'none';
+        bubble.style.transition = 'opacity 0.3s';
+        chartCanvas.parentElement.style.position = 'relative';
+        chartCanvas.parentElement.appendChild(bubble);
+      }
+
+      bubble.innerText = `Misión del día: ${dailyName}`;
+      bubble.style.left = `${x}px`;
+      bubble.style.top = `${y}px`;
+      bubble.style.opacity = '1';
+
+      setTimeout(()=>{
+        bubble.style.opacity = '0';
+      }, 2000);
+    }
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
   }
