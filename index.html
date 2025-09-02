@@ -327,7 +327,8 @@ function calcular(){
   document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-/* ===== ATTACH CLICK LISTENER DE MANERA SEGURA ===== */
+/* ===== CLICK EN EL GRÁFICO PARA MOSTRAR LA MISIÓN ===== */
+const chartCanvas = document.getElementById('myChart');
 chartCanvas.onclick = (e) => {
   const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
   if (!points.length) return;
@@ -341,23 +342,25 @@ chartCanvas.onclick = (e) => {
 
   const meta = chart.getDatasetMeta(0);
   const arc = meta.data[dataIndex];
-  const angle = (arc.startAngle + arc.endAngle)/2 - Math.PI/2;
+  const angle = (arc.startAngle + arc.endAngle) / 2 - Math.PI / 2;
   const radius = arc.outerRadius + 20;
+
+  // calcular posición relativa al centro del donut
   let x = arc.x + radius * Math.cos(angle);
   let y = arc.y + radius * Math.sin(angle);
 
-  // ajustar posición para que la burbuja siempre quede fuera del círculo
+  // ajustar la burbuja para que quede fuera del círculo
   const centerX = arc.x;
   const centerY = arc.y;
 
-  if (x < centerX) x -= 100;  // mover a la izquierda si estamos a la izquierda
-  else x += 10;                // mover a la derecha si estamos a la derecha
+  if (x < centerX) x -= 100; // mover a la izquierda si estamos a la izquierda
+  else x += 10;               // mover a la derecha si estamos a la derecha
 
-  if (y < centerY) y -= 10;    // mover arriba si estamos arriba
-  else y += 10;                // mover abajo si estamos abajo
+  if (y < centerY) y -= 10;   // mover arriba si estamos arriba
+  else y += 10;               // mover abajo si estamos abajo
 
-  showMissionBubbleOnCanvas(`📌 ${missionText}`, borderColor, x, y);
-  }
+  showMissionBubble(missionText, borderColor, x, y);
+ }
 };
 
   /* ===== LIMPIAR ===== */
