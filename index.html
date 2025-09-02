@@ -466,9 +466,6 @@ function calcular(){
   if(chart) chart.destroy();
   chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
-  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-  document.getElementById('centerDiamond').style.display="block";
-
   // ==== NUEVO: burbuja de misión sobre el segmento clicado ====
   const dailyName = getOrCreateDailyName();
   const chartCanvas = document.getElementById('myChart');
