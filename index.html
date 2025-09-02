@@ -330,9 +330,6 @@ function attachChartClickListener() {
 
   chartCanvas.onclick = (e) => {
     const rect = chartCanvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-
     const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
     if (!points.length) return;
 
@@ -343,19 +340,28 @@ function attachChartClickListener() {
     const missions = getMissionsForToday();
     const missionText = missions[dataIndex % missions.length].replace("{brawler}", dailyName);
 
-    // posición de la burbuja sobre el clic
-    let bubbleX = rect.left + clickX + 10;
-    let bubbleY = rect.top + clickY + 10;
+    // --- CALCULAR POSICIÓN DEL SEGMENTO ---
+    const meta = chart.getDatasetMeta(0);
+    const arc = meta.data[dataIndex];
+    const centerX = arc.x + rect.left;
+    const centerY = arc.y + rect.top;
+
+    // mover la burbuja un poco hacia fuera del centro del segmento
+    const angle = (arc.startAngle + arc.endAngle)/2 - Math.PI/2; 
+    const radius = arc.outerRadius + 20; // distancia fuera del donut
+    let bubbleX = centerX + radius * Math.cos(angle);
+    let bubbleY = centerY + radius * Math.sin(angle);
+
+    // limitar para que no salga de la ventana
     const bubbleWidth = 200;
     const bubbleHeight = 60;
     const padding = 10;
-
     if (bubbleX + bubbleWidth + padding > window.innerWidth) bubbleX = window.innerWidth - bubbleWidth - padding;
     if (bubbleY + bubbleHeight + padding > window.innerHeight) bubbleY = window.innerHeight - bubbleHeight - padding;
 
     showMissionBubble(`📌 ${missionText}`, borderColor, bubbleX, bubbleY);
   };
-}
+      }
 
   /* ===== LIMPIAR ===== */
   function limpiar() {
