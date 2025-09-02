@@ -139,7 +139,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-<script type="module">
+     <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -205,56 +205,13 @@ document.addEventListener('DOMContentLoaded', () => {
   async function incrementarVisita(){ try{ await supabase.rpc('increment_visitas',{pid:PAGE_ID}); await cargarMetricas(); } catch(e){ console.error(e); } }
 
   /* ===== DAILY / MISION DIARIA ===== */
-    function getOrCreateDailyName(){ const today=new Date().toISOString().slice(0,10); const saved=JSON.parse(localStorage.getItem('dailyBrawler')||'{}'); if(saved.date===today && saved.name) return saved.name; const idx=Math.floor(Math.random()*allBrawlers.length); const name=allBrawlers[idx]; localStorage.setItem('dailyBrawler',JSON.stringify({date:today,name})); return name; }
+  function getOrCreateDailyName(){ const today=new Date().toISOString().slice(0,10); const saved=JSON.parse(localStorage.getItem('dailyBrawler')||'{}'); if(saved.date===today && saved.name) return saved.name; const idx=Math.floor(Math.random()*allBrawlers.length); const name=allBrawlers[idx]; localStorage.setItem('dailyBrawler',JSON.stringify({date:today,name})); return name; }
   function cyrb128(str){ let h1=1779033703,h2=3144134277,h3=1013904242,h4=2773480762; for(let i=0,k;i<str.length;i++){k=str.charCodeAt(i);h1=h2^Math.imul(h1^k,597399067);h2=h3^Math.imul(h2^k,2869860233);h3=h4^Math.imul(h3^k,951274213);h4=h1^Math.imul(h4^k,2716044179);} return [(h1>>>0),(h2>>>0),(h3>>>0),(h4>>>0)]; }
   function mulberry32(a){ return function(){a|=0;a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
   function seededShuffle(arr,seedStr){ const seedArr=cyrb128(seedStr); let seed=(seedArr[0]^seedArr[1]^seedArr[2]^seedArr[3])>>>0; const rnd=mulberry32(seed); const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
   function getMissionsForToday(numSegments=8){ const daily=getOrCreateDailyName(); const today=new Date().toISOString().slice(0,10); const seed=`${today}-${daily}`; const shuffled=seededShuffle(MISSIONS.slice(),seed); return shuffled.slice(0,Math.min(numSegments,shuffled.length)); }
-  function showMissionBubble(text, borderColor = '#FFFFFF', x = null, y = null) {
-  // eliminar burbuja anterior
-  if (_currentMissionEl) {
-    _currentMissionEl.remove();
-    _currentMissionEl = null;
-    if (_missionTimeout) { clearTimeout(_missionTimeout); _missionTimeout = null; }
-  }
+  function showMissionBubble(text,borderColor='#FFFFFF'){ if(_currentMissionEl){ _currentMissionEl.remove(); _currentMissionEl=null; if(_missionTimeout){ clearTimeout(_missionTimeout); _missionTimeout=null; } } const el=document.createElement('div'); el.className='mission-bubble'; el.style.border=`4px solid ${borderColor}`; el.innerText=text; document.body.appendChild(el); void el.offsetWidth; _missionTimeout=setTimeout(()=>{ el.classList.add('fade-out'); setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); if(_currentMissionEl===el)_currentMissionEl=null; },1000); },7000); _currentMissionEl=el; }
 
-  const el = document.createElement('div');
-  el.className = 'mission-bubble';
-  el.style.border = `4px solid ${borderColor}`;
-  el.innerText = text;
-  el.style.position = 'absolute';
-  el.style.zIndex = 9999;
-  el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-  el.style.opacity = 1;
-
-  document.body.appendChild(el);
-
-  // calcular posición si no se pasó manualmente
-  if (x === null || y === null) {
-    const bRect = brawlerImg.getBoundingClientRect();
-    x = bRect.left + bRect.width + 10; // a la derecha por defecto
-    y = bRect.top; // alineado con la parte superior
-  }
-
-  el.style.left = `${x}px`;
-  el.style.top = `${y}px`;
-
-  // para forzar render y permitir animación
-  void el.offsetWidth;
-
-  // desaparecer después de 7 segundos
-  _missionTimeout = setTimeout(() => {
-    el.style.opacity = 0;
-    el.style.transform = 'translateY(-10px)';
-    setTimeout(() => {
-      if (el.parentNode) el.parentNode.removeChild(el);
-      if (_currentMissionEl === el) _currentMissionEl = null;
-    }, 1000);
-  }, 7000);
-
-  _currentMissionEl = el;
-  }
-    
   /* ===== PRECARGA BRAWLERS ===== */
   allBrawlers.forEach(name=>{ const img=new Image(); img.src=baseURL+name+".png"; brawlerCache[name]=img; });
 
@@ -290,49 +247,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
     if(chart) chart.destroy();
     chart=new Chart(document.getElementById('myChart').getContext('2d'),config);
-    document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'});
 
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display = "block";
 
-    /* ===== CLICK EN EL GRÁFICO PARA MOSTRAR MISIÓN (posición inteligente) ===== */
-const chartCanvas = document.getElementById('myChart');
+    // ==== CLICK EN EL GRÁFICO PARA MOSTRAR LA MISIÓN SEGÚN COLOR ====
+    const chartCanvas = document.getElementById('myChart');
+    chartCanvas.onclick = (e) => {
+      const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+      if (points.length) {
+        const dailyName = getOrCreateDailyName();
+        const missions = getMissionsForToday();
+        const dataIndex = points[0].index;
+        const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
+        const missionText = missions[dataIndex % missions.length].replace("{brawler}", dailyName);
 
-chartCanvas.onclick = (e) => {
-  if (!chart) return;
-
-  const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-  if (points.length) {
-    const index = points[0].index;
-
-    const dailyName = getOrCreateDailyName();
-    const missions = getMissionsForToday();
-    const missionText = missions[index % missions.length].replace("{brawler}", dailyName);
-    const borderColor = chart.data.datasets[0].backgroundColor[index];
-
-    // obtener rectángulo del brawler
-    const bRect = brawlerImg.getBoundingClientRect();
-    
-    // obtener posición del click
-    const clickX = e.clientX;
-    const clickY = e.clientY;
-
-    let x = bRect.left;
-    let y = bRect.top;
-
-    // decidir donde colocar la burbuja según zona del click respecto al brawler
-    if (clickX < bRect.left) x = bRect.left - 10;       // izquierda
-    else if (clickX > bRect.right) x = bRect.right + 10; // derecha
-    else x = bRect.left + bRect.width / 2;             // centro horizontal
-
-    if (clickY < bRect.top) y = bRect.top - 10;        // arriba
-    else if (clickY > bRect.bottom) y = bRect.bottom + 10; // abajo
-    else y = bRect.top + bRect.height / 2;             // centro vertical
-
-    // mostrar burbuja en posición calculada
-    showMissionBubble(`📌 ${missionText}`, borderColor, x, y);
+        showMissionBubble(`📌 ${missionText}`, borderColor);
+      }
+    };
   }
-};
 
   /* ===== LIMPIAR ===== */
   function limpiar() {
