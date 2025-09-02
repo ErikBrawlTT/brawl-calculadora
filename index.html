@@ -58,6 +58,35 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 @keyframes glow-red { 0% { box-shadow: 0 0 10px #f00, 0 0 20px #f00; } 50% { box-shadow: 0 0 25px #f00, 0 0 45px #f00; } 100% { box-shadow: 0 0 10px #f00, 0 0 20px #f00; } }
 @keyframes glow-orange { 0% { box-shadow: 0 0 10px #f90, 0 0 20px #f90; } 50% { box-shadow: 0 0 25px #f90, 0 0 45px #f90; } 100% { box-shadow: 0 0 10px #f90, 0 0 20px #f90; } }
 @keyframes glow-green { 0% { box-shadow: 0 0 10px #0f0, 0 0 20px #0f0; } 50% { box-shadow: 0 0 25px #0f0, 0 0 45px #0f0; } 100% { box-shadow: 0 0 10px #0f0, 0 0 20px #0f0; } }
+  /* ===== MISSION BUBBLE ===== */
+.mission-bubble {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-family: 'Bangers', cursive;
+  font-size: 1rem;
+  text-align: center;
+  z-index: 99999;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  transition: transform 0.4s ease, opacity 1s ease;
+  opacity: 1;
+}
+
+/* aparece con un pop */
+.mission-bubble.show {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* fade-out */
+.mission-bubble.fade-out {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
+}
 </style>
 </head>
 <body>
@@ -205,6 +234,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
 
+  // ----- PASTE START: MISSIONS (14) -----
+  const MISSIONS = [
+    "Sube 10 copas con {brawler}",
+    "Gana 3 partidas con {brawler}",
+    "Haz 5 kills con {brawler}",
+    "Sobrevive 3 partidas con {brawler}",
+    "Juega competición con {brawler}",
+    "Consigue ser top 1 con {brawler}",
+    "Participa en 2 partidas de supervivencia con {brawler}",
+    "Juega en dúo con {brawler}",
+    "Usa 3 veces la súper de {brawler}",
+    "Haz 20000 de daño con {brawler}",
+    "Defiende la base con {brawler}",
+    "Gana una partida sin morir con {brawler}",
+    "Juega 2 partidas en modo asedio con {brawler}",
+    "Haz 1000 de curación con {brawler}"
+  ];
+  // ----- PASTE END: MISSIONS -----
+
   /* precarga global */
   const brawlerCache = {};
   allBrawlers.forEach(name => { 
@@ -304,6 +352,77 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     brawlerImg.className = fallbackClass;
   }
+  // ----- PASTE START: MISSION HELPERS -----
+  function cyrb128(str) {
+    let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+    for (let i = 0, k; i < str.length; i++) {
+      k = str.charCodeAt(i);
+      h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+      h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+      h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+      h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+    }
+    return [(h1>>>0), (h2>>>0), (h3>>>0), (h4>>>0)];
+  }
+
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function seededShuffle(arr, seedStr) {
+    const seedArr = cyrb128(seedStr);
+    let seed = (seedArr[0] ^ seedArr[1] ^ seedArr[2] ^ seedArr[3]) >>> 0;
+    const rnd = mulberry32(seed);
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function getMissionsForToday(numSegments = 8) {
+    const daily = getOrCreateDailyName();
+    const today = new Date().toISOString().slice(0,10);
+    const seed = `${today}-${daily}`;
+    const shuffled = seededShuffle(MISSIONS.slice(), seed);
+    return shuffled.slice(0, Math.min(numSegments, shuffled.length));
+  }
+
+  let _currentMissionEl = null;
+  let _missionTimeout = null;
+
+  function showMissionBubble(text, borderColor = '#FFFFFF') {
+    if (_currentMissionEl) {
+      _currentMissionEl.remove();
+      _currentMissionEl = null;
+      if (_missionTimeout) { clearTimeout(_missionTimeout); _missionTimeout = null; }
+    }
+
+    const el = document.createElement('div');
+    el.className = 'mission-bubble';
+    el.style.border = `4px solid ${borderColor}`;
+    el.innerText = text;
+    document.body.appendChild(el);
+
+    void el.offsetWidth;
+
+    _missionTimeout = setTimeout(() => {
+      el.classList.add('fade-out');
+      setTimeout(() => {
+        if (el.parentNode) el.parentNode.removeChild(el);
+        if (_currentMissionEl === el) _currentMissionEl = null;
+      }, 1000);
+    }, 7000);
+
+    _currentMissionEl = el;
+  }
+  // ----- PASTE END: MISSION HELPERS -----
 
   /* ===== CALCULAR ===== */
   function calcular(){
@@ -347,7 +466,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
+// ---------- PASTE START: attach mission click handler ----------
+    const ctx = document.getElementById('myChart').getContext('2d');
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, config);
 
+    if (chart.options && chart.options.onClick) {
+      chart.options.onClick = null;
+    }
+
+    chart.options.onClick = function(evt, elements) {
+      try {
+        if (!elements || elements.length === 0) return;
+        const idx = elements[0].index;
+        const colors = chart.data.datasets[0].backgroundColor || [];
+        const color = colors[idx] || '#FFFFFF';
+
+        const missionsToday = getMissionsForToday(chart.data.labels.length);
+        const template = missionsToday[idx % missionsToday.length] || MISSIONS[idx % MISSIONS.length];
+        const brawler = getOrCreateDailyName();
+        const missionText = template.replace(/{brawler}/g, brawler);
+
+        showMissionBubble(missionText, color);
+      } catch (err) {
+        console.error('mission onClick error', err);
+      }
+    };
+
+    chart.update();
+    // ---------- PASTE END: attach mission click handler ----------
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
   }
