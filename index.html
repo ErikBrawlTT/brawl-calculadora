@@ -453,68 +453,101 @@ function showMissionBubble(text, borderColor = '#FFFFFF'){
     _currentMissionEl = el;
   }
 /* ===== CALCULAR ===== */
-function calcular(){
-  beep(600); vibrar();
+function calcular() {
+  beep(600); 
+  vibrar();
   calcBtn.classList.add('flash');
-  setTimeout(()=>calcBtn.classList.remove('flash'),200);
+  setTimeout(() => calcBtn.classList.remove('flash'), 200);
 
-  const bpass = Number(document.getElementById("bpass").value)||0;
-  const comunes = Number(document.getElementById("comunes").value)||0;
-  const raras = Number(document.getElementById("raras").value)||0;
-  const epicas = Number(document.getElementById("epicas").value)||0;
-  const miticas = Number(document.getElementById("miticas").value)||0;
-  const legendarias = Number(document.getElementById("legendarias").value)||0;
-  const hipercarga = Number(document.getElementById("hipercarga").value)||0;
-  const maxeados = Number(document.getElementById("maxeados").value)||0;
+  const bpass = Number(document.getElementById("bpass").value) || 0;
+  const comunes = Number(document.getElementById("comunes").value) || 0;
+  const raras = Number(document.getElementById("raras").value) || 0;
+  const epicas = Number(document.getElementById("epicas").value) || 0;
+  const miticas = Number(document.getElementById("miticas").value) || 0;
+  const legendarias = Number(document.getElementById("legendarias").value) || 0;
+  const hipercarga = Number(document.getElementById("hipercarga").value) || 0;
+  const maxeados = Number(document.getElementById("maxeados").value) || 0;
 
-  const valores={
-    "🎟️ Brawl Pass":bpass*10,
-    "🩵 Comunes":comunes*2,
-    "💚 Raras":raras*5,
-    "💜 Épicas":epicas*10,
-    "❤️ Míticas":miticas*12,
-    "🌟 Legendarias":legendarias*15,
-    "⚡ Hipercarga":hipercarga*20,
-    "🔥 Maxeados":maxeados*50
+  const valores = {
+    "🎟️ Brawl Pass": bpass * 10,
+    "🩵 Comunes": comunes * 2,
+    "💚 Raras": raras * 5,
+    "💜 Épicas": epicas * 10,
+    "❤️ Míticas": miticas * 12,
+    "🌟 Legendarias": legendarias * 15,
+    "⚡ Hipercarga": hipercarga * 20,
+    "🔥 Maxeados": maxeados * 50
   };
-  const total = Object.values(valores).reduce((a,b)=>a+b,0);
 
+  const total = Object.values(valores).reduce((a, b) => a + b, 0);
+
+  // Animación del número total
   const resultadoEl = document.getElementById("resultado");
-  let start = parseInt(resultadoEl.innerText.replace(/\D/g,''))||0;
+  let start = parseInt(resultadoEl.innerText.replace(/\D/g, '')) || 0;
   const end = total;
   const duration = 800;
   const t0 = performance.now();
-  function step(t){
-    const p = Math.min((t-t0)/duration,1);
-    resultadoEl.innerText = "Valor total: "+Math.floor(start + (end-start)*p)+" 🪙";
-    if(p<1) requestAnimationFrame(step);
+  function step(t) {
+    const p = Math.min((t - t0) / duration, 1);
+    resultadoEl.innerText = "Valor total: " + Math.floor(start + (end - start) * p) + " 🪙";
+    if (p < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 
-  const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
-  const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
-  if(chart) chart.destroy();
+  // Crear gráfico
+  const data = {
+    labels: Object.keys(valores),
+    datasets: [{
+      data: Object.values(valores),
+      backgroundColor: ["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],
+      borderWidth: 2
+    }]
+  };
+  const config = {
+    type: 'doughnut',
+    data: data,
+    options: {
+      cutout: "70%",
+      plugins: { legend: { display: true, position: 'bottom' } }
+    }
+  };
+
+  if (chart) chart.destroy();
   chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
   confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-  document.getElementById('centerDiamond').style.display="block";
+  document.getElementById('centerDiamond').style.display = "block";
 
-  // ==== CLICK EN EL GRÁFICO PARA MOSTRAR LA MISIÓN ====
+  // ===== CLICK EN EL GRÁFICO PARA MOSTRAR LA MISIÓN =====
   const chartCanvas = document.getElementById('myChart');
   chartCanvas.onclick = (e) => {
+    if (!chart) return;
+
     const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-    if(points.length){
-      const dailyName = getOrCreateDailyName();
-      const missions = getMissionsForToday();
-      const missionText = missions[0].replace("{brawler}", dailyName);
+    if (!points.length) return;
 
-      const dataIndex = points[0].index;
-      const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
+    const dataIndex = points[0].index;
+    const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
+    const dailyName = getOrCreateDailyName();
 
-      showMissionBubble(`📌 ${missionText}`, borderColor);
+    const missions = getMissionsForToday(chart.data.labels.length);
+    const missionText = missions[dataIndex % missions.length].replace("{brawler}", dailyName);
+
+    // Mostrar burbuja centrada sobre el gráfico
+    showMissionBubble(`📌 ${missionText}`, borderColor);
+
+    // Posicionar burbuja sobre el gráfico
+    const rect = chartCanvas.getBoundingClientRect();
+    const el = _currentMissionEl;
+    if (el) {
+      el.style.position = 'absolute';
+      el.style.left = `${rect.left + rect.width / 2}px`;
+      el.style.top = `${rect.top - 40}px`;
+      el.style.transform = 'translate(-50%, -50%)';
+      el.style.zIndex = 9999;
     }
   };
- }
+    }
   /* ===== LIMPIAR ===== */
   function limpiar(){
     beep(300); 
