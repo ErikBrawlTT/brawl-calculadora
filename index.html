@@ -273,17 +273,21 @@ document.addEventListener('DOMContentLoaded', () => {
     return copy.slice(0, Math.min(count, copy.length));
   }
 
-  /* ===== DAILY (por nombre, estable por día) ===== */
-  function getOrCreateDailyName(){
-    const today = new Date().toISOString().slice(0,10);
-    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-    if(saved.date === today && saved.name) return saved.name;
-    // elige de todo el conjunto (así la curiosidad puede venir de cualquier brawler)
-    const idx = Math.floor(Math.random()*allBrawlers.length);
-    const name = allBrawlers[idx];
-    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name}));
-    return name;
-  }
+/* ===== DAILY (misión del día con nombre y texto) ===== */
+function getOrCreateDailyMission(){
+  const today = new Date().toISOString().slice(0,10);
+  const saved = JSON.parse(localStorage.getItem('dailyMission')||'{}');
+  if(saved.date === today && saved.name && saved.text) return saved;
+
+  const idxB = Math.floor(Math.random()*allBrawlers.length);
+  const idxM = Math.floor(Math.random()*MISSIONS.length);
+  const name = allBrawlers[idxB];
+  const text = MISSIONS[idxM].replace("{brawler}", name);
+
+  const mission = { date: today, name, text };
+  localStorage.setItem('dailyMission', JSON.stringify(mission));
+  return mission;
+}
 
   /* ===== PREPARAR 20 BRAWLERS ACTIVOS (precarga/timeout) ===== */
   function prepareActiveBrawlers(count = 20, timeoutMs = 8000){
@@ -474,40 +478,23 @@ function calcular(){
   const chartCanvas = document.getElementById('myChart');
 
   chartCanvas.onclick = (e) => {
-    const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-    if(points.length){
-      const dataIndex = points[0].index;
-      const rect = chartCanvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+  chartCanvas.onclick = (e) => {
+  const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+  if(points.length){
+    // brawler del día
+    const dailyName = getOrCreateDailyName();
+    // misión aleatoria del día (pero fija, no cambia al refrescar)
+    const missions = getMissionsForToday();
+    const missionText = missions[0].replace("{brawler}", dailyName);
 
-      let bubble = document.getElementById('missionBubble');
-      if(!bubble){
-        bubble = document.createElement('div');
-        bubble.id = 'missionBubble';
-        bubble.style.position = 'absolute';
-        bubble.style.background = 'rgba(255,255,0,0.9)';
-        bubble.style.color = '#000';
-        bubble.style.padding = '6px 12px';
-        bubble.style.borderRadius = '8px';
-        bubble.style.fontWeight = 'bold';
-        bubble.style.pointerEvents = 'none';
-        bubble.style.transition = 'opacity 0.3s';
-        chartCanvas.parentElement.style.position = 'relative';
-        chartCanvas.parentElement.appendChild(bubble);
-      }
+    // color del segmento
+    const dataIndex = points[0].index;
+    const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
 
-      bubble.innerText = `Misión del día: ${dailyName}`;
-      bubble.style.left = `${x}px`;
-      bubble.style.top = `${y}px`;
-      bubble.style.opacity = '1';
-
-      setTimeout(()=>{
-        bubble.style.opacity = '0';
-      }, 2000);
-    }
-  };
- }
+    // mostramos SOLO la burbuja de misión
+    showMissionBubble(`📌 ${missionText}`, borderColor);
+  }
+};
   /* ===== LIMPIAR ===== */
   function limpiar(){
     beep(300); 
