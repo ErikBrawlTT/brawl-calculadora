@@ -60,32 +60,19 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 @keyframes glow-green { 0% { box-shadow: 0 0 10px #0f0, 0 0 20px #0f0; } 50% { box-shadow: 0 0 25px #0f0, 0 0 45px #0f0; } 100% { box-shadow: 0 0 10px #0f0, 0 0 20px #0f0; } }
   /* ===== MISSION BUBBLE ===== */
 .mission-bubble {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  background: rgba(0,0,0,0.85);
-  color: #fff;
-  padding: 12px 18px;
-  border-radius: 14px;
-  font-family: 'Bangers', cursive;
-  font-size: 1rem;
-  text-align: center;
-  z-index: 99999;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-  transition: transform 0.4s ease, opacity 1s ease;
-  opacity: 1;
+  position: absolute;
+  background: rgba(255,255,0,0.9);
+  color: #000;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 1000;
 }
 
-/* aparece con un pop */
-.mission-bubble.show {
-  transform: translate(-50%, -50%) scale(1);
-}
-
-/* fade-out */
 .mission-bubble.fade-out {
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.8);
 }
 </style>
 </head>
@@ -272,21 +259,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return copy.slice(0, Math.min(count, copy.length));
   }
-
 /* ===== DAILY (misión del día con nombre y texto) ===== */
-function getOrCreateDailyMission(){
+function getOrCreateDailyName(){
   const today = new Date().toISOString().slice(0,10);
-  const saved = JSON.parse(localStorage.getItem('dailyMission')||'{}');
-  if(saved.date === today && saved.name && saved.text) return saved;
+  const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
+  if(saved.date === today && saved.name) return saved.name;
 
-  const idxB = Math.floor(Math.random()*allBrawlers.length);
-  const idxM = Math.floor(Math.random()*MISSIONS.length);
-  const name = allBrawlers[idxB];
-  const text = MISSIONS[idxM].replace("{brawler}", name);
+  const idx = Math.floor(Math.random()*allBrawlers.length);
+  const name = allBrawlers[idx];
+  localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name}));
+  return name;
+}
 
-  const mission = { date: today, name, text };
-  localStorage.setItem('dailyMission', JSON.stringify(mission));
-  return mission;
+function getMissionsForToday(numSegments = 8){
+  const daily = getOrCreateDailyName();
+  const today = new Date().toISOString().slice(0,10);
+  const seed = `${today}-${daily}`;
+  const shuffled = seededShuffle(MISSIONS.slice(), seed);
+  return shuffled.slice(0, Math.min(numSegments, shuffled.length));
+}
+
+let _currentMissionEl = null;
+let _missionTimeout = null;
+
+function showMissionBubble(text, borderColor = '#FFFFFF'){
+  if (_currentMissionEl){
+    _currentMissionEl.remove();
+    _currentMissionEl = null;
+    if(_missionTimeout){ clearTimeout(_missionTimeout); _missionTimeout = null; }
+  }
+
+  const el = document.createElement('div');
+  el.className = 'mission-bubble';
+  el.style.border = `4px solid ${borderColor}`;
+  el.innerText = text;
+  document.body.appendChild(el);
+
+  void el.offsetWidth; // forzar render
+
+  _missionTimeout = setTimeout(() => {
+    el.classList.add('fade-out');
+    setTimeout(() => {
+      if(el.parentNode) el.parentNode.removeChild(el);
+      if(_currentMissionEl === el) _currentMissionEl = null;
+    }, 1000);
+  }, 7000);
+
+  _currentMissionEl = el;
 }
 
   /* ===== PREPARAR 20 BRAWLERS ACTIVOS (precarga/timeout) ===== */
@@ -429,7 +448,7 @@ function getOrCreateDailyMission(){
 /* ===== CALCULAR ===== */
 function calcular(){
   beep(600); vibrar();
-  calcBtn.classList.add('flash'); 
+  calcBtn.classList.add('flash');
   setTimeout(()=>calcBtn.classList.remove('flash'),200);
 
   const bpass = Number(document.getElementById("bpass").value)||0;
@@ -473,28 +492,22 @@ function calcular(){
   confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
   document.getElementById('centerDiamond').style.display="block";
 
-  // ==== NUEVO: burbuja de misión sobre el segmento clicado ====
-  const dailyName = getOrCreateDailyName();
+  // ==== CLICK EN EL GRÁFICO PARA MOSTRAR LA MISIÓN ====
   const chartCanvas = document.getElementById('myChart');
-
   chartCanvas.onclick = (e) => {
-  chartCanvas.onclick = (e) => {
-  const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-  if(points.length){
-    // brawler del día
-    const dailyName = getOrCreateDailyName();
-    // misión aleatoria del día (pero fija, no cambia al refrescar)
-    const missions = getMissionsForToday();
-    const missionText = missions[0].replace("{brawler}", dailyName);
+    const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+    if(points.length){
+      const dailyName = getOrCreateDailyName();
+      const missions = getMissionsForToday();
+      const missionText = missions[0].replace("{brawler}", dailyName);
 
-    // color del segmento
-    const dataIndex = points[0].index;
-    const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
+      const dataIndex = points[0].index;
+      const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
 
-    // mostramos SOLO la burbuja de misión
-    showMissionBubble(`📌 ${missionText}`, borderColor);
-  }
-};
+      showMissionBubble(`📌 ${missionText}`, borderColor);
+    }
+  };
+ }
   /* ===== LIMPIAR ===== */
   function limpiar(){
     beep(300); 
