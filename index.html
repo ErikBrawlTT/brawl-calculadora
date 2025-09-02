@@ -328,40 +328,46 @@ function calcular(){
 }
 
 /* ===== CLICK EN EL GRÁFICO PARA MOSTRAR LA MISIÓN ===== */
-const chartCanvas = document.getElementById('myChart');
-chartCanvas.onclick = (e) => {
-  const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-  if (!points.length) return;
 
-  const dataIndex = points[0].index;
-  const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
+  function attachChartClickListener() {
+  const chartCanvas = document.getElementById('myChart');
+  if (!chart || !chartCanvas) return;
 
-  const dailyName = getOrCreateDailyName();
-  const missions = getMissionsForToday();
-  const missionText = missions[dataIndex % missions.length].replace("{brawler}", dailyName);
+  chartCanvas.onclick = (e) => {
+    const rect = chartCanvas.getBoundingClientRect();
+    const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+    if (!points.length) return;
 
-  const meta = chart.getDatasetMeta(0);
-  const arc = meta.data[dataIndex];
-  const angle = (arc.startAngle + arc.endAngle) / 2 - Math.PI / 2;
-  const radius = arc.outerRadius + 20;
+    const dataIndex = points[0].index;
+    const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
 
-  // calcular posición relativa al centro del donut
-  let x = arc.x + radius * Math.cos(angle);
-  let y = arc.y + radius * Math.sin(angle);
+    const dailyName = getOrCreateDailyName();
+    const missions = getMissionsForToday();
+    const missionText = missions[dataIndex % missions.length].replace("{brawler}", dailyName);
 
-  // ajustar la burbuja para que quede fuera del círculo
-  const centerX = arc.x;
-  const centerY = arc.y;
+    // --- CALCULAR POSICIÓN DEL SEGMENTO ---
+    const meta = chart.getDatasetMeta(0);
+    const arc = meta.data[dataIndex];
+    const centerX = arc.x + rect.left;
+    const centerY = arc.y + rect.top;
 
-  if (x < centerX) x -= 100; // mover a la izquierda si estamos a la izquierda
-  else x += 10;               // mover a la derecha si estamos a la derecha
+    // mover la burbuja un poco hacia fuera del centro del segmento
+    const angle = (arc.startAngle + arc.endAngle)/2 - Math.PI/2; 
+    const radius = arc.outerRadius + 20; // distancia fuera del donut
+    let bubbleX = centerX + radius * Math.cos(angle);
+    let bubbleY = centerY + radius * Math.sin(angle);
 
-  if (y < centerY) y -= 10;   // mover arriba si estamos arriba
-  else y += 10;               // mover abajo si estamos abajo
+    // limitar para que no salga de la ventana
+    const bubbleWidth = 200;
+    const bubbleHeight = 60;
+    const padding = 10;
+    if (bubbleX + bubbleWidth + padding > window.innerWidth) bubbleX = window.innerWidth - bubbleWidth - padding;
+    if (bubbleY + bubbleHeight + padding > window.innerHeight) bubbleY = window.innerHeight - bubbleHeight - padding;
 
-  showMissionBubble(missionText, borderColor, x, y);
- }
-};
+    showMissionBubble(`📌 ${missionText}`, borderColor, bubbleX, bubbleY);
+       }
+  };
+  }
 
   /* ===== LIMPIAR ===== */
   function limpiar() {
