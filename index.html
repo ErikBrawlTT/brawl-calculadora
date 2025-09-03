@@ -226,16 +226,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== DAILY (por nombre, estable por día) ===== */
-  function getOrCreateDailyName(){
-    const today = new Date().toISOString().slice(0,10);
-    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-    if(saved.date === today && saved.name) return saved.name;
-    // elige de todo el conjunto (así la curiosidad puede venir de cualquier brawler)
-    const idx = Math.floor(Math.random()*allBrawlers.length);
-    const name = allBrawlers[idx];
-    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name}));
-    return name;
+  function getOrCreateDailyName() {
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  let saved = JSON.parse(localStorage.getItem('dailyBrawler') || '{}');
+
+  // si ya existe y es de hoy, lo devolvemos
+  if (saved.date === today && saved.name) {
+    return saved.name;
   }
+
+  // si no existe, lo generamos una sola vez
+  const idx = Math.floor(Math.random() * allBrawlers.length);
+  const name = allBrawlers[idx];
+
+  // lo guardamos con la fecha
+  saved = { date: today, name };
+  localStorage.setItem('dailyBrawler', JSON.stringify(saved));
+
+  return name;
+        }
 
   /* ===== PREPARAR 20 BRAWLERS ACTIVOS (precarga/timeout) ===== */
   function prepareActiveBrawlers(count = 20, timeoutMs = 8000){
