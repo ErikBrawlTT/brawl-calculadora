@@ -164,27 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
 
-  /* ===== CONSTANTES ===== */
-  const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
-  const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
-  const MISSIONS = [
-    "Sube 10 copas con {brawler}",
-    "Gana 3 partidas con {brawler}",
-    "Haz 5 kills con {brawler}",
-    "Sobrevive 3 partidas con {brawler}",
-    "Juega competición con {brawler}",
-    "Consigue ser top 1 con {brawler}",
-    "Participa en 2 partidas de supervivencia con {brawler}",
-    "Juega en dúo con {brawler}",
-    "Usa 3 veces la súper de {brawler}",
-    "Haz 20000 de daño con {brawler}",
-    "Defiende la base con {brawler}",
-    "Gana una partida sin morir con {brawler}",
-    "Juega 2 partidas en modo asedio con {brawler}",
-    "Haz 1000 de curación con {brawler}"
-  ];
-
-
 /* ===== VARIABLES GLOBALES ===== */
 let _currentMissionEl = null;
 let _missionTimeout = null;
@@ -193,7 +172,10 @@ let chart;
 const brawlerCache = {};
 let activeBrawlers = [];
 let activePrepared = false;
-       
+
+/* ===== LISTA DE BRAWLERS Y BASE URL ===== */
+const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
+const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
 
   /* ===== UTILIDADES ===== */
   function beep(freq){ const ctx = new (AudioContext||webkitAudioContext)(), o = ctx.createOscillator(), g = ctx.createGain(); o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15); }
