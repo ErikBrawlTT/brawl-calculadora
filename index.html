@@ -116,7 +116,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-      <script type="module">
+    <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -139,6 +139,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const visitasCounter = document.getElementById('visitas-counter');
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
+
+  /* ===== VARIABLES GLOBALES ===== */
+  const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
+  const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
+  let chart;
+
+  /* precarga global */
+  const brawlerCache = {};
+  allBrawlers.forEach(name => { 
+    const img = new Image(); 
+    img.src = baseURL+name+".png"; 
+    brawlerCache[name]=img; 
+  });
+
+  let activeBrawlers = [];
+  let activePrepared = false;
+
+  /* NUEVO: daily por usuario y control de giro */
+  let dailyNameGlobal = null;   // brawler del día para ESTE usuario
+  let isSpinning = false;       // evita dobles giros solapados
 
   /* ===== UTILIDADES ===== */
   function beep(freq){
@@ -200,22 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
   infoModal.addEventListener('click', e=> { if(e.target===infoModal) infoModal.style.display='none'; });
   shareBtn.classList.add('pulse');
 
-  /* ===== BRAWLERS ===== */
-  const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
-  const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
-  let chart;
-
-  /* precarga global */
-  const brawlerCache = {};
-  allBrawlers.forEach(name => { 
-    const img = new Image(); 
-    img.src = baseURL+name+".png"; 
-    brawlerCache[name]=img; 
-  });
-
-  let activeBrawlers = [];
-  let activePrepared = false;
-
   function pickRandomUnique(arr, count){
     const copy = [...arr];
     for(let i = copy.length - 1; i > 0; i--){
@@ -225,38 +229,34 @@ document.addEventListener('DOMContentLoaded', () => {
     return copy.slice(0, Math.min(count, copy.length));
   }
 
-/* ===== DAILY (estable por usuario cada día) ===== */
-function getOrCreateDailyName(){
-  const today = new Date().toISOString().slice(0,10);
+  /* ===== DAILY (estable por usuario cada día) ===== */
+  function getOrCreateDailyName(){
+    const today = new Date().toISOString().slice(0,10);
 
-  // 1. Intentamos usar localStorage (más simple si funciona)
-  try {
-    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-    if(saved.date === today && saved.name) {
-      return saved.name; // ya tenía su brawler asignado hoy
+    // 1) localStorage (por usuario)
+    try {
+      const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
+      if(saved.date === today && saved.name) return saved.name;
+
+      const idx = Math.floor(Math.random()*allBrawlers.length);
+      const name = allBrawlers[idx];
+      localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name}));
+      return name;
+    } catch(e){
+      console.warn("⚠️ localStorage no disponible, usando fallback por hash");
     }
 
-    // Si no tiene guardado para hoy, elegimos uno al azar
-    const idx = Math.floor(Math.random()*allBrawlers.length);
-    const name = allBrawlers[idx];
-    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name}));
-    return name;
-  } catch(e){
-    console.warn("⚠️ localStorage no disponible, usando fallback por hash");
+    // 2) Fallback determinístico (usuario ≈ userAgent) + fecha
+    const userKey = navigator.userAgent || "guest";
+    const seed = today + userKey;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash << 5) - hash + seed.charCodeAt(i);
+      hash |= 0;
+    }
+    const idx = Math.abs(hash) % allBrawlers.length;
+    return allBrawlers[idx];
   }
-
-  // 2. Fallback determinístico por usuario (userAgent) + fecha
-  const userKey = navigator.userAgent || "guest"; // ID aproximado de usuario
-  const seed = today + userKey;
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash |= 0; // convierte a 32 bits
-  }
-  const idx = Math.abs(hash) % allBrawlers.length;
-  return allBrawlers[idx];
-                          }
-
 
   /* ===== PREPARAR 20 BRAWLERS ACTIVOS (precarga/timeout) ===== */
   function prepareActiveBrawlers(count = 20, timeoutMs = 8000){
@@ -373,7 +373,7 @@ function getOrCreateDailyName(){
     document.getElementById('centerDiamond').style.display="block";
   }
 
-  /* ===== LIMPIAR ===== */
+  /* ===== LIMPIAR (ahora respeta el daily del usuario) ===== */
   function limpiar(){
     beep(300); 
     vibrar();
@@ -384,8 +384,8 @@ function getOrCreateDailyName(){
     document.getElementById("resultado").innerText="Valor total: 0 🪙";
     if(chart) chart.destroy();
 
-    // mostramos un brawler inicial distinto al daily para que la ruleta no empiece con el daily
-    const dailyName = getOrCreateDailyName();
+    // Usamos SIEMPRE el dailyNameGlobal ya calculado
+    const dailyName = dailyNameGlobal;
     let candidates = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
     candidates = candidates.filter(n => n !== dailyName);
     const start = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : dailyName;
@@ -432,10 +432,13 @@ function getOrCreateDailyName(){
     setUserVote(vote); cargarMetricas();
   });
 
-  /* ===== RULETA (termina en el daily, no empieza con él) ===== */
+  /* ===== RULETA (termina en el daily del usuario, no empieza con él) ===== */
   function spinRouletteSmooth() {
+    if (isSpinning) return;
+    isSpinning = true;
+
     let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
-    const dailyName = getOrCreateDailyName();
+    const dailyName = dailyNameGlobal; // 👈 fijo para este usuario
 
     // aseguramos que el daily esté presente en la lista (si no, lo insertamos)
     if(!brawlersList.includes(dailyName)){
@@ -526,10 +529,11 @@ function getOrCreateDailyName(){
             slowStep++;
           }
           if(slowStep >= finalSlowSteps){
-            // Reveal final (daily)
+            // Reveal final (daily del usuario)
             const finalName = brawlersList[finalIndex];
             safeSetBrawler(finalName, "glow-green finalGlow");
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+            isSpinning = false; // 👈 liberar giro
             return; // terminada
           }
         }
@@ -544,33 +548,33 @@ function getOrCreateDailyName(){
   /* ===== INICIALIZACIÓN ===== */
   if(spinBtn) spinBtn.disabled = true;
   prepareActiveBrawlers(20).then(() => {
-    // Obtener daily estable
-    const dailyName = getOrCreateDailyName();
+    // Obtener daily por usuario (solo una vez)
+    dailyNameGlobal = getOrCreateDailyName();
 
     // Si el daily no está en activeBrawlers, lo insertamos para garantizar su presencia y precarga
-    if(!activeBrawlers.includes(dailyName)){
+    if(!activeBrawlers.includes(dailyNameGlobal)){
       const idx = Math.floor(Math.random()*activeBrawlers.length);
-      activeBrawlers[idx] = dailyName;
+      activeBrawlers[idx] = dailyNameGlobal;
       // forzamos inicio de carga si hacía falta
-      if(!brawlerCache[dailyName]){
+      if(!brawlerCache[dailyNameGlobal]){
         const n = new Image();
-        n.src = baseURL + dailyName + ".png";
-        brawlerCache[dailyName] = n;
+        n.src = baseURL + dailyNameGlobal + ".png";
+        brawlerCache[dailyNameGlobal] = n;
       } else {
-        brawlerCache[dailyName].src = baseURL + dailyName + ".png";
+        brawlerCache[dailyNameGlobal].src = baseURL + dailyNameGlobal + ".png";
       }
     }
 
     // Mostramos un Brawler inicial que NO sea el daily (evita sensación de empezar y terminar igual)
-    const nonDaily = activeBrawlers.filter(n => n !== dailyName);
-    const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;
+    const nonDaily = activeBrawlers.filter(n => n !== dailyNameGlobal);
+    const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyNameGlobal;
     safeSetBrawler(startName);
 
     if(spinBtn) spinBtn.disabled = false;
   }).catch(e=>{
     console.warn("prepareActiveBrawlers fallo: ", e);
-    const dailyName = getOrCreateDailyName();
-    safeSetBrawler(dailyName);
+    dailyNameGlobal = getOrCreateDailyName();
+    safeSetBrawler(dailyNameGlobal);
     if(spinBtn) spinBtn.disabled = false;
   });
 
@@ -579,7 +583,8 @@ function getOrCreateDailyName(){
   incrementarVisita();
 });
 </script>
-  <!-- Script TikTok Browser: al final del body -->
+
+<!-- Script TikTok Browser: al final del body -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   function isTikTokBrowser() {
@@ -656,5 +661,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-  </body>
+</body>
 </html>
