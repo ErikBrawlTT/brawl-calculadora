@@ -135,10 +135,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoModal = document.getElementById('infoModal');
   const infoClose = document.getElementById('infoClose');
   const brawlerImg = document.getElementById('brawlerImg');
-
   const visitasCounter = document.getElementById('visitas-counter');
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
+  const resultadoEl = document.getElementById("resultado");
+
+  /* ===== MISIÓN PARA DOUGHNUT ===== */
+  const misiones = [
+    "Sube 10 copas con {brawler}",
+    "Gana 3 partidas con {brawler}",
+    "Haz 5 kills con {brawler}",
+    "Sobrevive 3 partidas con {brawler}",
+    "Juega competición con {brawler}",
+    "Consigue ser top 1 con {brawler}",
+    "Participa en 2 partidas de supervivencia con {brawler}",
+    "Juega en dúo con {brawler}",
+    "Usa 3 veces la súper de {brawler}",
+    "Haz 20000 de daño con {brawler}",
+    "Defiende la base con {brawler}",
+    "Gana una partida sin morir con {brawler}",
+    "Juega 2 partidas en modo asedio con {brawler}",
+    "Haz 1000 de curación con {brawler}"
+  ];
+
+  let missionTimeout;
+
+  function showMission(mission){
+    clearTimeout(missionTimeout);
+    resultadoEl.innerText = mission;
+    missionTimeout = setTimeout(()=>{ resultadoEl.innerText = "Valor total: 0 🪙"; }, 8000);
+  }
 
   /* ===== UTILIDADES ===== */
   function beep(freq){
@@ -150,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
-  /* ===== CONTADORES METRICAS ===== */
+  /* ===== METRICAS ===== */
   async function cargarMetricas(){
     const { data, error } = await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id', PAGE_ID).single();
     if (!error && data){
@@ -204,13 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
-
   const brawlerCache = {};
-  allBrawlers.forEach(name => { 
-    const img = new Image(); 
-    img.src = baseURL+name+".png"; 
-    brawlerCache[name]=img; 
-  });
+  allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
 
   let activeBrawlers = [];
   let activePrepared = false;
@@ -260,17 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       Promise.all(promises).then(results => {
         const ok = results.filter(r => r.ok).map(r => r.name);
-        if(ok.length > 0){
-          activeBrawlers = ok;
-        } else {
-          const loadedAny = Object.keys(brawlerCache).filter(n => {
-            const im = brawlerCache[n];
-            return im && im.complete && im.naturalWidth>0;
-          });
-          if(loadedAny.length>0) activeBrawlers = pickRandomUnique(loadedAny, Math.min(count, loadedAny.length));
-          else activeBrawlers = pickRandomUnique(allBrawlers, Math.min(count, allBrawlers.length));
-        }
-
+        if(ok.length > 0){ activeBrawlers = ok; } 
+        else { const loadedAny = Object.keys(brawlerCache).filter(n => brawlerCache[n].complete && brawlerCache[n].naturalWidth>0); if(loadedAny.length>0) activeBrawlers = pickRandomUnique(loadedAny, Math.min(count, loadedAny.length)); else activeBrawlers = pickRandomUnique(allBrawlers, Math.min(count, allBrawlers.length)); }
         activePrepared = true;
         if(spinBtn) spinBtn.disabled = false;
         resolve(activeBrawlers);
@@ -279,77 +291,73 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== FUNCION IMAGEN SEGURA ===== */
+  function getLoadedImagesFromList(list){
+    return list.map(name => brawlerCache[name]).filter(img => img && img.complete && img.naturalWidth>0);
+  }
+
   function safeSetBrawler(name, fallbackClass="finalGlow"){
     const img = brawlerCache[name];
-    const loadedActive = activeBrawlers.map(n=>brawlerCache[n]).filter(i=>i && i.complete && i.naturalWidth>0);
+    const loadedActive = getLoadedImagesFromList(activeBrawlers);
     const loadedAny = Object.values(brawlerCache).filter(i=>i && i.complete && i.naturalWidth>0);
-    if(img && img.complete && img.naturalWidth>0){
-      brawlerImg.src = img.src;
-    } else if(loadedActive.length > 0){
-      const choice = loadedActive[Math.floor(Math.random()*loadedActive.length)];
-      brawlerImg.src = choice.src;
-    } else if(loadedAny.length > 0){
-      const choice = loadedAny[Math.floor(Math.random()*loadedAny.length)];
-      brawlerImg.src = choice.src;
-    } else {
-      brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
-    }
+    if(img && img.complete && img.naturalWidth>0){ brawlerImg.src = img.src; } 
+    else if(loadedActive.length>0){ brawlerImg.src = loadedActive[Math.floor(Math.random()*loadedActive.length)].src; } 
+    else if(loadedAny.length>0){ brawlerImg.src = loadedAny[Math.floor(Math.random()*loadedAny.length)].src; } 
+    else { brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler"; }
     brawlerImg.className = fallbackClass;
   }
 
-  /* ===== MISIÓN DIARIA ===== */
-  const misionesBase = [
-    "Sube 10 copas con {brawler}",  
-    "Gana 3 partidas con {brawler}",  
-    "Haz 5 kills con {brawler}",  
-    "Sobrevive 3 partidas con {brawler}",  
-    "Juega competición con {brawler}",  
-    "Consigue ser top 1 con {brawler}",  
-    "Participa en 2 partidas de supervivencia con {brawler}",  
-    "Juega en dúo con {brawler}",  
-    "Usa 3 veces la súper de {brawler}",  
-    "Haz 20000 de daño con {brawler}",  
-    "Defiende la base con {brawler}",  
-    "Gana una partida sin morir con {brawler}",  
-    "Juega 2 partidas en modo asedio con {brawler}",  
-    "Haz 1000 de curación con {brawler}"
-  ];
-
-  function generarMisionesDiarias(){
-    const dailyName = getOrCreateDailyName();
-    const shuffled = pickRandomUnique(misionesBase, 14);
-    return shuffled.map(m => m.replace("{brawler}", dailyName));
-  }
-
-  let misionesDiarias = generarMisionesDiarias();
-  let timeoutMision = null;
-
-  function mostrarMision(mision){
-    const el = document.getElementById("resultado");
-    if(timeoutMision) clearTimeout(timeoutMision);
-    el.innerText = mision;
-    timeoutMision = setTimeout(()=>{ el.innerText = ""; timeoutMision=null; }, 8000);
-  }
-
-  /* ===== CALCULAR (ahora muestra misiones) ===== */
+  /* ===== CALCULAR ===== */
   function calcular(){
     beep(600); vibrar();
     calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
 
-    // Crear doughnut con misiones
-    const data={labels:misionesDiarias,datasets:[{data:Array(14).fill(1),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000","#FFA500","#A020F0","#7FFF00","#DC143C","#1E90FF","#FFD700"],borderWidth:2}]} ;
-    const config={type:'doughnut',data:data,options:{
-      cutout:"70%",
-      plugins:{legend:{display:true,position:'bottom'}},
-      onClick:(evt, elements)=>{
-        if(elements.length>0){
-          const index = elements[0].index;
-          mostrarMision(misionesDiarias[index]);
-        }
-      }
-    }};
+    const bpass = Number(document.getElementById("bpass").value)||0;
+    const comunes = Number(document.getElementById("comunes").value)||0;
+    const raras = Number(document.getElementById("raras").value)||0;
+    const epicas = Number(document.getElementById("epicas").value)||0;
+    const miticas = Number(document.getElementById("miticas").value)||0;
+    const legendarias = Number(document.getElementById("legendarias").value)||0;
+    const hipercarga = Number(document.getElementById("hipercarga").value)||0;
+    const maxeados = Number(document.getElementById("maxeados").value)||0;
+
+    const valores={
+      "🎟️ Brawl Pass":bpass*10,
+      "🩵 Comunes":comunes*2,
+      "💚 Raras":raras*5,
+      "💜 Épicas":epicas*10,
+      "❤️ Míticas":miticas*12,
+      "🌟 Legendarias":legendarias*15,
+      "⚡ Hipercarga":hipercarga*20,
+      "🔥 Maxeados":maxeados*50
+    };
+    const total = Object.values(valores).reduce((a,b)=>a+b,0);
+
+    let start = parseInt(resultadoEl.innerText.replace(/\D/g,''))||0;
+    const end = total;
+    const duration = 800;
+    const t0 = performance.now();
+    function step(t){
+      const p = Math.min((t-t0)/duration,1);
+      resultadoEl.innerText = "Valor total: "+Math.floor(start + (end-start)*p)+" 🪙";
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+
+    const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
+    const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
+
+    // Evento click en segmentos para mostrar misión
+    document.getElementById('myChart').onclick = (evt) => {
+      const points = chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+      if(points.length){
+        const idx = points[0].index;
+        const brawler = allBrawlers[Math.floor(Math.random()*allBrawlers.length)];
+        const mission = misiones[idx % misiones.length].replace("{brawler}",brawler);
+        showMission(mission);
+      }
+    };
 
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
@@ -357,22 +365,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== LIMPIAR ===== */
   function limpiar(){
-    beep(300); 
-    vibrar();
-    clearBtn.classList.add('flash'); 
-    setTimeout(()=>clearBtn.classList.remove('flash'),200);
-
+    beep(300); vibrar();
+    clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
     document.getElementById("calcForm").reset();
-    document.getElementById("resultado").innerText="Valor total: 0 🪙";
+    resultadoEl.innerText="Valor total: 0 🪙";
     if(chart) chart.destroy();
-
     const dailyName = getOrCreateDailyName();
     let candidates = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
-    candidates = candidates.filter(n => n !== dailyName);
+    candidates = candidates.filter(n => n!==dailyName);
     const start = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : dailyName;
     safeSetBrawler(start);
-
-    document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
   }
 
   /* ===== SHARE ===== */
@@ -384,19 +386,14 @@ document.addEventListener('DOMContentLoaded', () => {
       try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
       catch(err){console.log(err);}
     } else {
-      try{
-        await navigator.clipboard.writeText(url);
-        alert("Enlace copiado al portapapeles ✅");
-      }catch(e){
-        prompt("Copia este enlace:", url);
-      }
+      try{await navigator.clipboard.writeText(url); alert("Enlace copiado al portapapeles ✅");}
+      catch(e){prompt("Copia este enlace:", url);}
     }
   }
 
   /* ===== VOTO ===== */
   function getUserVote() { return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}'); }
   function setUserVote(vote) { localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote)); }
-
   likesCounter.addEventListener('click', async () => {
     beep(400); vibrar();
     let vote = getUserVote();
@@ -412,36 +409,23 @@ document.addEventListener('DOMContentLoaded', () => {
     setUserVote(vote); cargarMetricas();
   });
 
-  /* ===== RULETA (termina en el daily, no empieza con él) ===== */
+  /* ===== RULETA ===== */
   function spinRouletteSmooth() {
     let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
     const dailyName = getOrCreateDailyName();
-
-    if(!brawlersList.includes(dailyName)){
-      const replaceIdx = Math.floor(Math.random()*brawlersList.length);
-      brawlersList[replaceIdx] = dailyName;
-    }
-
+    if(!brawlersList.includes(dailyName)){ brawlersList[Math.floor(Math.random()*brawlersList.length)] = dailyName; }
     const numBrawlers = brawlersList.length;
-    const finalIndex = brawlersList.indexOf(dailyName); 
-    const totalDuration = 10000;
-    const slowDuration = 2000;
-    const fastDuration = totalDuration - slowDuration;
+    const finalIndex = brawlersList.indexOf(dailyName);
+    const totalDuration = 10000, slowDuration = 2000, fastDuration = totalDuration - slowDuration;
     const finalSlowSteps = Math.min(6, numBrawlers);
-
     const indices = Array.from({ length: numBrawlers }, (_, i) => i);
     const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
-
     if(brawlersList[shuffledFast[0]] === dailyName){
       const swapIdx = shuffledFast.findIndex(i => brawlersList[i] !== dailyName);
-      if(swapIdx > 0){
-        [shuffledFast[0], shuffledFast[swapIdx]] = [shuffledFast[swapIdx], shuffledFast[0]];
-      }
+      if(swapIdx>0){ [shuffledFast[0], shuffledFast[swapIdx]] = [shuffledFast[swapIdx], shuffledFast[0]]; }
     }
-
     const temp = indices.filter(i => i !== finalIndex);
-    const slowSequence = [];
-    for (let i = 0; i < finalSlowSteps - 1; i++) {
+    const slowSequence = [];for (let i = 0; i < finalSlowSteps - 1; i++) {
       const idx = Math.floor(Math.random() * temp.length);
       slowSequence.push(temp[idx]);
       temp.splice(idx, 1);
@@ -453,20 +437,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showImageSafe(name, glowClass) {
       const img = brawlerCache[name];
-      const loadedActive = activeBrawlers.map(n=>brawlerCache[n]).filter(i=>i && i.complete && i.naturalWidth>0);
-      const loadedAny = Object.values(brawlerCache).filter(i=>i && i.complete && i.naturalWidth>0);
-
-      if(img && img.complete && img.naturalWidth>0){
-        brawlerImg.src = img.src;
-      } else if(loadedActive.length > 0){
-        const randomImg = loadedActive[Math.floor(Math.random()*loadedActive.length)];
-        brawlerImg.src = randomImg.src;
-      } else if(loadedAny.length > 0){
-        const randomImg = loadedAny[Math.floor(Math.random()*loadedAny.length)];
-        brawlerImg.src = randomImg.src;
-      } else {
-        brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
-      }
+      const loadedActive = getLoadedImagesFromList(brawlersList);
+      const loadedAny = Object.values(brawlerCache).filter(i => i && i.complete && i.naturalWidth>0);
+      if(img && img.complete && img.naturalWidth>0){ brawlerImg.src = img.src; } 
+      else if(loadedActive.length > 0){ brawlerImg.src = loadedActive[Math.floor(Math.random()*loadedActive.length)].src; } 
+      else if(loadedAny.length > 0){ brawlerImg.src = loadedAny[Math.floor(Math.random()*loadedAny.length)].src; } 
+      else { brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler"; }
       brawlerImg.className = glowClass;
     }
 
@@ -503,11 +479,10 @@ document.addEventListener('DOMContentLoaded', () => {
             slowStep++;
           }
           if(slowStep >= finalSlowSteps){
-            // Reveal final (daily)
             const finalName = brawlersList[finalIndex];
             safeSetBrawler(finalName, "glow-green finalGlow");
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-            return; // animación terminada
+            return; 
           }
         }
       }
@@ -522,25 +497,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if(spinBtn) spinBtn.disabled = true;
   prepareActiveBrawlers(20).then(() => {
     const dailyName = getOrCreateDailyName();
-
-    // Insertamos el daily en activeBrawlers si no estaba
     if(!activeBrawlers.includes(dailyName)){
       const idx = Math.floor(Math.random()*activeBrawlers.length);
       activeBrawlers[idx] = dailyName;
-      if(!brawlerCache[dailyName]){
-        const n = new Image();
-        n.src = baseURL + dailyName + ".png";
-        brawlerCache[dailyName] = n;
-      } else {
-        brawlerCache[dailyName].src = baseURL + dailyName + ".png";
-      }
+      if(!brawlerCache[dailyName]){ const n = new Image(); n.src = baseURL + dailyName + ".png"; brawlerCache[dailyName] = n; }
+      else { brawlerCache[dailyName].src = baseURL + dailyName + ".png"; }
     }
-
-    // Mostrar un brawler inicial que NO sea el daily
     const nonDaily = activeBrawlers.filter(n => n !== dailyName);
     const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;
     safeSetBrawler(startName);
-
     if(spinBtn) spinBtn.disabled = false;
   }).catch(e=>{
     console.warn("prepareActiveBrawlers fallo: ", e);
@@ -549,7 +514,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(spinBtn) spinBtn.disabled = false;
   });
 
-  // Métricas en paralelo
   cargarMetricas();
   incrementarVisita();
 });
