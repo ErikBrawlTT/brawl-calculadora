@@ -521,29 +521,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== INICIALIZACIÓN ===== */
-  if(spinBtn) spinBtn.disabled = true;
-  prepareActiveBrawlers(20).then(() => {
-    // Obtener daily estable
-    const dailyName = getOrCreateDailyName();
+  // ===== Inicialización mínima segura =====
+spinBtn.disabled = false; // siempre activo
+dailyNameGlobal = getOrCreateDailyName(); // daily del usuario
 
-    // Si el daily no está en activeBrawlers, lo insertamos para garantizar su presencia y precarga
-    if(!activeBrawlers.includes(dailyName)){
-      const idx = Math.floor(Math.random()*activeBrawlers.length);
-      activeBrawlers[idx] = dailyName;
-      // forzamos inicio de carga si hacía falta
-      if(!brawlerCache[dailyName]){
-        const n = new Image();
-        n.src = baseURL + dailyName + ".png";
-        brawlerCache[dailyName] = n;
-      } else {
-        brawlerCache[dailyName].src = baseURL + dailyName + ".png";
-      }
-    }
+// Precargar brawlers en segundo plano
+prepareActiveBrawlers(20).then(() => {
+  if(!activeBrawlers.includes(dailyNameGlobal)){
+    const idx = Math.floor(Math.random()*activeBrawlers.length);
+    activeBrawlers[idx] = dailyNameGlobal;
+  }
+  activePrepared = true;
+});
 
-    // Mostramos un Brawler inicial que NO sea el daily (evita sensación de empezar y terminar igual)
-    const nonDaily = activeBrawlers.filter(n => n !== dailyName);
-    const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;
-    safeSetBrawler(startName);
+// Mostramos un Brawler inicial que NO sea el daily (evita empezar y terminar igual)
+const nonDaily = activeBrawlers.filter(n => n !== dailyNameGlobal);
+const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyNameGlobal;
+safeSetBrawler(startName);
 
     if(spinBtn) spinBtn.disabled = false;
   }).catch(e=>{
