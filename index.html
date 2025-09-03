@@ -347,33 +347,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== REGLA DE RUEDA ===== */
   function spinRouletteSmooth() {
-  let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
-  const dailyName = getOrCreateDailyName();
+  const dailyName = getOrCreateDailyName(); // brawler del día
+  let brawlersList = activePrepared && activeBrawlers.length ? activeBrawlers.slice() : allBrawlers.slice();
 
-  // Aseguramos que el daily esté presente
-  if(!brawlersList.includes(dailyName)){
-    const replaceIdx = Math.floor(Math.random()*brawlersList.length);
-    brawlersList[replaceIdx] = dailyName;
+  // Asegurar que el daily esté en la lista
+  if (!brawlersList.includes(dailyName)) {
+    const idx = Math.floor(Math.random() * brawlersList.length);
+    brawlersList[idx] = dailyName;
   }
 
+  // Elegir inicio distinto al daily
+  const startCandidates = brawlersList.filter(b => b !== dailyName);
+  const startName = startCandidates.length ? startCandidates[Math.floor(Math.random() * startCandidates.length)] : dailyName;
+  safeSetBrawler(startName, "glow-blue");
+
   const numBrawlers = brawlersList.length;
-  const finalIndex = brawlersList.indexOf(dailyName); // Final será daily
+  const finalIndex = brawlersList.indexOf(dailyName);
   const totalDuration = 10000;
   const slowDuration = 2000;
   const fastDuration = totalDuration - slowDuration;
   const finalSlowSteps = Math.min(6, numBrawlers);
+  const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
 
-  // Índices
   const indices = Array.from({ length: numBrawlers }, (_, i) => i);
+  const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
 
-  // Fase rápida: shuffle, asegurando que el primer brawler NO sea el daily
-  let shuffledFast = [...indices].sort(() => Math.random() - 0.5);
-  if(brawlersList[shuffledFast[0]] === dailyName){
+  // Evitar que el daily esté primero
+  if (brawlersList[shuffledFast[0]] === dailyName) {
     const swapIdx = shuffledFast.findIndex(i => brawlersList[i] !== dailyName);
-    if(swapIdx > 0) [shuffledFast[0], shuffledFast[swapIdx]] = [shuffledFast[swapIdx], shuffledFast[0]];
+    if (swapIdx > 0) [shuffledFast[0], shuffledFast[swapIdx]] = [shuffledFast[swapIdx], shuffledFast[0]];
   }
 
-  // Fase lenta: últimos pasos para terminar en daily
   const temp = indices.filter(i => i !== finalIndex);
   const slowSequence = [];
   for (let i = 0; i < finalSlowSteps - 1; i++) {
@@ -381,57 +385,44 @@ document.addEventListener('DOMContentLoaded', () => {
     slowSequence.push(temp[idx]);
     temp.splice(idx, 1);
   }
-  slowSequence.push(finalIndex); // termina en daily
+  slowSequence.push(finalIndex);
 
-  const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
   const startTime = performance.now();
-
-  function showImageSafe(name, glowClass) {
-    const img = brawlerCache[name];
-    const loadedActive = getLoadedImagesFromList(brawlersList);
-    const loadedAny = Object.values(brawlerCache).filter(i => i && i.complete && i.naturalWidth>0);
-
-    if(img && img.complete && img.naturalWidth>0) brawlerImg.src = img.src;
-    else if(loadedActive.length>0) brawlerImg.src = loadedActive[Math.floor(Math.random()*loadedActive.length)].src;
-    else if(loadedAny.length>0) brawlerImg.src = loadedAny[Math.floor(Math.random()*loadedAny.length)].src;
-    else brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
-
-    brawlerImg.className = glowClass;
-  }
-
-  let fastStep = 0, slowStep = 0, phase = "fast", lastTime = performance.now();
+  let fastStep = 0;
+  let slowStep = 0;
+  let phase = "fast";
+  let lastTime = startTime;
   const fastInterval = 60;
 
-  function animate(currentTime){
+  function animate(currentTime) {
     const elapsed = currentTime - startTime;
 
-    if(phase === "fast"){
-      if(elapsed >= fastDuration) { phase = "slow"; lastTime = currentTime; }
-      else if(currentTime - lastTime >= fastInterval){
+    if (phase === "fast") {
+      if (elapsed >= fastDuration) {
+        phase = "slow";
+        lastTime = currentTime;
+      } else if (currentTime - lastTime >= fastInterval) {
         const name = brawlersList[shuffledFast[fastStep % shuffledFast.length]];
         const glow = glowClasses[fastStep % glowClasses.length];
-        showImageSafe(name, glow);
-        fastStep++; lastTime = currentTime;
+        safeSetBrawler(name, glow);
+        fastStep++;
+        lastTime = currentTime;
       }
     }
 
-    if(phase === "slow"){
+    if (phase === "slow") {
       const slowElapsed = elapsed - fastDuration;
       const stepDuration = slowDuration / finalSlowSteps;
-      if(slowElapsed >= stepDuration * slowStep){
-        if(slowStep < finalSlowSteps){
-          const idx = slowSequence[slowStep];
-          const name = brawlersList[idx];
-          const glow = slowStep < finalSlowSteps - 1 ? glowClasses[(fastStep + slowStep) % glowClasses.length] : "glow-green finalGlow";
-          showImageSafe(name, glow);
-          slowStep++;
-        }
-        if(slowStep >= finalSlowSteps){
-          // Revela el daily definitivamente
-          safeSetBrawler(dailyName, "glow-green finalGlow");
-          confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-          return; // animación terminada
-        }
+      if (slowElapsed >= stepDuration * slowStep && slowStep < finalSlowSteps) {
+        const idx = slowSequence[slowStep];
+        const glow = slowStep < finalSlowSteps - 1 ? glowClasses[(fastStep + slowStep) % glowClasses.length] : "glow-green finalGlow";
+        safeSetBrawler(brawlersList[idx], glow);
+        slowStep++;
+      }
+      if (slowStep >= finalSlowSteps) {
+        safeSetBrawler(dailyName, "glow-green finalGlow");
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+        return; // fin
       }
     }
 
@@ -439,8 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   requestAnimationFrame(animate);
-      }
-
+    }
   /* ===== INICIALIZACIÓN ===== */
   if(spinBtn) spinBtn.disabled=true;
   prepareActiveBrawlers(20).then(()=>{
