@@ -537,6 +537,7 @@ prepareActiveBrawlers(20).then(() => {
 const nonDaily = activeBrawlers.filter(n => n !== dailyNameGlobal);
 const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyNameGlobal;
 safeSetBrawler(startName);
+}
 
   // métricas en paralelo
   cargarMetricas();
