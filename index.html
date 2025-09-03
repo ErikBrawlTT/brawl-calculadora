@@ -328,8 +328,7 @@ function calcular(){
 }
 
 /* ===== CLICK EN EL GRÁFICO PARA MOSTRAR LA MISIÓN ===== */
-
-  function attachChartClickListener() {
+function attachChartClickListener() {
   const chartCanvas = document.getElementById('myChart');
   if (!chart || !chartCanvas) return;
 
@@ -341,7 +340,10 @@ function calcular(){
     const dataIndex = points[0].index;
     const borderColor = chart.data.datasets[0].backgroundColor[dataIndex];
 
-    const dailyName = getOrCreateDailyName();
+    // ✅ Usamos siempre el mismo brawler del día
+    const dailyName = DAILY_BRAWLER;
+
+    // Misión correspondiente al segmento
     const missions = getMissionsForToday();
     const missionText = missions[dataIndex % missions.length].replace("{brawler}", dailyName);
 
@@ -351,22 +353,24 @@ function calcular(){
     const centerX = arc.x + rect.left;
     const centerY = arc.y + rect.top;
 
-    // mover la burbuja un poco hacia fuera del centro del segmento
+    // Posicionar burbuja hacia fuera del segmento
     const angle = (arc.startAngle + arc.endAngle)/2 - Math.PI/2; 
-    const radius = arc.outerRadius + 20; // distancia fuera del donut
+    const radius = arc.outerRadius + 20; 
     let bubbleX = centerX + radius * Math.cos(angle);
     let bubbleY = centerY + radius * Math.sin(angle);
 
-    // limitar para que no salga de la ventana
+    // Evitar que se salga de la ventana
     const bubbleWidth = 200;
     const bubbleHeight = 60;
     const padding = 10;
     if (bubbleX + bubbleWidth + padding > window.innerWidth) bubbleX = window.innerWidth - bubbleWidth - padding;
     if (bubbleY + bubbleHeight + padding > window.innerHeight) bubbleY = window.innerHeight - bubbleHeight - padding;
 
+    // Mostrar misión en la burbuja
     showMissionBubbleOnCanvas(`📌 ${missionText}`, borderColor, bubbleX, bubbleY);
   };
-  }
+       }
+                                            
 
   /* ===== LIMPIAR ===== */
   function limpiar() {
