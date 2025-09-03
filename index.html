@@ -364,7 +364,7 @@ function calcular(){
     if (bubbleX + bubbleWidth + padding > window.innerWidth) bubbleX = window.innerWidth - bubbleWidth - padding;
     if (bubbleY + bubbleHeight + padding > window.innerHeight) bubbleY = window.innerHeight - bubbleHeight - padding;
 
-    showMissionBubble(`📌 ${missionText}`, borderColor, bubbleX, bubbleY);
+    showMissionBubbleOnCanvas(`📌 ${missionText}`, borderColor, bubbleX, bubbleY);
   };
   }
 
