@@ -225,60 +225,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return copy.slice(0, Math.min(count, copy.length));
   }
 
-/* ===== DAILY (un brawler fijo por usuario y por día, determinista) ===== */
-function getOrCreateUserId() {
-  const key = `${PAGE_ID}-uid`;
-  let id = localStorage.getItem(key);
-  if (!id) {
-    // crypto.randomUUID() si está disponible; fallback simple si no
-    id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('uid-' + Math.random().toString(36).slice(2) + '-' + Date.now().toString(36));
-    localStorage.setItem(key, id);
-  }
-  return id;
-}
-
-function getLocalDateString() {
-  const d = new Date(); // usa la fecha LOCAL del usuario
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`; // YYYY-MM-DD
-}
-
-function hashString(str) {
-  // djb2 simple y rápida
-  let h = 5381;
-  for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) + h) + str.charCodeAt(i);
-  }
-  return h >>> 0; // entero no firmado
-}
-
-function getOrCreateDailyName() {
-  const date = getLocalDateString();
-  const uid = getOrCreateUserId();
-  const key = `${PAGE_ID}-dailyBrawler`; // evita colisiones con otras páginas/scripts
-
-  // Si ya hay guardado y coincide con fecha+uid, devolvemos eso
-  try {
-    const saved = JSON.parse(localStorage.getItem(key) || '{}');
-    if (saved && saved.date === date && saved.uid === uid && saved.name) {
-      return saved.name;
-    }
-  } catch (e) {
-    // si JSON está corrupto, lo ignoramos y sobrescribimos
-    console.warn('dailyBrawler localStorage corrupto, se reescribe.');
-  }
-
-  // calculamos determinísticamente el índice según fecha+uid
-  const hash = hashString(`${date}|${uid}`);
-  const idx = hash % allBrawlers.length;
-  const name = allBrawlers[idx];
-
-  // guardamos para facilitar depuración/inspección
-  localStorage.setItem(key, JSON.stringify({ date, uid, name }));
-
-  return name;
+/* ===== DAILY (por nombre, estable por día) ===== */
+  function getOrCreateDailyName(){
+    const today = new Date().toISOString().slice(0,10);
+    const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
+    if(saved.date === today && saved.name) return saved.name;
+    // elige de todo el conjunto (así la curiosidad puede venir de cualquier brawler)
+    const idx = Math.floor(Math.random()*allBrawlers.length);
+    const name = allBrawlers[idx];
+    localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name}));
+    return name;
         }
 
 
