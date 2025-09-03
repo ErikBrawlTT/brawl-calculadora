@@ -225,17 +225,33 @@ document.addEventListener('DOMContentLoaded', () => {
     return copy.slice(0, Math.min(count, copy.length));
   }
 
-/* ===== DAILY (por nombre, estable por día) ===== */
-  function getOrCreateDailyName(){
-    const today = new Date().toISOString().slice(0,10);
+/* ===== DAILY (estable por día, híbrido localStorage + hash) ===== */
+function getOrCreateDailyName(){
+  const today = new Date().toISOString().slice(0,10);
+
+  // 1. Intentar con localStorage
+  try {
     const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
-    if(saved.date === today && saved.name) return saved.name;
-    // elige de todo el conjunto (así la curiosidad puede venir de cualquier brawler)
+    if(saved.date === today && saved.name) {
+      return saved.name;
+    }
     const idx = Math.floor(Math.random()*allBrawlers.length);
     const name = allBrawlers[idx];
     localStorage.setItem('dailyBrawler', JSON.stringify({date: today, name}));
     return name;
-        }
+  } catch(e){
+    console.warn("⚠️ localStorage no disponible, usando hash", e);
+  }
+
+  // 2. Fallback: hash estable por fecha (si localStorage falla)
+  let hash = 0;
+  for (let i = 0; i < today.length; i++) {
+    hash = (hash << 5) - hash + today.charCodeAt(i);
+    hash |= 0; // convierte a 32 bits
+  }
+  const idx = Math.abs(hash) % allBrawlers.length;
+  return allBrawlers[idx];
+  }
 
 
   /* ===== PREPARAR 20 BRAWLERS ACTIVOS (precarga/timeout) ===== */
