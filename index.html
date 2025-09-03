@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -537,7 +537,6 @@ prepareActiveBrawlers(20).then(() => {
 const nonDaily = activeBrawlers.filter(n => n !== dailyNameGlobal);
 const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyNameGlobal;
 safeSetBrawler(startName);
-  });
 
   // métricas en paralelo
   cargarMetricas();
