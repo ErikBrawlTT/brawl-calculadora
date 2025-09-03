@@ -380,7 +380,7 @@ function calcular(){
     if (chart) chart.destroy();
 
     // Mostrar un brawler inicial distinto al daily
-    const dailyName = getOrCreateDailyName();
+    const dailyName = DAILY_BRAWLER;
     let candidates = (activePrepared && activeBrawlers.length > 0) ? activeBrawlers.slice() : allBrawlers.slice();
     candidates = candidates.filter(n => n !== dailyName);
     const start = candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : dailyName;
