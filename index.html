@@ -204,13 +204,63 @@ document.addEventListener('DOMContentLoaded', () => {
   async function cargarMetricas(){ const { data, error }=await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id',PAGE_ID).single(); if(!error && data){ animateCounter('visitas-counter',data.visitas); animateCounter('likes-counter',data.likes); animateCounter('dislikes-counter',data.dislikes); } }
   async function incrementarVisita(){ try{ await supabase.rpc('increment_visitas',{pid:PAGE_ID}); await cargarMetricas(); } catch(e){ console.error(e); } }
 
-  /* ===== DAILY / MISION DIARIA ===== */
-  function getOrCreateDailyName(){ const today=new Date().toISOString().slice(0,10); const saved=JSON.parse(localStorage.getItem('dailyBrawler')||'{}'); if(saved.date===today && saved.name) return saved.name; const idx=Math.floor(Math.random()*allBrawlers.length); const name=allBrawlers[idx]; localStorage.setItem('dailyBrawler',JSON.stringify({date:today,name})); return name; }
-  function cyrb128(str){ let h1=1779033703,h2=3144134277,h3=1013904242,h4=2773480762; for(let i=0,k;i<str.length;i++){k=str.charCodeAt(i);h1=h2^Math.imul(h1^k,597399067);h2=h3^Math.imul(h2^k,2869860233);h3=h4^Math.imul(h3^k,951274213);h4=h1^Math.imul(h4^k,2716044179);} return [(h1>>>0),(h2>>>0),(h3>>>0),(h4>>>0)]; }
-  function mulberry32(a){ return function(){a|=0;a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-  function seededShuffle(arr,seedStr){ const seedArr=cyrb128(seedStr); let seed=(seedArr[0]^seedArr[1]^seedArr[2]^seedArr[3])>>>0; const rnd=mulberry32(seed); const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-  function getMissionsForToday(numSegments=8){ const daily=getOrCreateDailyName(); const today=new Date().toISOString().slice(0,10); const seed=`${today}-${daily}`; const shuffled=seededShuffle(MISSIONS.slice(),seed); return shuffled.slice(0,Math.min(numSegments,shuffled.length)); }
-  function showMissionBubbleOnCanvas(text, borderColor = '#FFFFFF', x = null, y = null) {
+/* ===== DAILY / MISIÓN DIARIA ===== */
+let _currentMissionEl = null;
+let _missionTimeout = null;
+
+function getOrCreateDailyName() {
+  const today = new Date().toISOString().slice(0, 10);
+  const saved = JSON.parse(localStorage.getItem('dailyBrawler') || '{}');
+  if (saved.date === today && saved.name) return saved.name;
+
+  const idx = Math.floor(Math.random() * allBrawlers.length);
+  const name = allBrawlers[idx];
+  localStorage.setItem('dailyBrawler', JSON.stringify({ date: today, name }));
+  return name;
+}
+
+function cyrb128(str) {
+  let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+  for (let i = 0, k; i < str.length; i++) {
+    k = str.charCodeAt(i);
+    h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+    h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+    h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+    h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+  }
+  return [(h1 >>> 0), (h2 >>> 0), (h3 >>> 0), (h4 >>> 0)];
+}
+
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(arr, seedStr) {
+  const seedArr = cyrb128(seedStr);
+  let seed = (seedArr[0] ^ seedArr[1] ^ seedArr[2] ^ seedArr[3]) >>> 0;
+  const rnd = mulberry32(seed);
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getMissionsForToday(numSegments = 8) {
+  const daily = getOrCreateDailyName();
+  const today = new Date().toISOString().slice(0, 10);
+  const seed = `${today}-${daily}`;
+  const shuffled = seededShuffle(MISSIONS.slice(), seed);
+  return shuffled.slice(0, Math.min(numSegments, shuffled.length));
+}
+
+function showMissionBubbleOnCanvas(text, borderColor = '#FFFFFF', x = null, y = null) {
   const canvas = document.getElementById('myChart');
   if (!canvas) return;
 
@@ -259,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 7000);
 
   _currentMissionEl = el;
-  }
+       }
                                                                                                                                                                                                                               
   /* ===== PRECARGA BRAWLERS ===== */
   allBrawlers.forEach(name=>{ const img=new Image(); img.src=baseURL+name+".png"; brawlerCache[name]=img; });
