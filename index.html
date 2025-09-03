@@ -225,21 +225,21 @@ document.addEventListener('DOMContentLoaded', () => {
     return copy.slice(0, Math.min(count, copy.length));
   }
 
-  /* ===== DAILY (por nombre, estable por día) ===== */
-  function getOrCreateDailyName() {
+/* ===== DAILY (un brawler fijo por usuario y por día) ===== */
+function getOrCreateDailyName() {
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   let saved = JSON.parse(localStorage.getItem('dailyBrawler') || '{}');
 
-  // si ya existe y es de hoy, lo devolvemos
+  // Si ya existe y es de hoy, devolvemos el mismo
   if (saved.date === today && saved.name) {
     return saved.name;
   }
 
-  // si no existe, lo generamos una sola vez
+  // Si no existe (o es de otro día), elegimos uno nuevo
   const idx = Math.floor(Math.random() * allBrawlers.length);
   const name = allBrawlers[idx];
 
-  // lo guardamos con la fecha
+  // Guardamos en localStorage para mantenerlo todo el día
   saved = { date: today, name };
   localStorage.setItem('dailyBrawler', JSON.stringify(saved));
 
