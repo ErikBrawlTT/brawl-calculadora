@@ -521,7 +521,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===== INICIALIZACIÓN ===== */
-  // ===== Inicialización mínima segura =====
 spinBtn.disabled = false; // siempre activo
 dailyNameGlobal = getOrCreateDailyName(); // daily del usuario
 
@@ -538,13 +537,6 @@ prepareActiveBrawlers(20).then(() => {
 const nonDaily = activeBrawlers.filter(n => n !== dailyNameGlobal);
 const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyNameGlobal;
 safeSetBrawler(startName);
-
-    if(spinBtn) spinBtn.disabled = false;
-  }).catch(e=>{
-    console.warn("prepareActiveBrawlers fallo: ", e);
-    const dailyName = getOrCreateDailyName();
-    safeSetBrawler(dailyName);
-    if(spinBtn) spinBtn.disabled = false;
   });
 
   // métricas en paralelo
