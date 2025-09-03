@@ -184,13 +184,16 @@ document.addEventListener('DOMContentLoaded', () => {
     "Haz 1000 de curación con {brawler}"
   ];
 
-  /* ===== VARIABLES ===== */
-  let chart = null;
-  let brawlerCache = {};
-  let activeBrawlers = [];
-  let activePrepared = false;
-  let _currentMissionEl = null;
-  let _missionTimeout = null;
+
+/* ===== VARIABLES GLOBALES ===== */
+let _currentMissionEl = null;
+let _missionTimeout = null;
+let DAILY_BRAWLER = null; // Brawler del día
+let chart;
+const brawlerCache = {};
+let activeBrawlers = [];
+let activePrepared = false;
+       
 
   /* ===== UTILIDADES ===== */
   function beep(freq){ const ctx = new (AudioContext||webkitAudioContext)(), o = ctx.createOscillator(), g = ctx.createGain(); o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15); }
