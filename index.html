@@ -116,7 +116,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-<script type="module">
+        <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -139,6 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
   const resultadoEl = document.getElementById("resultado");
+
+  /* ===== VARIABLES DE CONTROL ===== */
+  let chart;
+  let canShowMission = false; // NUEVO: Control para que no se muestre la misión hasta que ruleta termine
 
   /* ===== MISIÓN PARA DOUGHNUT ===== */
   const misiones = [
@@ -221,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ===== BRAWLERS ===== */
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
-  let chart;
   const brawlerCache = {};
   allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
 
@@ -298,32 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
     brawlerImg.className = fallbackClass;
   }
 
-  /* ===== FUNCION MULTILÍNEA CON GLOW ===== */
-  function wrapTextWithBackground(ctx,text,x,y,maxWidth,lineHeight,glowColor="cyan"){
-    const words = text.split(" ");
-    const lines = [];
-    let line = "";
-    for(let n=0;n<words.length;n++){
-      const testLine = line + words[n] + " ";
-      const metrics = ctx.measureText(testLine);
-      if(metrics.width>maxWidth && n>0){ lines.push(line); line=words[n]+" "; }
-      else{ line=testLine; }
-    }
-    lines.push(line);
-
-    const offset = (lines.length-1)*lineHeight/2;
-    lines.forEach((l,i)=>{
-      const lineWidth = ctx.measureText(l.trim()).width;
-      ctx.fillStyle = "rgba(0,0,0,0.6)";
-      ctx.fillRect(x - lineWidth/2 - 5, y - lineHeight/2 - offset + i*lineHeight, lineWidth+10, lineHeight);
-      ctx.strokeStyle = glowColor;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x - lineWidth/2 - 5, y - lineHeight/2 - offset + i*lineHeight, lineWidth+10, lineHeight);
-      ctx.fillStyle = "white";
-      ctx.fillText(l.trim(), x, y - offset + i*lineHeight);
-    });
-  }
-
   /* ===== CALCULAR ===== */
   function calcular(){
     beep(600); vibrar();
@@ -368,14 +345,20 @@ document.addEventListener('DOMContentLoaded', () => {
       options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}},
       plugins:[{
         id:'missionOverlay',
-        afterDraw:(chart)=>{
+        beforeDraw:(chart)=>{
           if(!chart.missionText) return;
           const {ctx, chartArea:{width,height}}=chart;
           ctx.save();
+          ctx.fillStyle="rgba(0,0,0,0.85)";
+          ctx.fillRect(width/2-120,height/2-50,240,100);
+          ctx.strokeStyle = chart.missionGlow || "cyan";
+          ctx.lineWidth=3;
+          ctx.strokeRect(width/2-120,height/2-50,240,100);
+          ctx.fillStyle="white";
           ctx.font="16px Arial";
           ctx.textAlign="center";
           ctx.textBaseline="middle";
-          wrapTextWithBackground(ctx, chart.missionText, width/2, height/2, 220, 20, chart.missionGlow || "cyan");
+          wrapText(ctx,chart.missionText,width/2,height/2,220,20);
           ctx.restore();
         }
       }]
@@ -383,33 +366,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
+  }
 
-    document.getElementById('myChart').onclick = (evt) => {
-      const points = chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
-      if(points.length){
-        const idx = points[0].index;
-        const brawlerDia = getOrCreateDailyName();
-        const mission = misiones[idx % misiones.length].replace("{brawler}", brawlerDia);
-        const colorSegment = chart.data.datasets[0].backgroundColor[idx % chart.data.datasets[0].backgroundColor.length];
-
-        chart.missionText = mission;
-        chart.missionGlow = colorSegment;
-        chart.update();
-
-        // Hacer imagen semitransparente
-        brawlerImg.style.opacity = "0.3";
-
-        setTimeout(()=>{
-          chart.missionText = null;
-          chart.missionGlow = null;
-          chart.update();
-          brawlerImg.style.opacity = "1";
-        },8000);
-      }
-    };
-
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-    document.getElementById('centerDiamond').style.display="block";
+  /* ===== FUNCION PARA MULTILÍNEA ===== */
+  function wrapText(ctx,text,x,y,maxWidth,lineHeight){
+    const words=text.split(" ");
+    let line="";
+    const lines=[];
+    for(let n=0;n<words.length;n++){
+      const testLine=line+words[n]+" ";
+      const metrics=ctx.measureText(testLine);
+      if(metrics.width>maxWidth&&n>0){ lines.push(line); line=words[n]+" "; }
+      else{ line=testLine; }
+    }
+    lines.push(line);
+    const offset=(lines.length-1)*lineHeight/2;
+    lines.forEach((l,i)=>{ ctx.fillText(l.trim(),x,y-offset+(i*lineHeight)); });
   }
 
   /* ===== LIMPIAR ===== */
@@ -534,6 +506,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalName = brawlersList[finalIndex];
             safeSetBrawler(finalName, "glow-green finalGlow");
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+
+            // Ahora se puede mostrar la misión
+            canShowMission = true;
             return; 
           }
         }
@@ -544,6 +519,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     requestAnimationFrame(animate);
   }
+
+  /* ===== CLICK SOBRE EL CHART PARA MISION ===== */
+  document.getElementById('myChart').onclick = (evt) => {
+    if(!canShowMission) return; // No mostrar misión hasta que termine la ruleta
+    const points = chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+    if(points.length){
+      const idx = points[0].index;
+      const brawlerDia = getOrCreateDailyName();
+      const mission = misiones[idx % misiones.length].replace("{brawler}", brawlerDia);
+      const colorSegment = chart.data.datasets[0].backgroundColor[idx % chart.data.datasets[0].backgroundColor.length];
+
+      chart.missionText = mission;
+      chart.missionGlow = colorSegment;
+      chart.update();
+
+      brawlerImg.style.opacity = "0.3"; // Imagen semitransparente mientras se muestra la misión
+
+      setTimeout(()=>{
+        chart.missionText = null;
+        chart.missionGlow = null;
+        chart.update();
+        brawlerImg.style.opacity = "1"; // Recupera opacidad
+      },8000);
+    }
+  };
 
   /* ===== INICIALIZACIÓN ===== */
   if(spinBtn) spinBtn.disabled = true;
