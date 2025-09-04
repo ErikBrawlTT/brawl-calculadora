@@ -116,7 +116,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
- <script type="module">
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -298,48 +298,31 @@ document.addEventListener('DOMContentLoaded', () => {
     brawlerImg.className = fallbackClass;
   }
 
-  /* ===== FUNCIÓN WRAP TEXT CON FONDO SEMITRANSPARENTE ===== */
-  function wrapTextWithBackground(ctx, text, x, y, maxWidth, lineHeight){
+  /* ===== FUNCION MULTILÍNEA CON GLOW ===== */
+  function wrapTextWithBackground(ctx,text,x,y,maxWidth,lineHeight,glowColor="cyan"){
     const words = text.split(" ");
     const lines = [];
     let line = "";
-
     for(let n=0;n<words.length;n++){
       const testLine = line + words[n] + " ";
       const metrics = ctx.measureText(testLine);
-      if(metrics.width>maxWidth && n>0){
-        lines.push(line);
-        line = words[n] + " ";
-      } else { line = testLine; }
+      if(metrics.width>maxWidth && n>0){ lines.push(line); line=words[n]+" "; }
+      else{ line=testLine; }
     }
     lines.push(line);
 
     const offset = (lines.length-1)*lineHeight/2;
-
     lines.forEach((l,i)=>{
       const lineWidth = ctx.measureText(l.trim()).width;
       ctx.fillStyle = "rgba(0,0,0,0.6)";
-      ctx.fillRect(x - lineWidth/2 - 5, y - lineHeight/2 - offset + i*lineHeight, lineWidth + 10, lineHeight);
+      ctx.fillRect(x - lineWidth/2 - 5, y - lineHeight/2 - offset + i*lineHeight, lineWidth+10, lineHeight);
+      ctx.strokeStyle = glowColor;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x - lineWidth/2 - 5, y - lineHeight/2 - offset + i*lineHeight, lineWidth+10, lineHeight);
       ctx.fillStyle = "white";
       ctx.fillText(l.trim(), x, y - offset + i*lineHeight);
     });
   }
-
-  /* ===== PLUGIN MISSION OVERLAY ===== */
-  const missionOverlayPlugin = {
-    id: 'missionOverlay',
-    afterDraw: (chart) => {
-      if(!chart.missionText) return;
-      const { ctx, chartArea: { width, height } } = chart;
-      ctx.save();
-      ctx.font = "16px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.globalCompositeOperation = "source-over";
-      wrapTextWithBackground(ctx, chart.missionText, width/2, height/2, 220, 20);
-      ctx.restore();
-    }
-  };
 
   /* ===== CALCULAR ===== */
   function calcular(){
@@ -379,12 +362,23 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(step);
 
     const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
-
     const config={
       type:'doughnut',
       data:data,
       options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}},
-      plugins:[missionOverlayPlugin]
+      plugins:[{
+        id:'missionOverlay',
+        afterDraw:(chart)=>{
+          if(!chart.missionText) return;
+          const {ctx, chartArea:{width,height}}=chart;
+          ctx.save();
+          ctx.font="16px Arial";
+          ctx.textAlign="center";
+          ctx.textBaseline="middle";
+          wrapTextWithBackground(ctx, chart.missionText, width/2, height/2, 220, 20, chart.missionGlow || "cyan");
+          ctx.restore();
+        }
+      }]
     };
 
     if(chart) chart.destroy();
@@ -394,11 +388,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const points = chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
       if(points.length){
         const idx = points[0].index;
-        const brawler = allBrawlers[Math.floor(Math.random()*allBrawlers.length)];
-        const mission = misiones[idx % misiones.length].replace("{brawler}",brawler);
+        const brawlerDia = getOrCreateDailyName();
+        const mission = misiones[idx % misiones.length].replace("{brawler}", brawlerDia);
+        const colorSegment = chart.data.datasets[0].backgroundColor[idx % chart.data.datasets[0].backgroundColor.length];
+
         chart.missionText = mission;
+        chart.missionGlow = colorSegment;
         chart.update();
-        setTimeout(()=>{ chart.missionText = null; chart.update(); },8000);
+
+        // Hacer imagen semitransparente
+        brawlerImg.style.opacity = "0.3";
+
+        setTimeout(()=>{
+          chart.missionText = null;
+          chart.missionGlow = null;
+          chart.update();
+          brawlerImg.style.opacity = "1";
+        },8000);
       }
     };
 
@@ -447,8 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
   dislikesCounter.addEventListener('click', async () => {
     beep(300); vibrar();
     let vote = getUserVote();
-    if(vote.type === 'dislike'){ vote = {}; await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); }   
-     else { if(vote.type==='like') await supabase.rpc('decrement_likes',{pid: PAGE_ID}); vote={type:'dislike'}; await supabase.rpc('increment_dislikes',{pid: PAGE_ID}); }
+    if(vote.type === 'dislike'){ vote = {}; await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); }
+    else { if(vote.type==='like') await supabase.rpc('decrement_likes',{pid: PAGE_ID}); vote={type:'dislike'}; await supabase.rpc('increment_dislikes',{pid: PAGE_ID}); }
     setUserVote(vote); cargarMetricas();
   });
 
@@ -566,6 +572,6 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarMetricas();
   incrementarVisita();
 });
-</script> 
+</script>
 </body>
 </html>
