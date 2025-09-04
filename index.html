@@ -116,7 +116,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-  <script type="module">
+     <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -157,6 +157,46 @@ document.addEventListener('DOMContentLoaded', () => {
     "Juega 2 partidas en modo asedio con {brawler}",
     "Haz 1000 de curación con {brawler}"
   ];
+
+  /* ===== OVERLAY DEL MENSAJE ===== */
+  const missionPopup = document.createElement('div');
+  missionPopup.id = "missionPopup";
+  missionPopup.style.position = "absolute";
+  missionPopup.style.top = "50%";
+  missionPopup.style.left = "50%";
+  missionPopup.style.transform = "translate(-50%, -50%) scale(0.8)";
+  missionPopup.style.padding = "8px 12px";
+  missionPopup.style.borderRadius = "8px";
+  missionPopup.style.border = "3px solid #fff";
+  missionPopup.style.backgroundColor = "rgba(0,0,0,0.8)";
+  missionPopup.style.color = "rgba(255,255,255,0.9)";
+  missionPopup.style.fontWeight = "bold";
+  missionPopup.style.fontSize = "14px";
+  missionPopup.style.textAlign = "center";
+  missionPopup.style.pointerEvents = "none";
+  missionPopup.style.opacity = "0";
+  missionPopup.style.transition = "all 0.3s ease";
+  missionPopup.style.zIndex = "20";
+  document.body.appendChild(missionPopup);
+
+  let missionTimeout;
+  function showMission(mission, color="#fff"){
+    clearTimeout(missionTimeout);
+    missionPopup.innerText = mission;
+    missionPopup.style.borderColor = color;
+    missionPopup.style.opacity = "1";
+    missionPopup.style.transform = "translate(-50%, -50%) scale(1)";
+
+    const canvas = document.getElementById('myChart');
+    const rect = canvas.getBoundingClientRect();
+    missionPopup.style.left = (rect.left + rect.width/2) + "px";
+    missionPopup.style.top = (rect.top + rect.height/2) + "px";
+
+    missionTimeout = setTimeout(()=>{
+      missionPopup.style.opacity = "0";
+      missionPopup.style.transform = "translate(-50%, -50%) scale(0.8)";
+    }, 4000);
+  }
 
   /* ===== UTILIDADES ===== */
   function beep(freq){
@@ -233,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for(let i = copy.length - 1; i > 0; i--){
       const j = Math.floor(Math.random()*(i+1));
       [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
+    } 
     return copy.slice(0, Math.min(count, copy.length));
   }
 
@@ -336,66 +376,25 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(step);
 
     const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
-    const config={
-      type:'doughnut',
-      data:data,
-      options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}},
-      plugins:[{
-        id:'missionOverlay',
-        beforeDraw:(chart)=>{
-          if(!chart.missionText) return;
-          const {ctx, chartArea:{width,height}}=chart;
-          ctx.save();
-          ctx.fillStyle="rgba(0,0,0,0.85)";
-          ctx.fillRect(width/2-120,height/2-50,240,100);
-          ctx.strokeStyle="cyan";
-          ctx.lineWidth=3;
-          ctx.strokeRect(width/2-120,height/2-50,240,100);
-          ctx.fillStyle="white";
-          ctx.font="16px Arial";
-          ctx.textAlign="center";
-          ctx.textBaseline="middle";
-          wrapText(ctx,chart.missionText,width/2,height/2,220,20);
-          ctx.restore();
-        }
-      }]
-    };
-
+    const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
+    // Evento click en segmentos para mostrar misión
     document.getElementById('myChart').onclick = (evt) => {
       const points = chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
       if(points.length){
         const idx = points[0].index;
-        const brawler = allBrawlers[Math.floor(Math.random()*allBrawlers.length)];
+        const brawler = getOrCreateDailyName(); // Siempre brawler del día
         const mission = misiones[idx % misiones.length].replace("{brawler}",brawler);
-        chart.missionText = mission;
-        chart.update();
-        setTimeout(()=>{ chart.missionText = null; chart.update(); },8000);
+        const color = data.datasets[0].backgroundColor[idx % data.datasets[0].backgroundColor.length];
+        showMission(mission, color);
       }
     };
 
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
   }
-
-  /* ===== FUNCION PARA MULTILÍNEA ===== */
-  function wrapText(ctx,text,x,y,maxWidth,lineHeight){
-    const words=text.split(" ");
-    let line="";
-    const lines=[];
-    for(let n=0;n<words.length;n++){
-      const testLine=line+words[n]+" ";
-      const metrics=ctx.measureText(testLine);
-      if(metrics.width>maxWidth&&n>0){ lines.push(line); line=words[n]+" "; }
-      else{ line=testLine; }
-    }
-    lines.push(line);
-    const offset=(lines.length-1)*lineHeight/2;
-    lines.forEach((l,i)=>{ ctx.fillText(l.trim(),x,y-offset+(i*lineHeight)); });
-  }
-
   /* ===== LIMPIAR ===== */
   function limpiar(){
     beep(300); vibrar();
@@ -403,30 +402,33 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("calcForm").reset();
     resultadoEl.innerText="Valor total: 0 🪙";
     if(chart) chart.destroy();
+
     const dailyName = getOrCreateDailyName();
     let candidates = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
-    candidates = candidates.filter(n => n!==dailyName);
+    candidates = candidates.filter(n => n !== dailyName);
     const start = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : dailyName;
     safeSetBrawler(start);
   }
 
   /* ===== SHARE ===== */
   async function share(){
-    beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
+    beep(500); vibrar();
+    shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
     const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
     if(navigator.share){
-      try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
-      catch(err){console.log(err);}
+      try { await navigator.share({title:"Calculadora Brawl Stars", text, url}); }
+      catch(err) { console.log(err); }
     } else {
-      try{await navigator.clipboard.writeText(url); alert("Enlace copiado al portapapeles ✅");}
-      catch(e){prompt("Copia este enlace:", url);}
+      try { await navigator.clipboard.writeText(url); alert("Enlace copiado al portapapeles ✅"); }
+      catch(e) { prompt("Copia este enlace:", url); }
     }
   }
 
   /* ===== VOTO ===== */
   function getUserVote() { return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}'); }
   function setUserVote(vote) { localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote)); }
+
   likesCounter.addEventListener('click', async () => {
     beep(400); vibrar();
     let vote = getUserVote();
@@ -434,6 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
     else { if(vote.type==='dislike') await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); vote={type:'like'}; await supabase.rpc('increment_likes',{pid: PAGE_ID}); }
     setUserVote(vote); cargarMetricas();
   });
+
   dislikesCounter.addEventListener('click', async () => {
     beep(300); vibrar();
     let vote = getUserVote();
@@ -444,24 +447,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== RULETA ===== */
   function spinRouletteSmooth() {
-    let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice: allBrawlers.slice();
+    let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
     const dailyName = getOrCreateDailyName();
-    if(!brawlersList.includes(dailyName)){ 
-      brawlersList[Math.floor(Math.random()*brawlersList.length)] = dailyName; 
+    if(!brawlersList.includes(dailyName)){
+      const replaceIdx = Math.floor(Math.random()*brawlersList.length);
+      brawlersList[replaceIdx] = dailyName;
     }
+
     const numBrawlers = brawlersList.length;
     const finalIndex = brawlersList.indexOf(dailyName);
     const totalDuration = 10000, slowDuration = 2000, fastDuration = totalDuration - slowDuration;
     const finalSlowSteps = Math.min(6, numBrawlers);
     const indices = Array.from({ length: numBrawlers }, (_, i) => i);
     const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
+
     if(brawlersList[shuffledFast[0]] === dailyName){
       const swapIdx = shuffledFast.findIndex(i => brawlersList[i] !== dailyName);
       if(swapIdx>0){ [shuffledFast[0], shuffledFast[swapIdx]] = [shuffledFast[swapIdx], shuffledFast[0]]; }
     }
+
     const temp = indices.filter(i => i !== finalIndex);
     const slowSequence = [];
-    for (let i = 0; i < finalSlowSteps - 1; i++) {
+    for (let i = 0; i < finalSlowSteps - 1; i++){
       const idx = Math.floor(Math.random() * temp.length);
       slowSequence.push(temp[idx]);
       temp.splice(idx, 1);
@@ -471,10 +478,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
     const startTime = performance.now();
 
-    function showImageSafe(name, glowClass) {
+    function showImageSafe(name, glowClass){
       const img = brawlerCache[name];
       const loadedActive = getLoadedImagesFromList(brawlersList);
-      const loadedAny = Object.values(brawlerCache).filter(i => i && i.complete && i.naturalWidth>0);
+      const loadedAny = Object.values(brawlerCache).filter(i=>i && i.complete && i.naturalWidth>0);
       if(img && img.complete && img.naturalWidth>0){ brawlerImg.src = img.src; } 
       else if(loadedActive.length > 0){ brawlerImg.src = loadedActive[Math.floor(Math.random()*loadedActive.length)].src; } 
       else if(loadedAny.length > 0){ brawlerImg.src = loadedAny[Math.floor(Math.random()*loadedAny.length)].src; } 
@@ -482,20 +489,15 @@ document.addEventListener('DOMContentLoaded', () => {
       brawlerImg.className = glowClass;
     }
 
-    let fastStep = 0;
-    let slowStep = 0;
-    let phase = "fast";
-    let lastTime = performance.now();
+    let fastStep = 0, slowStep = 0, phase = "fast", lastTime = performance.now();
     const fastInterval = 60;
 
     function animate(currentTime){
       const elapsed = currentTime - startTime;
 
       if(phase === "fast"){
-        if(elapsed >= fastDuration){
-          phase = "slow";
-          lastTime = currentTime;
-        } else if(currentTime - lastTime >= fastInterval){
+        if(elapsed >= fastDuration){ phase = "slow"; lastTime = currentTime; }
+        else if(currentTime - lastTime >= fastInterval){
           const name = brawlersList[shuffledFast[fastStep % shuffledFast.length]];
           const glow = glowClasses[fastStep % glowClasses.length];
           showImageSafe(name, glow);
@@ -518,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalName = brawlersList[finalIndex];
             safeSetBrawler(finalName, "glow-green finalGlow");
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-            return; 
+            return;
           }
         }
       }
@@ -536,15 +538,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!activeBrawlers.includes(dailyName)){
       const idx = Math.floor(Math.random()*activeBrawlers.length);
       activeBrawlers[idx] = dailyName;
-      if(!brawlerCache[dailyName]){
-        const n = new Image();
-        n.src = baseURL + dailyName + ".png";
-        brawlerCache[dailyName] = n;
-      } else { brawlerCache[dailyName].src = baseURL + dailyName + ".png"; }
+      if(!brawlerCache[dailyName]){ const n = new Image(); n.src = baseURL + dailyName + ".png"; brawlerCache[dailyName] = n; }
+      else { brawlerCache[dailyName].src = baseURL + dailyName + ".png"; }
     }
+
     const nonDaily = activeBrawlers.filter(n => n !== dailyName);
     const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;
     safeSetBrawler(startName);
+
     if(spinBtn) spinBtn.disabled = false;
   }).catch(e=>{
     console.warn("prepareActiveBrawlers fallo: ", e);
@@ -556,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarMetricas();
   incrementarVisita();
 });
-    
+
 </script>
 </body>
 </html>
