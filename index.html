@@ -116,7 +116,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-        <script type="module">
+    <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -140,10 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const dislikesCounter = document.getElementById('dislikes-counter');
   const resultadoEl = document.getElementById("resultado");
 
-  /* ===== VARIABLES DE CONTROL ===== */
-  let chart;
-  let canShowMission = false; // NUEVO: Control para que no se muestre la misión hasta que ruleta termine
-
   /* ===== MISIÓN PARA DOUGHNUT ===== */
   const misiones = [
     "Sube 10 copas con {brawler}",
@@ -163,12 +159,17 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   /* ===== UTILIDADES ===== */
-  function beep(freq){
-    const ctx = new (AudioContext||webkitAudioContext)(),
-          o = ctx.createOscillator(),
-          g = ctx.createGain();
-    o.type="square"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination);
-    g.gain.setValueAtTime(.15,ctx.currentTime); o.start(); o.stop(ctx.currentTime+.15);
+  function beep(freq=440, duration=80){
+    const ctx = new (AudioContext||webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type="square"; 
+    o.frequency.value=freq; 
+    o.connect(g); 
+    g.connect(ctx.destination);
+    g.gain.setValueAtTime(.15,ctx.currentTime); 
+    o.start(); 
+    o.stop(ctx.currentTime+duration/1000);
   }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
@@ -203,17 +204,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== BOTONES ===== */
   calcBtn.addEventListener('click', () => { 
-    beep(520); vibrar(80); 
+    beep(520,50); vibrar(50); 
     calcular(); 
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); 
   });
   clearBtn.addEventListener('click', () => { 
+    beep(300,80); vibrar(80); 
     limpiar(); 
     document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
   });
-  shareBtn.addEventListener('click', share);
+  shareBtn.addEventListener('click', () => { 
+    beep(600,80); vibrar(80); 
+    share(); 
+  });
   spinBtn.addEventListener('click', () => { 
-    beep(520); vibrar(80); 
+    beep(520,50); vibrar(80); 
     if(!spinBtn.disabled) spinRouletteSmooth(); 
     document.getElementById('myChart').scrollIntoView({behavior:'smooth', block:'end'}); 
   });
@@ -230,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let activeBrawlers = [];
   let activePrepared = false;
+  let canShowMission = false;
 
   function pickRandomUnique(arr, count){
     const copy = [...arr];
@@ -285,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ===== FUNCION IMAGEN SEGURA ===== */
+  /* ===== FUNCIONES DE IMAGEN ===== */
   function getLoadedImagesFromList(list){
     return list.map(name => brawlerCache[name]).filter(img => img && img.complete && img.naturalWidth>0);
   }
@@ -301,9 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
     brawlerImg.className = fallbackClass;
   }
 
-  /* ===== CALCULAR ===== */
+  /* ===== FUNCIONES DE CALCULAR ===== */
   function calcular(){
-    beep(600); vibrar();
+    beep(520,50); vibrar(50);
     calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
 
     const bpass = Number(document.getElementById("bpass").value)||0;
@@ -349,9 +355,14 @@ document.addEventListener('DOMContentLoaded', () => {
           if(!chart.missionText) return;
           const {ctx, chartArea:{width,height}}=chart;
           ctx.save();
+          // Glow si existe
+          if(chart.missionGlow){
+            ctx.shadowColor = chart.missionGlow;
+            ctx.shadowBlur = 20;
+          }
           ctx.fillStyle="rgba(0,0,0,0.85)";
           ctx.fillRect(width/2-120,height/2-50,240,100);
-          ctx.strokeStyle = chart.missionGlow || "cyan";
+          ctx.strokeStyle="cyan";
           ctx.lineWidth=3;
           ctx.strokeRect(width/2-120,height/2-50,240,100);
           ctx.fillStyle="white";
@@ -366,17 +377,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
+
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    document.getElementById('centerDiamond').style.display="block";
   }
 
-  /* ===== FUNCION PARA MULTILÍNEA ===== */
+  /* ===== WRAP TEXT ===== */
   function wrapText(ctx,text,x,y,maxWidth,lineHeight){
     const words=text.split(" ");
     let line="";
     const lines=[];
     for(let n=0;n<words.length;n++){
       const testLine=line+words[n]+" ";
-      const metrics=ctx.measureText(testLine);
-      if(metrics.width>maxWidth&&n>0){ lines.push(line); line=words[n]+" "; }
+      if(ctx.measureText(testLine).width>maxWidth&&n>0){ lines.push(line); line=words[n]+" "; }
       else{ line=testLine; }
     }
     lines.push(line);
@@ -386,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== LIMPIAR ===== */
   function limpiar(){
-    beep(300); vibrar();
+    beep(300,80); vibrar();
     clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
     document.getElementById("calcForm").reset();
     resultadoEl.innerText="Valor total: 0 🪙";
@@ -400,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== SHARE ===== */
   async function share(){
-    beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
+    beep(600,80); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
     const url = window.location.href;
     const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
     if(navigator.share){
@@ -416,22 +429,53 @@ document.addEventListener('DOMContentLoaded', () => {
   function getUserVote() { return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}'); }
   function setUserVote(vote) { localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote)); }
   likesCounter.addEventListener('click', async () => {
-    beep(400); vibrar();
+    beep(400,80); vibrar();
     let vote = getUserVote();
     if(vote.type === 'like'){ vote = {}; await supabase.rpc('decrement_likes',{pid: PAGE_ID}); }
     else { if(vote.type==='dislike') await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); vote={type:'like'}; await supabase.rpc('increment_likes',{pid: PAGE_ID}); }
     setUserVote(vote); cargarMetricas();
   });
   dislikesCounter.addEventListener('click', async () => {
-    beep(300); vibrar();
+    beep(300,80); vibrar();
     let vote = getUserVote();
     if(vote.type === 'dislike'){ vote = {}; await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); }
     else { if(vote.type==='like') await supabase.rpc('decrement_likes',{pid: PAGE_ID}); vote={type:'dislike'}; await supabase.rpc('increment_dislikes',{pid: PAGE_ID}); }
-    setUserVote(vote); cargarMetricas();
+     setUserVote(vote); cargarMetricas();
   });
+
+  /* ===== SONIDO RULETA ===== */
+  const rouletteAudioURL = "https://tu-dominio.com/roulette.mp3"; // Coloca aquí tu audio real
+  let rouletteAudioCtx, rouletteBuffer, rouletteSource;
+
+  async function loadRouletteSound() {
+    rouletteAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const response = await fetch(rouletteAudioURL);
+    const arrayBuffer = await response.arrayBuffer();
+    rouletteBuffer = await rouletteAudioCtx.decodeAudioData(arrayBuffer);
+  }
+
+  function playRouletteSound(duration = 10000) {
+    if(!rouletteBuffer) return;
+    rouletteSource = rouletteAudioCtx.createBufferSource();
+    rouletteSource.buffer = rouletteBuffer;
+    rouletteSource.connect(rouletteAudioCtx.destination);
+    rouletteSource.playbackRate.value = 1;
+    rouletteSource.start();
+
+    // Simular frenado
+    const startTime = rouletteAudioCtx.currentTime;
+    const endTime = startTime + duration/1000;
+    const interval = setInterval(() => {
+      const now = rouletteAudioCtx.currentTime;
+      const t = (now - startTime)/(endTime - startTime);
+      rouletteSource.playbackRate.value = 1 - t*0.9; // disminuye de 1 a 0.1
+      if(t >= 1) clearInterval(interval);
+    },50);
+  }
 
   /* ===== RULETA ===== */
   function spinRouletteSmooth() {
+    canShowMission = false; // bloquea mostrar misión hasta finalizar
     let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
     const dailyName = getOrCreateDailyName();
     if(!brawlersList.includes(dailyName)){ 
@@ -457,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
     slowSequence.push(finalIndex);
 
     const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
-    const startTime = performance.now();
+    const startTimeAnim = performance.now();
 
     function showImageSafe(name, glowClass) {
       const img = brawlerCache[name];
@@ -470,6 +514,8 @@ document.addEventListener('DOMContentLoaded', () => {
       brawlerImg.className = glowClass;
     }
 
+    playRouletteSound(totalDuration); // inicia sonido ruleta
+
     let fastStep = 0;
     let slowStep = 0;
     let phase = "fast";
@@ -477,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fastInterval = 60;
 
     function animate(currentTime){
-      const elapsed = currentTime - startTime;
+      const elapsed = currentTime - startTimeAnim;
 
       if(phase === "fast"){
         if(elapsed >= fastDuration){
@@ -505,43 +551,29 @@ document.addEventListener('DOMContentLoaded', () => {
           if(slowStep >= finalSlowSteps){
             const finalName = brawlersList[finalIndex];
             safeSetBrawler(finalName, "glow-green finalGlow");
+            canShowMission = true; // ahora se puede mostrar misión
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-
-            // Ahora se puede mostrar la misión
-            canShowMission = true;
             return; 
           }
         }
       }
-
       requestAnimationFrame(animate);
     }
-
     requestAnimationFrame(animate);
   }
 
-  /* ===== CLICK SOBRE EL CHART PARA MISION ===== */
+  /* ===== CLICK EN CHART PARA MISION ===== */
   document.getElementById('myChart').onclick = (evt) => {
-    if(!canShowMission) return; // No mostrar misión hasta que termine la ruleta
+    if(!canShowMission) return; // bloquear antes de girar ruleta
     const points = chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
     if(points.length){
       const idx = points[0].index;
-      const brawlerDia = getOrCreateDailyName();
-      const mission = misiones[idx % misiones.length].replace("{brawler}", brawlerDia);
-      const colorSegment = chart.data.datasets[0].backgroundColor[idx % chart.data.datasets[0].backgroundColor.length];
-
+      const dailyName = getOrCreateDailyName();
+      const mission = misiones[idx % misiones.length].replace("{brawler}", dailyName);
       chart.missionText = mission;
-      chart.missionGlow = colorSegment;
+      chart.missionGlow = ["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"][idx % 8];
       chart.update();
-
-      brawlerImg.style.opacity = "0.3"; // Imagen semitransparente mientras se muestra la misión
-
-      setTimeout(()=>{
-        chart.missionText = null;
-        chart.missionGlow = null;
-        chart.update();
-        brawlerImg.style.opacity = "1"; // Recupera opacidad
-      },8000);
+      setTimeout(()=>{ chart.missionText = null; chart.missionGlow = null; chart.update(); },8000);
     }
   };
 
@@ -571,7 +603,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   cargarMetricas();
   incrementarVisita();
+  loadRouletteSound(); // carga sonido ruleta
 });
-</script>
+</script> 
 </body>
 </html>
