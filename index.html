@@ -116,7 +116,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-  <script type="module">
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -135,34 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoModal = document.getElementById('infoModal');
   const infoClose = document.getElementById('infoClose');
   const brawlerImg = document.getElementById('brawlerImg');
-
   const visitasCounter = document.getElementById('visitas-counter');
   const likesCounter = document.getElementById('likes-counter');
   const dislikesCounter = document.getElementById('dislikes-counter');
+  const resultadoEl = document.getElementById("resultado");
 
-  /* ===== OVERLAY MISION ===== */
-  const missionOverlay = document.createElement('div');
-  missionOverlay.style.position = 'absolute';
-  missionOverlay.style.top = '50%';
-  missionOverlay.style.left = '50%';
-  missionOverlay.style.transform = 'translate(-50%, -50%)';
-  missionOverlay.style.padding = '8px 12px';
-  missionOverlay.style.borderRadius = '8px';
-  missionOverlay.style.display = 'none';
-  missionOverlay.style.zIndex = '10';
-  missionOverlay.style.fontSize = '14px';
-  missionOverlay.style.fontWeight = 'bold';
-  missionOverlay.style.textAlign = 'center';
-  missionOverlay.style.pointerEvents = 'none';
-  missionOverlay.style.maxWidth = '180px';
-  missionOverlay.style.wordWrap = 'break-word';
-  missionOverlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
-  missionOverlay.style.color = 'rgba(255,255,255,0.9)';
-  missionOverlay.style.border = '3px solid #fff';
-  document.getElementById('myChart').parentElement.style.position = 'relative';
-  document.getElementById('myChart').parentElement.appendChild(missionOverlay);
-
-  const missions = [
+  /* ===== MISIÓN PARA DOUGHNUT ===== */
+  const misiones = [
     "Sube 10 copas con {brawler}",
     "Gana 3 partidas con {brawler}",
     "Haz 5 kills con {brawler}",
@@ -179,14 +158,12 @@ document.addEventListener('DOMContentLoaded', () => {
     "Haz 1000 de curación con {brawler}"
   ];
 
-  function showMission(colorIndex, brawler) {
-    const mission = missions[colorIndex % missions.length].replace('{brawler}', brawler);
-    const colors = ["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"];
-    missionOverlay.style.borderColor = colors[colorIndex % colors.length];
-    missionOverlay.innerText = mission;
-    missionOverlay.style.display = 'block';
-    clearTimeout(missionOverlay.hideTimeout);
-    missionOverlay.hideTimeout = setTimeout(()=> missionOverlay.style.display='none',8000);
+  let missionTimeout;
+
+  function showMission(mission){
+    clearTimeout(missionTimeout);
+    resultadoEl.innerText = mission;
+    missionTimeout = setTimeout(()=>{ resultadoEl.innerText = "Valor total: 0 🪙"; }, 8000);
   }
 
   /* ===== UTILIDADES ===== */
@@ -199,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function vibrar(ms=80){ if(navigator.vibrate) navigator.vibrate(ms); }
 
-  /* ===== CONTADORES METRICAS ===== */
+  /* ===== METRICAS ===== */
   async function cargarMetricas(){
     const { data, error } = await supabase.from('metrics').select('visitas,likes,dislikes').eq('page_id', PAGE_ID).single();
     if (!error && data){
@@ -253,14 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const allBrawlers = ["elprimo","colt","nita","edgar","spike","penny","darryl","rico","mortis","bea","8-bit","alli","amber","angelo","ash","barley","belle","berry","bibi","bo","bonnie","brock","bull","buster","buzz","byron","carl","charly","chester","chuck","clancy","colette","cordelius","crow","doug","draco","dynamike","eve","fang","finx","frank","gale","genio","gray","griff","grom","hank","gus","jacky","jae-yong","janet","jessie","max","meeple","meg","melodie","mico","moe","nani","otis","ollie","pam","pearl","piper","poco","r-t","rosa","ruffs","sam","sandy","shade","shelly","sprout","squeak","stu","surge","tick","trunk","willow"];
   const baseURL = "https://raw.githubusercontent.com/ErikBrawlTT/brawl-calculadora/main/Brawlers/";
   let chart;
-
-  /* precarga global */
   const brawlerCache = {};
-  allBrawlers.forEach(name => { 
-    const img = new Image(); 
-    img.src = baseURL+name+".png"; 
-    brawlerCache[name]=img; 
-  });
+  allBrawlers.forEach(name => { const img = new Image(); img.src = baseURL+name+".png"; brawlerCache[name]=img; });
 
   let activeBrawlers = [];
   let activePrepared = false;
@@ -274,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return copy.slice(0, Math.min(count, copy.length));
   }
 
-  /* ===== DAILY (por nombre, estable por día) ===== */
+  /* ===== DAILY ===== */
   function getOrCreateDailyName(){
     const today = new Date().toISOString().slice(0,10);
     const saved = JSON.parse(localStorage.getItem('dailyBrawler')||'{}');
@@ -285,27 +256,53 @@ document.addEventListener('DOMContentLoaded', () => {
     return name;
   }
 
-  /* ===== FUNCIONES DE IMAGEN SEGURA ===== */
-  function getLoadedImagesFromList(list){
-    return list
-      .map(name => brawlerCache[name])
-      .filter(img => img && img.complete && img.naturalWidth>0);
+  /* ===== PREPARAR 20 BRAWLERS ===== */
+  function prepareActiveBrawlers(count = 20, timeoutMs = 8000){
+    return new Promise(resolve => {
+      const selected = pickRandomUnique(allBrawlers, count);
+      activeBrawlers = selected.slice();
+      const promises = activeBrawlers.map(name => {
+        return new Promise(res => {
+          const img = brawlerCache[name];
+          if(!img){
+            const newImg = new Image();
+            newImg.src = baseURL + name + ".png";
+            brawlerCache[name] = newImg;
+            newImg.onload = () => res({name, ok:true});
+            newImg.onerror = () => res({name, ok:false});
+          } else {
+            if(img.complete && img.naturalWidth>0) return res({name, ok:true});
+            const t = setTimeout(()=> res({name, ok:false}), timeoutMs);
+            img.onload = () => { clearTimeout(t); res({name, ok:true}); };
+            img.onerror = () => { clearTimeout(t); res({name, ok:false}); };
+          }
+        });
+      });
+
+      Promise.all(promises).then(results => {
+        const ok = results.filter(r => r.ok).map(r => r.name);
+        if(ok.length > 0){ activeBrawlers = ok; } 
+        else { const loadedAny = Object.keys(brawlerCache).filter(n => brawlerCache[n].complete && brawlerCache[n].naturalWidth>0); if(loadedAny.length>0) activeBrawlers = pickRandomUnique(loadedAny, Math.min(count, loadedAny.length)); else activeBrawlers = pickRandomUnique(allBrawlers, Math.min(count, allBrawlers.length)); }
+        activePrepared = true;
+        if(spinBtn) spinBtn.disabled = false;
+        resolve(activeBrawlers);
+      });
+    });
   }
+
+  /* ===== FUNCION IMAGEN SEGURA ===== */
+  function getLoadedImagesFromList(list){
+    return list.map(name => brawlerCache[name]).filter(img => img && img.complete && img.naturalWidth>0);
+  }
+
   function safeSetBrawler(name, fallbackClass="finalGlow"){
     const img = brawlerCache[name];
     const loadedActive = getLoadedImagesFromList(activeBrawlers);
     const loadedAny = Object.values(brawlerCache).filter(i=>i && i.complete && i.naturalWidth>0);
-    if(img && img.complete && img.naturalWidth>0){
-      brawlerImg.src = img.src;
-    } else if(loadedActive.length > 0){
-      const choice = loadedActive[Math.floor(Math.random()*loadedActive.length)];
-      brawlerImg.src = choice.src;
-    } else if(loadedAny.length > 0){
-      const choice = loadedAny[Math.floor(Math.random()*loadedAny.length)];
-      brawlerImg.src = choice.src;
-    } else {
-      brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
-    }
+    if(img && img.complete && img.naturalWidth>0){ brawlerImg.src = img.src; } 
+    else if(loadedActive.length>0){ brawlerImg.src = loadedActive[Math.floor(Math.random()*loadedActive.length)].src; } 
+    else if(loadedAny.length>0){ brawlerImg.src = loadedAny[Math.floor(Math.random()*loadedAny.length)].src; } 
+    else { brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler"; }
     brawlerImg.className = fallbackClass;
   }
 
@@ -335,7 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const total = Object.values(valores).reduce((a,b)=>a+b,0);
 
-    const resultadoEl = document.getElementById("resultado");
     let start = parseInt(resultadoEl.innerText.replace(/\D/g,''))||0;
     const end = total;
     const duration = 800;
@@ -347,26 +343,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     requestAnimationFrame(step);
 
-    // Doughnut sin valores, solo colores, con click en segmento para misión
-    const data={labels:Object.keys(valores),datasets:[{data:Array(Object.keys(valores).length).fill(1),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
-    const config={
-      type:'doughnut',
-      data:data,
-      options:{
-        cutout:"70%",
-        plugins:{
-          legend:{display:true,position:'bottom'}
-        },
-        onClick: (evt, elems) => {
-          if(elems.length>0){
-            const index = elems[0].index;
-            showMission(index, getOrCreateDailyName());
-          }
-        }
-      }
-    };
+    const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
+    const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
+
+    // Evento click en segmentos para mostrar misión
+    document.getElementById('myChart').onclick = (evt) => {
+      const points = chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
+      if(points.length){
+        const idx = points[0].index;
+        const brawler = allBrawlers[Math.floor(Math.random()*allBrawlers.length)];
+        const mission = misiones[idx % misiones.length].replace("{brawler}",brawler);
+        showMission(mission);
+      }
+    };
 
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
@@ -374,22 +365,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== LIMPIAR ===== */
   function limpiar(){
-    beep(300); 
-    vibrar();
-    clearBtn.classList.add('flash'); 
-    setTimeout(()=>clearBtn.classList.remove('flash'),200);
-
+    beep(300); vibrar();
+    clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
     document.getElementById("calcForm").reset();
-    document.getElementById("resultado").innerText="Valor total: 0 🪙";
+    resultadoEl.innerText="Valor total: 0 🪙";
     if(chart) chart.destroy();
-
     const dailyName = getOrCreateDailyName();
     let candidates = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
-    candidates = candidates.filter(n => n !== dailyName);
+    candidates = candidates.filter(n => n!==dailyName);
     const start = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : dailyName;
     safeSetBrawler(start);
-
-    document.getElementById('calcForm').scrollIntoView({behavior:'smooth', block:'start'}); 
   }
 
   /* ===== SHARE ===== */
@@ -401,19 +386,14 @@ document.addEventListener('DOMContentLoaded', () => {
       try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
       catch(err){console.log(err);}
     } else {
-      try{
-        await navigator.clipboard.writeText(url);
-        alert("Enlace copiado al portapapeles ✅");
-      }catch(e){
-        prompt("Copia este enlace:", url);
-      }
+      try{await navigator.clipboard.writeText(url); alert("Enlace copiado al portapapeles ✅");}
+      catch(e){prompt("Copia este enlace:", url);}
     }
   }
 
   /* ===== VOTO ===== */
   function getUserVote() { return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}'); }
   function setUserVote(vote) { localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote)); }
-
   likesCounter.addEventListener('click', async () => {
     beep(400); vibrar();
     let vote = getUserVote();
@@ -429,35 +409,23 @@ document.addEventListener('DOMContentLoaded', () => {
     setUserVote(vote); cargarMetricas();
   });
 
-  /* ===== RULETA (termina en el daily, no empieza con él) ===== */
+  /* ===== RULETA ===== */
   function spinRouletteSmooth() {
     let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
     const dailyName = getOrCreateDailyName();
-    if(!brawlersList.includes(dailyName)){
-      const replaceIdx = Math.floor(Math.random()*brawlersList.length);
-      brawlersList[replaceIdx] = dailyName;
-    }
-
+    if(!brawlersList.includes(dailyName)){ brawlersList[Math.floor(Math.random()*brawlersList.length)] = dailyName; }
     const numBrawlers = brawlersList.length;
-    const finalIndex = brawlersList.indexOf(dailyName); 
-    const totalDuration = 10000;
-    const slowDuration = 2000;
-    const fastDuration = totalDuration - slowDuration;
+    const finalIndex = brawlersList.indexOf(dailyName);
+    const totalDuration = 10000, slowDuration = 2000, fastDuration = totalDuration - slowDuration;
     const finalSlowSteps = Math.min(6, numBrawlers);
-
     const indices = Array.from({ length: numBrawlers }, (_, i) => i);
     const shuffledFast = [...indices].sort(() => Math.random() - 0.5);
-
-      if(brawlersList[shuffledFast[0]] === dailyName){
+    if(brawlersList[shuffledFast[0]] === dailyName){
       const swapIdx = shuffledFast.findIndex(i => brawlersList[i] !== dailyName);
-      if(swapIdx > 0){
-        [shuffledFast[0], shuffledFast[swapIdx]] = [shuffledFast[swapIdx], shuffledFast[0]];
-      }
+      if(swapIdx>0){ [shuffledFast[0], shuffledFast[swapIdx]] = [shuffledFast[swapIdx], shuffledFast[0]]; }
     }
-
     const temp = indices.filter(i => i !== finalIndex);
-    const slowSequence = [];
-    for (let i = 0; i < finalSlowSteps - 1; i++) {
+    const slowSequence = [];for (let i = 0; i < finalSlowSteps - 1; i++) {
       const idx = Math.floor(Math.random() * temp.length);
       slowSequence.push(temp[idx]);
       temp.splice(idx, 1);
@@ -470,19 +438,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function showImageSafe(name, glowClass) {
       const img = brawlerCache[name];
       const loadedActive = getLoadedImagesFromList(brawlersList);
-      const loadedAny = Object.values(brawlerCache).filter(i=>i && i.complete && i.naturalWidth>0);
-
-      if(img && img.complete && img.naturalWidth>0){
-        brawlerImg.src = img.src;
-      } else if(loadedActive.length > 0){
-        const randomImg = loadedActive[Math.floor(Math.random()*loadedActive.length)];
-        brawlerImg.src = randomImg.src;
-      } else if(loadedAny.length > 0){
-        const randomImg = loadedAny[Math.floor(Math.random()*loadedAny.length)];
-        brawlerImg.src = randomImg.src;
-      } else {
-        brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler";
-      }
+      const loadedAny = Object.values(brawlerCache).filter(i => i && i.complete && i.naturalWidth>0);
+      if(img && img.complete && img.naturalWidth>0){ brawlerImg.src = img.src; } 
+      else if(loadedActive.length > 0){ brawlerImg.src = loadedActive[Math.floor(Math.random()*loadedActive.length)].src; } 
+      else if(loadedAny.length > 0){ brawlerImg.src = loadedAny[Math.floor(Math.random()*loadedAny.length)].src; } 
+      else { brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler"; }
       brawlerImg.className = glowClass;
     }
 
@@ -522,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalName = brawlersList[finalIndex];
             safeSetBrawler(finalName, "glow-green finalGlow");
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-            return;
+            return; 
           }
         }
       }
@@ -540,19 +500,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!activeBrawlers.includes(dailyName)){
       const idx = Math.floor(Math.random()*activeBrawlers.length);
       activeBrawlers[idx] = dailyName;
-      if(!brawlerCache[dailyName]){
-        const n = new Image();
-        n.src = baseURL + dailyName + ".png";
-        brawlerCache[dailyName] = n;
-      } else {
-        brawlerCache[dailyName].src = baseURL + dailyName + ".png";
-      }
+      if(!brawlerCache[dailyName]){ const n = new Image(); n.src = baseURL + dailyName + ".png"; brawlerCache[dailyName] = n; }
+      else { brawlerCache[dailyName].src = baseURL + dailyName + ".png"; }
     }
-
     const nonDaily = activeBrawlers.filter(n => n !== dailyName);
     const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;
     safeSetBrawler(startName);
-
     if(spinBtn) spinBtn.disabled = false;
   }).catch(e=>{
     console.warn("prepareActiveBrawlers fallo: ", e);
@@ -564,6 +517,6 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarMetricas();
   incrementarVisita();
 });
-</script>         
+</script>
 </body>
 </html>
