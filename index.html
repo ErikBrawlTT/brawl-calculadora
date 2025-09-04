@@ -573,6 +573,85 @@ document.addEventListener('DOMContentLoaded', () => {
   incrementarVisita();
 });
 </script>
+  <!-- TikTok Browser: al final del body -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  function isTikTokBrowser() {
+    const ua = navigator.userAgent || "";
+    return /tiktok/i.test(ua) || /musical_ly/i.test(ua);
+  }
+
+  function getMobileOS() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    if (/android/i.test(ua)) return "Android";
+    if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return "iOS";
+    return "unknown";
+  }
+
+  if (isTikTokBrowser()) {
+    const os = getMobileOS();
+    let instructions = "abre este enlace en tu navegador para disfrutar de todas las funciones";
+    if (os === "iOS") instructions = "pulsa el botón de compartir y selecciona 'Abrir en Safari'";
+    if (os === "Android") instructions = "pulsa el botón de compartir y selecciona 'Abrir en Chrome u otro navegador'";
+
+    // Overlay semitransparente
+    const overlay = document.createElement('div');
+    overlay.id = 'tiktokOverlay';
+    overlay.style.cssText = `
+      position:fixed; inset:0; background:rgba(255,255,255,0.85);
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      z-index:99998; font-family:'Bangers', cursive; color:#333; text-align:center; padding:20px;
+    `;
+    overlay.innerHTML = `
+      <div style="max-width:320px;">
+        <h2 style="font-size:1.8rem; margin-bottom:10px; color:#FFD700; text-shadow:1px 1px 2px #000;">👋 Hola Brawler</h2>
+        <p style="font-size:1rem; color:#000; margin-bottom:15px;">
+          TikTok Browser no permite disfrutar de todas las funciones de la calculadora.<br>
+          Para usarla al 100%, ${instructions}.
+        </p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Banner superior
+    const banner = document.createElement('div');
+    banner.id = 'tiktokBanner';
+    banner.style.cssText = `
+      position:fixed; top:-120px; left:50%; transform:translateX(-50%);
+      background:linear-gradient(90deg,#FFD700,#FFA500); color:#000; padding:12px 20px;
+      border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); font-family:'Bangers', cursive;
+      font-size:1rem; text-align:center; z-index:99999; display:flex; flex-direction:column;
+      align-items:center; gap:8px; transition:top 0.6s ease;
+    `;
+    banner.innerHTML = `
+      <div>👆 Para disfrutar de la una  mejor experiencia,accede a la calculadora desde tu navegador🌐 pulsando los ⚪⚪⚪ ↗️ TIKTOK bloquea algunas funciones,como la del brawler del dia</div>
+      <div style="display:flex; gap:10px; margin-top:4px;">
+        <a href="https://brawl-calculadora.vercel.app" target="_self" style="
+          padding:6px 12px; font-family:'Bangers', cursive; font-size:0.95rem;
+          border:none; border-radius:8px; cursor:pointer; background:#fff; color:#FFA500;
+          text-decoration:none; display:inline-block; box-shadow:0 2px 6px rgba(0,0,0,0.2);">🌐 Abrir en navegador</a>
+        <button id="closeBannerBtn" style="
+          padding:6px 12px; font-family:'Bangers', cursive; font-size:0.95rem;
+          border:none; border-radius:8px; cursor:pointer; background:rgba(0,0,0,0.1); color:#000;">❌ Continuar aquí</button>
+      </div>
+      <p style="font-size:0.85rem; margin-top:6px; color:#555;">No se guarda ningún dato de tu dispositivo.</p>
+    `;
+    document.body.appendChild(banner);
+
+    // Animación entrada banner
+    requestAnimationFrame(() => { banner.style.top = '20px'; });
+
+    // Cerrar todo si pulsa "Continuar aquí"
+    document.getElementById('closeBannerBtn').addEventListener('click', () => {
+      banner.style.top = '-120px';
+      overlay.remove();
+      setTimeout(() => banner.remove(), 500);
+    });
+  }
+});
+</script>
+</body>
+</html>
 </body>
 </html>
 
