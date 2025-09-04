@@ -159,42 +159,49 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   /* ===== OVERLAY DEL MENSAJE ===== */
-  function showMission(message, color="#00FFFF"){
+function showMission(message, color="#00FFFF"){
   clearTimeout(missionTimeout);
-  
+
   let missionEl = document.getElementById('missionMessage');
   if(!missionEl){
     missionEl = document.createElement('div');
     missionEl.id = 'missionMessage';
     document.body.appendChild(missionEl);
+
+    // Estilos iniciales
+    missionEl.style.position = 'absolute';
+    missionEl.style.zIndex = 1000;
+    missionEl.style.pointerEvents = 'none';
+    missionEl.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    missionEl.style.color = '#fff';
+    missionEl.style.padding = '8px 12px';
+    missionEl.style.borderRadius = '8px';
+    missionEl.style.fontWeight = 'bold';
+    missionEl.style.textAlign = 'center';
+    missionEl.style.maxWidth = '180px';
+    missionEl.style.wordWrap = 'break-word';
+    missionEl.style.transition = 'border-color 0.3s ease';
+    missionEl.style.display = 'block';
   }
 
   missionEl.innerText = message;
-  missionEl.style.borderColor = color;
+  missionEl.style.border = `3px solid ${color}`;
   missionEl.style.display = 'block';
 
-  // Posicionar sobre el brawler
-  const brawlerRect = brawlerImg.getBoundingClientRect();
-  missionEl.style.position = 'absolute';
-  missionEl.style.top = (brawlerRect.top + window.scrollY + brawlerRect.height/2 - missionEl.offsetHeight/2) + 'px';
-  missionEl.style.left = (brawlerRect.left + window.scrollX + brawlerRect.width/2 - missionEl.offsetWidth/2) + 'px';
-  missionEl.style.zIndex = 1000; // por delante del brawler
-  missionEl.style.pointerEvents = 'none'; // que no bloquee clicks
-  missionEl.style.backgroundColor = 'rgba(0,0,0,0.8)';
-  missionEl.style.color = '#fff';
-  missionEl.style.padding = '8px 12px';
-  missionEl.style.borderRadius = '8px';
-  missionEl.style.fontWeight = 'bold';
-  missionEl.style.textAlign = 'center';
-  missionEl.style.maxWidth = '180px';
-  missionEl.style.wordWrap = 'break-word';
-  missionEl.style.border = `3px solid ${color}`;
-  missionEl.style.transition = 'border-color 0.3s ease';
+  // Posicionar sobre el brawler después de render
+  requestAnimationFrame(() => {
+    const brawlerRect = brawlerImg.getBoundingClientRect();
+    const scrollY = window.scrollY || window.pageYOffset;
+    const scrollX = window.scrollX || window.pageXOffset;
+
+    missionEl.style.top = (brawlerRect.top + scrollY + brawlerRect.height/2 - missionEl.offsetHeight/2) + 'px';
+    missionEl.style.left = (brawlerRect.left + scrollX + brawlerRect.width/2 - missionEl.offsetWidth/2) + 'px';
+  });
 
   missionTimeout = setTimeout(()=>{
     missionEl.style.display = 'none';
   }, 4000);
-  }
+       }
   /* ===== UTILIDADES ===== */
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
