@@ -116,7 +116,7 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
       <p>¡A qué esperas! Haz tu cálculo, deja tu like👍 comparte📤 vuelve al juego y dale caña🏆.</p>
     </div>
   </div>
-<script type="module">
+  <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -157,14 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
     "Juega 2 partidas en modo asedio con {brawler}",
     "Haz 1000 de curación con {brawler}"
   ];
-
-  let missionTimeout;
-
-  function showMission(mission){
-    clearTimeout(missionTimeout);
-    resultadoEl.innerText = mission;
-    missionTimeout = setTimeout(()=>{ resultadoEl.innerText = "Valor total: 0 🪙"; }, 8000);
-  }
 
   /* ===== UTILIDADES ===== */
   function beep(freq){
@@ -344,23 +336,64 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(step);
 
     const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
-    const config={type:'doughnut',data:data,options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}}};
+    const config={
+      type:'doughnut',
+      data:data,
+      options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}},
+      plugins:[{
+        id:'missionOverlay',
+        beforeDraw:(chart)=>{
+          if(!chart.missionText) return;
+          const {ctx, chartArea:{width,height}}=chart;
+          ctx.save();
+          ctx.fillStyle="rgba(0,0,0,0.85)";
+          ctx.fillRect(width/2-120,height/2-50,240,100);
+          ctx.strokeStyle="cyan";
+          ctx.lineWidth=3;
+          ctx.strokeRect(width/2-120,height/2-50,240,100);
+          ctx.fillStyle="white";
+          ctx.font="16px Arial";
+          ctx.textAlign="center";
+          ctx.textBaseline="middle";
+          wrapText(ctx,chart.missionText,width/2,height/2,220,20);
+          ctx.restore();
+        }
+      }]
+    };
+
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
 
-    // Evento click en segmentos para mostrar misión
     document.getElementById('myChart').onclick = (evt) => {
       const points = chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
       if(points.length){
         const idx = points[0].index;
         const brawler = allBrawlers[Math.floor(Math.random()*allBrawlers.length)];
         const mission = misiones[idx % misiones.length].replace("{brawler}",brawler);
-        showMission(mission);
+        chart.missionText = mission;
+        chart.update();
+        setTimeout(()=>{ chart.missionText = null; chart.update(); },8000);
       }
     };
 
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     document.getElementById('centerDiamond').style.display="block";
+  }
+
+  /* ===== FUNCION PARA MULTILÍNEA ===== */
+  function wrapText(ctx,text,x,y,maxWidth,lineHeight){
+    const words=text.split(" ");
+    let line="";
+    const lines=[];
+    for(let n=0;n<words.length;n++){
+      const testLine=line+words[n]+" ";
+      const metrics=ctx.measureText(testLine);
+      if(metrics.width>maxWidth&&n>0){ lines.push(line); line=words[n]+" "; }
+      else{ line=testLine; }
+    }
+    lines.push(line);
+    const offset=(lines.length-1)*lineHeight/2;
+    lines.forEach((l,i)=>{ ctx.fillText(l.trim(),x,y-offset+(i*lineHeight)); });
   }
 
   /* ===== LIMPIAR ===== */
@@ -411,9 +444,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== RULETA ===== */
   function spinRouletteSmooth() {
-    let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
+    let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice: allBrawlers.slice();
     const dailyName = getOrCreateDailyName();
-    if(!brawlersList.includes(dailyName)){ brawlersList[Math.floor(Math.random()*brawlersList.length)] = dailyName; }
+    if(!brawlersList.includes(dailyName)){ 
+      brawlersList[Math.floor(Math.random()*brawlersList.length)] = dailyName; 
+    }
     const numBrawlers = brawlersList.length;
     const finalIndex = brawlersList.indexOf(dailyName);
     const totalDuration = 10000, slowDuration = 2000, fastDuration = totalDuration - slowDuration;
@@ -425,7 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if(swapIdx>0){ [shuffledFast[0], shuffledFast[swapIdx]] = [shuffledFast[swapIdx], shuffledFast[0]]; }
     }
     const temp = indices.filter(i => i !== finalIndex);
-    const slowSequence = [];for (let i = 0; i < finalSlowSteps - 1; i++) {
+    const slowSequence = [];
+    for (let i = 0; i < finalSlowSteps - 1; i++) {
       const idx = Math.floor(Math.random() * temp.length);
       slowSequence.push(temp[idx]);
       temp.splice(idx, 1);
@@ -500,8 +536,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!activeBrawlers.includes(dailyName)){
       const idx = Math.floor(Math.random()*activeBrawlers.length);
       activeBrawlers[idx] = dailyName;
-      if(!brawlerCache[dailyName]){ const n = new Image(); n.src = baseURL + dailyName + ".png"; brawlerCache[dailyName] = n; }
-      else { brawlerCache[dailyName].src = baseURL + dailyName + ".png"; }
+      if(!brawlerCache[dailyName]){
+        const n = new Image();
+        n.src = baseURL + dailyName + ".png";
+        brawlerCache[dailyName] = n;
+      } else { brawlerCache[dailyName].src = baseURL + dailyName + ".png"; }
     }
     const nonDaily = activeBrawlers.filter(n => n !== dailyName);
     const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;
@@ -517,6 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarMetricas();
   incrementarVisita();
 });
+    
 </script>
 </body>
 </html>
