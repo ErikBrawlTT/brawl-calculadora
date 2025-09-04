@@ -163,14 +163,16 @@ function showMission(message, color="#00FFFF"){
   clearTimeout(missionTimeout);
 
   let missionEl = document.getElementById('missionMessage');
+  const chartContainer = document.getElementById('myChart').parentElement;
+
   if(!missionEl){
     missionEl = document.createElement('div');
     missionEl.id = 'missionMessage';
-    document.body.appendChild(missionEl);
+    chartContainer.appendChild(missionEl);
 
     // Estilos iniciales
     missionEl.style.position = 'absolute';
-    missionEl.style.zIndex = 1000;
+    missionEl.style.zIndex = 10;
     missionEl.style.pointerEvents = 'none';
     missionEl.style.backgroundColor = 'rgba(0,0,0,0.8)';
     missionEl.style.color = '#fff';
@@ -188,20 +190,19 @@ function showMission(message, color="#00FFFF"){
   missionEl.style.border = `3px solid ${color}`;
   missionEl.style.display = 'block';
 
-  // Posicionar sobre el brawler después de render
+  // Posicionar sobre el brawler
   requestAnimationFrame(() => {
     const brawlerRect = brawlerImg.getBoundingClientRect();
-    const scrollY = window.scrollY || window.pageYOffset;
-    const scrollX = window.scrollX || window.pageXOffset;
+    const containerRect = chartContainer.getBoundingClientRect();
 
-    missionEl.style.top = (brawlerRect.top + scrollY + brawlerRect.height/2 - missionEl.offsetHeight/2) + 'px';
-    missionEl.style.left = (brawlerRect.left + scrollX + brawlerRect.width/2 - missionEl.offsetWidth/2) + 'px';
+    missionEl.style.top = (brawlerRect.top - containerRect.top + brawlerRect.height/2 - missionEl.offsetHeight/2) + 'px';
+    missionEl.style.left = (brawlerRect.left - containerRect.left + brawlerRect.width/2 - missionEl.offsetWidth/2) + 'px';
   });
 
   missionTimeout = setTimeout(()=>{
     missionEl.style.display = 'none';
   }, 4000);
-       }
+                          }
   /* ===== UTILIDADES ===== */
   function beep(freq){
     const ctx = new (AudioContext||webkitAudioContext)(),
