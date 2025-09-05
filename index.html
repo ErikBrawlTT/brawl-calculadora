@@ -136,6 +136,33 @@ document.addEventListener('DOMContentLoaded', () => {
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
   );
   const PAGE_ID = 'pagina1';
+    // 🎵 SONIDO RULETA
+  const rouletteAudioURL = "6i3zrhspunb-slot-machine-sfx-5.mp3"; // debe estar en la misma carpeta que tu HTML
+  let rouletteAudioCtx, rouletteBuffer;
+  async function loadRouletteSound() {
+    if (!rouletteAudioCtx) rouletteAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (rouletteBuffer) return;
+    const response = await fetch(rouletteAudioURL);
+    const arrayBuffer = await response.arrayBuffer();
+    rouletteBuffer = await rouletteAudioCtx.decodeAudioData(arrayBuffer);
+  }
+  function playRouletteSound(duration = 10000) {
+    if (!rouletteBuffer) return;
+    const source = rouletteAudioCtx.createBufferSource();
+    source.buffer = rouletteBuffer;
+    source.connect(rouletteAudioCtx.destination);
+    source.start();
+
+    const startTime = rouletteAudioCtx.currentTime;
+    const endTime = startTime + duration / 1000;
+
+    const interval = setInterval(() => {
+      const now = rouletteAudioCtx.currentTime;
+      const progress = (now - startTime) / (endTime - startTime);
+      source.playbackRate.value = Math.max(0.1, 1 - progress * 0.9);
+      if (progress >= 1) clearInterval(interval);
+    }, 50);
+  }
 
   /* ===== ELEMENTOS ===== */
   const calcBtn = document.getElementById('calcBtn');
