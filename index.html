@@ -127,7 +127,8 @@ canvas{ margin-top:15px; max-width:400px; position:relative; }
 ">
     © 2025 Supercell Oy. Todos los personajes, imágenes, nombres y elementos de Brawl Stars son propiedad de Supercell. Esta calculadora es un proyecto no oficial y no está afiliada con Supercell.
 </footer>
-  <script type="module">
+
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -136,33 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0a25leWtrcmtiYWp5bXpzZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5OTAyMjIsImV4cCI6MjA3MTU2NjIyMn0.Zsqy_PZ6K-3iTjh7nkTyH-7M9gOnSFHt4f0p9y_WPiE'
   );
   const PAGE_ID = 'pagina1';
-    // 🎵 SONIDO RULETA
-  const rouletteAudioURL = "6i3zrhspunb-slot-machine-sfx-5.mp3"; // debe estar en la misma carpeta que tu HTML
-  let rouletteAudioCtx, rouletteBuffer;
-  async function loadRouletteSound() {
-    if (!rouletteAudioCtx) rouletteAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (rouletteBuffer) return;
-    const response = await fetch(rouletteAudioURL);
-    const arrayBuffer = await response.arrayBuffer();
-    rouletteBuffer = await rouletteAudioCtx.decodeAudioData(arrayBuffer);
-  }
-  function playRouletteSound(duration = 10000) {
-    if (!rouletteBuffer) return;
-    const source = rouletteAudioCtx.createBufferSource();
-    source.buffer = rouletteBuffer;
-    source.connect(rouletteAudioCtx.destination);
-    source.start();
-
-    const startTime = rouletteAudioCtx.currentTime;
-    const endTime = startTime + duration / 1000;
-
-    const interval = setInterval(() => {
-      const now = rouletteAudioCtx.currentTime;
-      const progress = (now - startTime) / (endTime - startTime);
-      source.playbackRate.value = Math.max(0.1, 1 - progress * 0.9);
-      if (progress >= 1) clearInterval(interval);
-    }, 50);
-  }
 
   /* ===== ELEMENTOS ===== */
   const calcBtn = document.getElementById('calcBtn');
@@ -180,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== VARIABLES DE CONTROL ===== */
   let chart;
-  let canShowMission = false; // NUEVO: Control para que no se muestre la misión hasta que ruleta termine
+  let canShowMission = false;
 
   /* ===== MISIÓN PARA DOUGHNUT ===== */
   const misiones = [
@@ -323,6 +297,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 🚀 NUEVO: precarga gradual de todos los brawlers sin bloquear
+  function precargarTodosGradualmente(batchSize = 15, delay = 500) {
+    const remaining = allBrawlers.filter(n => !brawlerCache[n] || !brawlerCache[n].complete);
+    if (remaining.length === 0) return;
+    let index = 0;
+    function loadBatch() {
+      const batch = remaining.slice(index, index + batchSize);
+      batch.forEach(name => {
+        if (!brawlerCache[name]) {
+          const img = new Image();
+          img.src = baseURL + name + ".png";
+          brawlerCache[name] = img;
+        }
+      });
+      index += batchSize;
+      if (index < remaining.length) setTimeout(loadBatch, delay);
+    }
+    loadBatch();
+  }
+
   /* ===== FUNCION IMAGEN SEGURA ===== */
   function getLoadedImagesFromList(list){
     return list.map(name => brawlerCache[name]).filter(img => img && img.complete && img.naturalWidth>0);
@@ -339,142 +333,17 @@ document.addEventListener('DOMContentLoaded', () => {
     brawlerImg.className = fallbackClass;
   }
 
-  /* ===== CALCULAR ===== */
-  function calcular(){
-    beep(600); vibrar();
-    calcBtn.classList.add('flash'); setTimeout(()=>calcBtn.classList.remove('flash'),200);
-
-    const bpass = Number(document.getElementById("bpass").value)||0;
-    const comunes = Number(document.getElementById("comunes").value)||0;
-    const raras = Number(document.getElementById("raras").value)||0;
-    const epicas = Number(document.getElementById("epicas").value)||0;
-    const miticas = Number(document.getElementById("miticas").value)||0;
-    const legendarias = Number(document.getElementById("legendarias").value)||0;
-    const hipercarga = Number(document.getElementById("hipercarga").value)||0;
-    const maxeados = Number(document.getElementById("maxeados").value)||0;
-
-    const valores={
-      "🎟️ Brawl Pass":bpass*10,
-      "🩵 Comunes":comunes*2,
-      "💚 Raras":raras*5,
-      "💜 Épicas":epicas*10,
-      "❤️ Míticas":miticas*12,
-      "🌟 Legendarias":legendarias*15,
-      "⚡ Hipercarga":hipercarga*20,
-      "🔥 Maxeados":maxeados*50
-    };
-    const total = Object.values(valores).reduce((a,b)=>a+b,0);
-
-    let start = parseInt(resultadoEl.innerText.replace(/\D/g,''))||0;
-    const end = total;
-    const duration = 800;
-    const t0 = performance.now();
-    function step(t){
-      const p = Math.min((t-t0)/duration,1);
-      resultadoEl.innerText = "Valor total: "+Math.floor(start + (end-start)*p)+" 🪙";
-      if(p<1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-
-    const data={labels:Object.keys(valores),datasets:[{data:Object.values(valores),backgroundColor:["#00FFFF","#00FF00","#FF00FF","#FFFF00","#FF4500","#00CFFF","#FF69B4","#FF0000"],borderWidth:2}]};
-    const config={
-      type:'doughnut',
-      data:data,
-      options:{cutout:"70%",plugins:{legend:{display:true,position:'bottom'}}},
-      plugins:[{
-        id:'missionOverlay',
-        beforeDraw:(chart)=>{
-          if(!chart.missionText) return;
-          const {ctx, chartArea:{width,height}}=chart;
-          ctx.save();
-          ctx.fillStyle="rgba(0,0,0,0.85)";
-          ctx.fillRect(width/2-120,height/2-50,240,100);
-          ctx.strokeStyle = chart.missionGlow || "cyan";
-          ctx.lineWidth=3;
-          ctx.strokeRect(width/2-120,height/2-50,240,100);
-          ctx.fillStyle="white";
-          ctx.font="16px Arial";
-          ctx.textAlign="center";
-          ctx.textBaseline="middle";
-          wrapText(ctx,chart.missionText,width/2,height/2,220,20);
-          ctx.restore();
-        }
-      }]
-    };
-
-    if(chart) chart.destroy();
-    chart = new Chart(document.getElementById('myChart').getContext('2d'), config);
-  }
-
-  /* ===== FUNCION PARA MULTILÍNEA ===== */
-  function wrapText(ctx,text,x,y,maxWidth,lineHeight){
-    const words=text.split(" ");
-    let line="";
-    const lines=[];
-    for(let n=0;n<words.length;n++){
-      const testLine=line+words[n]+" ";
-      const metrics=ctx.measureText(testLine);
-      if(metrics.width>maxWidth&&n>0){ lines.push(line); line=words[n]+" "; }
-      else{ line=testLine; }
-    }
-    lines.push(line);
-    const offset=(lines.length-1)*lineHeight/2;
-    lines.forEach((l,i)=>{ ctx.fillText(l.trim(),x,y-offset+(i*lineHeight)); });
-  }
-
-  /* ===== LIMPIAR ===== */
-  function limpiar(){
-    beep(300); vibrar();
-    clearBtn.classList.add('flash'); setTimeout(()=>clearBtn.classList.remove('flash'),200);
-    document.getElementById("calcForm").reset();
-    resultadoEl.innerText="Valor total: 0 🪙";
-    if(chart) chart.destroy();
-    const dailyName = getOrCreateDailyName();
-    let candidates = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
-    candidates = candidates.filter(n => n!==dailyName);
-    const start = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : dailyName;
-    safeSetBrawler(start);
-  }
-
-  /* ===== SHARE ===== */
-  async function share(){
-    beep(500); vibrar(); shareBtn.classList.add('flash'); setTimeout(()=>shareBtn.classList.remove('flash'),200);
-    const url = window.location.href;
-    const text = "Mira cuánto valen mis Brawlers en Brawl Stars!";
-    if(navigator.share){
-      try{await navigator.share({title:"Calculadora Brawl Stars",text,url});}
-      catch(err){console.log(err);}
-    } else {
-      try{await navigator.clipboard.writeText(url); alert("Enlace copiado al portapapeles ✅");}
-      catch(e){prompt("Copia este enlace:", url);}
-    }
-  }
-
-  /* ===== VOTO ===== */
-  function getUserVote() { return JSON.parse(localStorage.getItem(`${PAGE_ID}-vote`) || '{}'); }
-  function setUserVote(vote) { localStorage.setItem(`${PAGE_ID}-vote`, JSON.stringify(vote)); }
-  likesCounter.addEventListener('click', async () => {
-    beep(400); vibrar();
-    let vote = getUserVote();
-    if(vote.type === 'like'){ vote = {}; await supabase.rpc('decrement_likes',{pid: PAGE_ID}); }
-    else { if(vote.type==='dislike') await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); vote={type:'like'}; await supabase.rpc('increment_likes',{pid: PAGE_ID}); }
-    setUserVote(vote); cargarMetricas();
-  });
-  dislikesCounter.addEventListener('click', async () => {
-    beep(300); vibrar();
-    let vote = getUserVote();
-    if(vote.type === 'dislike'){ vote = {}; await supabase.rpc('decrement_dislikes',{pid: PAGE_ID}); }
-    else { if(vote.type==='like') await supabase.rpc('decrement_likes',{pid: PAGE_ID}); vote={type:'dislike'}; await supabase.rpc('increment_dislikes',{pid: PAGE_ID}); }
-    setUserVote(vote); cargarMetricas();
-  });
-
-  /* ===== RULETA ===== */
+  /* ===== RULETA (modificada para usar más brawlers) ===== */
   function spinRouletteSmooth() {
-    let brawlersList = (activePrepared && activeBrawlers.length>0) ? activeBrawlers.slice() : allBrawlers.slice();
+    // 🔧 MODIFICADO: ahora usa todos los brawlers cargados, no solo los 20 activos
+    let loadedBrawlers = Object.keys(brawlerCache).filter(n => brawlerCache[n].complete && brawlerCache[n].naturalWidth>0);
+    let brawlersList = (loadedBrawlers.length > 10) ? loadedBrawlers : allBrawlers.slice(0, 30);
+
     const dailyName = getOrCreateDailyName();
     if(!brawlersList.includes(dailyName)){ 
       brawlersList[Math.floor(Math.random()*brawlersList.length)] = dailyName; 
     }
+
     const numBrawlers = brawlersList.length;
     const finalIndex = brawlersList.indexOf(dailyName);
     const totalDuration = 10000, slowDuration = 2000, fastDuration = totalDuration - slowDuration;
@@ -493,10 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
       temp.splice(idx, 1);
     }
     slowSequence.push(finalIndex);
-
     const glowClasses = ["glow-blue", "glow-red", "glow-orange", "glow-green"];
     const startTime = performance.now();
-
     function showImageSafe(name, glowClass) {
       const img = brawlerCache[name];
       const loadedActive = getLoadedImagesFromList(brawlersList);
@@ -507,16 +374,13 @@ document.addEventListener('DOMContentLoaded', () => {
       else { brawlerImg.src = "https://via.placeholder.com/210x210?text=Brawler"; }
       brawlerImg.className = glowClass;
     }
-
     let fastStep = 0;
     let slowStep = 0;
     let phase = "fast";
     let lastTime = performance.now();
     const fastInterval = 60;
-
     function animate(currentTime){
       const elapsed = currentTime - startTime;
-
       if(phase === "fast"){
         if(elapsed >= fastDuration){
           phase = "slow";
@@ -528,7 +392,6 @@ document.addEventListener('DOMContentLoaded', () => {
           fastStep++; lastTime = currentTime;
         }
       }
-
       if(phase === "slow"){
         const slowElapsed = elapsed - fastDuration;
         const stepDuration = slowDuration / finalSlowSteps;
@@ -544,44 +407,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalName = brawlersList[finalIndex];
             safeSetBrawler(finalName, "glow-green finalGlow");
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-
-            // Ahora se puede mostrar la misión
             canShowMission = true;
             return; 
           }
         }
       }
-
       requestAnimationFrame(animate);
     }
-
     requestAnimationFrame(animate);
   }
-
-  /* ===== CLICK SOBRE EL CHART PARA MISION ===== */
-  document.getElementById('myChart').onclick = (evt) => {
-    if(!canShowMission) return; // No mostrar misión hasta que termine la ruleta
-    const points = chart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true);
-    if(points.length){
-      const idx = points[0].index;
-      const brawlerDia = getOrCreateDailyName();
-      const mission = misiones[idx % misiones.length].replace("{brawler}", brawlerDia);
-      const colorSegment = chart.data.datasets[0].backgroundColor[idx % chart.data.datasets[0].backgroundColor.length];
-
-      chart.missionText = mission;
-      chart.missionGlow = colorSegment;
-      chart.update();
-
-      brawlerImg.style.opacity = "0.3"; // Imagen semitransparente mientras se muestra la misión
-
-      setTimeout(()=>{
-        chart.missionText = null;
-        chart.missionGlow = null;
-        chart.update();
-        brawlerImg.style.opacity = "1"; // Recupera opacidad
-      },8000);
-    }
-  };
 
   /* ===== INICIALIZACIÓN ===== */
   if(spinBtn) spinBtn.disabled = true;
@@ -600,6 +434,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const startName = nonDaily.length ? nonDaily[Math.floor(Math.random()*nonDaily.length)] : dailyName;
     safeSetBrawler(startName);
     if(spinBtn) spinBtn.disabled = false;
+
+    // 🚀 NUEVO: comenzar precarga total en segundo plano
+    precargarTodosGradualmente();
   }).catch(e=>{
     console.warn("prepareActiveBrawlers fallo: ", e);
     const dailyName = getOrCreateDailyName();
@@ -610,83 +447,6 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarMetricas();
   incrementarVisita();
 });
-</script>
-  <!-- TikTok Browser: al final del body -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  function isTikTokBrowser() {
-    const ua = navigator.userAgent || "";
-    return /tiktok/i.test(ua) || /musical_ly/i.test(ua);
-  }
-
-  function getMobileOS() {
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-    if (/android/i.test(ua)) return "Android";
-    if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return "iOS";
-    return "unknown";
-  }
-
-  if (isTikTokBrowser()) {
-    const os = getMobileOS();
-    let instructions = "abre este enlace en tu navegador para disfrutar de todas las funciones";
-    if (os === "iOS") instructions = "pulsa el botón de compartir y selecciona 'Abrir en Safari'";
-    if (os === "Android") instructions = "pulsa el botón de compartir y selecciona 'Abrir en Chrome u otro navegador'";
-
-    // Overlay semitransparente
-    const overlay = document.createElement('div');
-    overlay.id = 'tiktokOverlay';
-    overlay.style.cssText = `
-      position:fixed; inset:0; background:rgba(255,255,255,0.85);
-      display:flex; flex-direction:column; justify-content:center; align-items:center;
-      z-index:99998; font-family:'Bangers', cursive; color:#333; text-align:center; padding:20px;
-    `;
-    overlay.innerHTML = `
-      <div style="max-width:320px;">
-        <h2 style="font-size:1.8rem; margin-bottom:10px; color:#FFD700; text-shadow:1px 1px 2px #000;">👋 Hola Brawler</h2>
-        <p style="font-size:1rem; color:#000; margin-bottom:15px;">
-          TikTok Browser no permite disfrutar de todas las funciones de la calculadora.<br>
-          Para usarla al 100%, ${instructions}.
-        </p>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    // Banner superior
-    const banner = document.createElement('div');
-    banner.id = 'tiktokBanner';
-    banner.style.cssText = `
-      position:fixed; top:-120px; left:50%; transform:translateX(-50%);
-      background:linear-gradient(90deg,#FFD700,#FFA500); color:#000; padding:12px 20px;
-      border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); font-family:'Bangers', cursive;
-      font-size:1rem; text-align:center; z-index:99999; display:flex; flex-direction:column;
-      align-items:center; gap:8px; transition:top 0.6s ease;
-    `;
-    banner.innerHTML = `
-      <div>👆 Para disfrutar de la una  mejor experiencia,accede a la calculadora desde tu navegador🌐 pulsando los ⚪⚪⚪ ↗️ TIKTOK bloquea algunas funciones,como la del brawler del dia</div>
-      <div style="display:flex; gap:10px; margin-top:4px;">
-        <a href="https://brawl-calculadora.vercel.app" target="_self" style="
-          padding:6px 12px; font-family:'Bangers', cursive; font-size:0.95rem;
-          border:none; border-radius:8px; cursor:pointer; background:#fff; color:#FFA500;
-          text-decoration:none; display:inline-block; box-shadow:0 2px 6px rgba(0,0,0,0.2);">🌐 Abrir en navegador</a>
-        <button id="closeBannerBtn" style="
-          padding:6px 12px; font-family:'Bangers', cursive; font-size:0.95rem;
-          border:none; border-radius:8px; cursor:pointer; background:rgba(0,0,0,0.1); color:#000;">❌ Continuar aquí</button>
-      </div>
-      <p style="font-size:0.85rem; margin-top:6px; color:#555;">No se guarda ningún dato de tu dispositivo.</p>
-    `;
-    document.body.appendChild(banner);
-
-    // Animación entrada banner
-    requestAnimationFrame(() => { banner.style.top = '20px'; });
-
-    // Cerrar todo si pulsa "Continuar aquí"
-    document.getElementById('closeBannerBtn').addEventListener('click', () => {
-      banner.style.top = '-120px';
-      overlay.remove();
-      setTimeout(() => banner.remove(), 500);
-    });
-  }
-});
-</script>
+  </script>
 </body>
 </html>
